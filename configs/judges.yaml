@@ -1,0 +1,63 @@
+# Judges: what scores the replies the benchmark rules cannot (docs/judges.md). One entry per judge; a benchmark's
+# JUDGE policy picks its judge (fallback/always -> extract, classifier -> harmbench_cls, rjscore -> rjscore,
+# lingo -> lingo). configs/local.yaml may override any field under `judges:`.
+#
+# Fields
+#   checkpoint(s)  "<Hugging Face repo>@<revision>"; the local folder is <checkpoints root>/<repo> unless the paths
+#                  configuration maps it (paths.py, checkpoint_dirs)
+#   env            the Python environment the judge process runs in (<envs root>/<env>)
+#   backend        how the judge runs; part of the cache identity together with the checkpoint, the decoding settings
+#                  and the prompt version. Cached answers live in <outputs>/judges/<judge>.<config_hash>.jsonl, so a
+#                  different judge configuration never reuses another one's answers
+# GPUs are given on the command line (score --judge-gpus), never here; without it a judge uses GPU 0, the RJScore
+# judge GPUs 0 and 1.
+
+extract:
+  # LLM answer extraction for rule-parse failures, the benchmarks' official chat extraction prompts (TOMATO,
+  # TimeBlind, VMDT fairness fallback) and VideoReasonBench's official judge. The paper used this model (Qwen3.5
+  # architecture, 27B, FP8 weights) at this revision.
+  checkpoint: Qwen/Qwen3.8-27B-FP8@017b9c7af6b5689d5dd426a76e0bc077eb5ca20a
+  env: judge
+  backend: vllm_server
+  server:                          # local `vllm serve` replicas, one per judge GPU
+    served_model_name: judge
+    port: 8031                     # replica i prefers port + i; if that port is taken, the OS assigns a free one
+                                   # (see the judge log)
+    max_model_len: 32768
+    gpu_memory_utilization: 0.9
+    max_num_seqs: 64
+    limit_mm_per_prompt: {image: 0, video: 0}     # text-only judging
+    env: {VLLM_ENGINE_READY_TIMEOUT_S: "3600", VLLM_USE_FLASHINFER_SAMPLER: "0"}
+    # url: http://127.0.0.1:8000/v1   # instead: an OpenAI-compatible endpoint you run (with `model: <name>`); the
+                                       # url and model enter the cache identity, so its answers get their own cache file
+  client:
+    temperature: 0
+    enable_thinking: false         # chat_template_kwargs.enable_thinking
+    in_flight_per_replica: 32
+    attempts: 5
+    retry_sleep_s: 5
+
+harmbench_cls:
+  # The official HarmBench classifiers (vLLM, temperature 0, one token), one per behaviour type.
+  checkpoints:
+    text: cais/HarmBench-Llama-2-13b-cls@bda705349d1144fa618770bea64d99ce54e3835b
+    multimodal: cais/HarmBench-Llama-2-13b-cls-multimodal-behaviors@928eaf3333b75a0eba1d7632d26256a56223b949
+  env: judge
+  backend: vllm
+  selftest:                        # labels equal to the official ones on the classifier validation sets (paper runs)
+    min_agreement: {text: 594, multimodal: 217}
+
+rjscore:
+  # Video-SafetyBench's RJScore judge (also used for MCV-SafetyBench): transformers, bf16, device_map="auto".
+  checkpoint: Qwen/Qwen2.5-72B-Instruct@495f39366efef23836d0cfae4fbe635880d2be31
+  env: judge
+  backend: hf
+  selftest:                        # run before any new request: every |RJScore - reference| <= tolerance
+    tolerance: 0.15                # bf16 scores differ slightly between GPU models; broken P2P copies move them ~1.3
+    min_items: 4
+
+lingo:
+  # The official LingoQA Lingo-Judge (fine-tuning experiment; judges/lingo.py).
+  checkpoint: wayveai/Lingo-Judge@a1a6e2194fd1aedaba02bde82316a6b73753d1d5
+  env: lingo
+  backend: hf

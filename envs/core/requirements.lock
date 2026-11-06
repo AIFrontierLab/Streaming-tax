@@ -1,0 +1,29 @@
+# Environment 'core': the orchestrator (prepare, run, score, report, stats, tables, plugin post-processing, download).
+# Exact versions (Python 3.12.14). `streamreplace env build core` installs them with `uv pip sync` and then this
+# repository (editable, without dependencies); requirements.in names the direct requirements.
+av==13.1.0
+beautifulsoup4==4.13.4
+certifi==2026.7.22
+charset-normalizer==3.5.1
+decord==0.6.0
+filelock==4.0.1
+fsspec==2026.9.0
+gdown==5.2.0
+hf-xet==1.6.0
+huggingface-hub==0.36.2
+idna==3.20
+iniconfig==2.3.0
+numpy==2.5.3
+packaging==26.3
+pillow==12.3.0
+pluggy==1.6.0
+pyarrow==25.0.1
+pygments==2.21.0
+pysocks==1.7.1
+pytest==9.1.1
+pyyaml==6.0.3
+requests==2.34.2
+soupsieve==2.7
+tqdm==4.70.1
+typing-extensions==4.16.0
+urllib3==2.8.0

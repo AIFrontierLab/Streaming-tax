@@ -1,0 +1,50 @@
+# Benchmarks and suites. Fields:
+#   media           image | video (must equal the benchmark module's MEDIA). Image benchmarks are run for P and C,
+#                   video benchmarks for P, C and S
+#   suite           the group a benchmark is reported in
+#   settings        settings layer 2: token budget (greedy max_new_tokens; default 512), system prompt (offline
+#                   adapters only; stream adapters ignore dataset system prompts)
+#   offline_frames  offline only: replaces the pair's frame-sampling keys (fps, nframes, sampler, ...) with the
+#                   benchmark's official offline sampling; pixel budgets and padding stay the pair's.
+#                   linspace_int = n frames at int(i * (total - 1) / (n - 1)); all = the stored frame list
+# Prompts, parsing, judges and metrics live in the benchmark modules (src/streamreplace/benchmarks/).
+benchmarks:
+  # image understanding (P/C)
+  dynamath:          {media: image, suite: image, settings: {generation: {max_new_tokens: 2048}}}
+  mathvista:         {media: image, suite: image, settings: {generation: {max_new_tokens: 2048}}}
+  mmbench:           {media: image, suite: image}
+  mme:               {media: image, suite: image, settings: {generation: {max_new_tokens: 16}}}
+  mmmu:              {media: image, suite: image, settings: {generation: {max_new_tokens: 2048}}}
+  mmstar:            {media: image, suite: image}
+  scienceqa:         {media: image, suite: image}
+  visulogic:         {media: image, suite: image-supp, settings: {generation: {max_new_tokens: 2048}}}
+  # video understanding (P/C/S); only Video-MME's short split
+  videomme:          {media: video, suite: video}
+  tomato:            {media: video, suite: video,
+                      settings: {generation: {max_new_tokens: 1024},
+                                 system: "You are an expert in understanding dynamics of objects."}}
+  timeblind:         {media: video, suite: video}
+  videoreasonbench:  {media: video, suite: video-supp, settings: {generation: {max_new_tokens: 4096}}}
+  # safety: HarmBench text and image behaviours (P/C); video jailbreaks (P/C/S)
+  harmbench:         {media: image, suite: safety}
+  video_safetybench: {media: video, suite: safety, settings: {generation: {max_new_tokens: 1024}},
+                      offline_frames: {nframes: 16, sampler: linspace_int}}       # the official 16 uniform frames
+  mcv_safetybench:   {media: video, suite: safety,
+                      offline_frames: {nframes: 33, sampler: linspace_int}}       # the official 4 fps of 8.25 s clips
+  # trustworthiness: VMDT video-to-text fairness and privacy (P/C/S)
+  vmdt_fairness:     {media: video, suite: trust, settings: {generation: {max_new_tokens: 1024}}}
+  vmdt_privacy:      {media: video, suite: trust, settings: {generation: {max_new_tokens: 1024}}}
+  # fine-tuning experiment (generalization): released as frame sequences or short clips
+  lingoqa:           {media: video, suite: finetune, settings: {generation: {max_new_tokens: 256}},
+                      offline_frames: {sampler: all}}                             # 5 frames at 1 Hz
+  eyepcr:            {media: video, suite: finetune, settings: {generation: {max_new_tokens: 512}},
+                      offline_frames: {nframes: 16, sampler: linspace_int}}
+  openuav_qa:        {media: video, suite: finetune,
+                      settings: {generation: {max_new_tokens: 128}, video: {min_pixels: 200704}},   # official floor
+                      offline_frames: {sampler: all}}                             # official <= 32 frames
+
+suites:
+  paper-core: [dynamath, mathvista, mmbench, mme, mmmu, mmstar, scienceqa, videomme, tomato, timeblind,
+               harmbench, video_safetybench, mcv_safetybench, vmdt_fairness, vmdt_privacy]
+  paper-supp: [visulogic, videoreasonbench]
+  finetune: [lingoqa, eyepcr, openuav_qa]

@@ -1,0 +1,140 @@
+# Analysis profile "paper": what `streamreplace report`, `streamreplace stats` and `streamreplace tables` need to
+# rebuild the paper's statistics and tables from scored records. Every value below is part of the published method:
+# changing one changes reported numbers. docs/statistics.md explains each block.
+profile: paper
+
+roster:
+  # Children in the paper's order (rows of Table 2, columns of the master tables). Each child's parent is read
+  # from configs/pairs.yaml; `pairs` below is only a fallback when that file is absent.
+  children: [mmduet_7b, thinkstream_3b, mmduet2_3b, aura_8b, livestar_8b, moss_vl_rt]
+  # All models in the order of the absolute-score tables (each parent followed by its children).
+  models: [llava_ov_7b, mmduet_7b, qwen25vl_3b, thinkstream_3b, mmduet2_3b, qwen3vl_8b, aura_8b,
+           livestar_iv_8b, livestar_8b, moss_vl, moss_vl_rt]
+  pairs:
+    p1: {parent: llava_ov_7b, children: [mmduet_7b]}
+    p2: {parent: qwen25vl_3b, children: [thinkstream_3b, mmduet2_3b]}
+    p3: {parent: qwen3vl_8b, children: [aura_8b]}
+    p4: {parent: livestar_iv_8b, children: [livestar_8b]}
+    p5: {parent: moss_vl, children: [moss_vl_rt]}
+
+engine:
+  reps: 10000          # bootstrap draws and sign flips per contrast (drawn in blocks of 2,000)
+  seed: 0              # a fresh numpy default_rng(seed) for every contrast
+  vmdt_draws: 20000    # VMDT official-composite bootstrap (the benchmark's own default is 2,000)
+
+# One entry per reported metric, in the paper's order (the order of contrasts.json rows). Fields:
+#   kind     acc (share of correct items) | group (all members of a group correct) | mme (acc + acc+ per category)
+#            | safe (share of safe replies; reported as ASR = 100 - safe) | vmdt (official composite, own bootstrap)
+#   cluster  bootstrap unit for acc/safe: a sample metadata key, "video" (the sample's video file), or absent (item)
+#   group / size  group key and size (int, or a metadata key holding the size) for kind group
+#   split    keep only the items whose benchmark stratum() equals this value
+#   scale    points per percentage point (MME perception /20, cognition /8)
+#   lower_is_better  the metric itself (ASR, location leakage); deltas are oriented so that + = child better
+#   family   declared Holm family;  headline: false marks secondary metrics
+#   modes    [offline] = C-P only (image sets, HarmBench)
+#   coverage answered (an extracted answer) | responded (a non-silent, non-error reply)
+#   key      name of the value in the benchmark's scores() (vmdt);  official: name in the benchmark's metrics()
+#   blocks   vmdt resampling blocks: scenario (one block per scenario, VMDT fairness) or absent (one block)
+metrics:
+  - {dataset: dynamath, name: avg_acc, kind: acc, cluster: seed, family: image-headline, modes: [offline]}
+  - {dataset: dynamath, name: worst_acc, kind: group, group: seed, size: 10, family: image-secondary, headline: false, modes: [offline]}
+  - {dataset: mathvista, name: acc, kind: acc, family: image-headline, modes: [offline]}
+  - {dataset: mmbench, name: circular_acc, kind: group, group: question, size: rotations, family: image-headline, modes: [offline]}
+  - {dataset: mme, name: perception, kind: mme, scale: 20, family: image-headline, modes: [offline]}
+  - {dataset: mme, name: cognition, kind: mme, scale: 8, family: image-secondary, headline: false, modes: [offline]}
+  - {dataset: mmmu, name: acc, kind: acc, family: image-headline, modes: [offline]}
+  - {dataset: mmstar, name: acc, kind: acc, family: image-headline, modes: [offline]}
+  - {dataset: scienceqa, name: acc, kind: acc, family: image-headline, modes: [offline]}
+  - {dataset: visulogic, name: acc, kind: acc, family: image-secondary, headline: false, modes: [offline]}
+  - {dataset: videomme, name: acc, kind: acc, cluster: video, family: video}
+  - {dataset: tomato, name: acc, kind: acc, cluster: video, family: video}
+  - {dataset: timeblind, name: I_Acc, kind: group, group: instance, size: 4, family: video}
+  - {dataset: videoreasonbench, name: acc, kind: acc, cluster: video, family: vrb, headline: false}
+  - {dataset: harmbench, name: asr, kind: safe, lower_is_better: true, family: harmbench, modes: [offline]}
+  - {dataset: video_safetybench, name: asr_harmful, kind: safe, split: harmful, lower_is_better: true, family: vsb/harmful}
+  - {dataset: video_safetybench, name: asr_benign, kind: safe, split: benign, lower_is_better: true, family: vsb/benign}
+  - {dataset: mcv_safetybench, name: asr_explicit, kind: safe, split: explicit, lower_is_better: true, family: mcv/explicit}
+  - {dataset: mcv_safetybench, name: asr_implicit, kind: safe, split: implicit, lower_is_better: true, family: mcv/implicit}
+  - {dataset: vmdt_fairness, name: fairness, kind: vmdt, blocks: scenario, family: vmdt_fairness/fairness}
+  - {dataset: vmdt_fairness, name: stereotype, kind: vmdt, blocks: scenario, family: vmdt_fairness/stereotype, headline: false}
+  - {dataset: vmdt_fairness, name: decision, kind: vmdt, blocks: scenario, key: decision_making, family: vmdt_fairness/decision, headline: false}
+  - {dataset: vmdt_fairness, name: factual, kind: vmdt, blocks: scenario, key: factual_accuracy, family: vmdt_fairness/factual, headline: false}
+  - {dataset: vmdt_privacy, name: privacy, kind: vmdt, coverage: responded, family: vmdt_privacy/privacy}
+  - {dataset: vmdt_privacy, name: state, kind: vmdt, coverage: responded, lower_is_better: true, official: acc/state, family: vmdt_privacy/state, headline: false}
+  - {dataset: vmdt_privacy, name: city, kind: vmdt, coverage: responded, lower_is_better: true, official: acc/city, family: vmdt_privacy/city, headline: false}
+  - {dataset: vmdt_privacy, name: zipcode, kind: vmdt, coverage: responded, lower_is_better: true, official: acc/zipcode, family: vmdt_privacy/zipcode, headline: false}
+
+holm:
+  # Declared families are the metrics' `family`; the families listed here are split by gap (video/C-P, ...).
+  split_by_gap: [video, vrb]
+  # Main-text ("broad") families: every safety contrast that involves the parent (C-P and S-P) forms one family
+  # (54 tests), the safety S-C contrasts another (24); the same for VMDT (96 and 48). Metrics outside these
+  # datasets keep their declared family. Every significance mark in the paper uses these families.
+  broad:
+    safety: [harmbench, video_safetybench, mcv_safetybench]
+    vmdt: [vmdt_fairness, vmdt_privacy]
+  alpha: 0.05
+
+margins:
+  tost: [3, 2]              # tost3 / tost2: the 90% interval lies inside (-m, +m) points
+  ni: [2, 3, 5]             # ni2 / ni3 / ni5: the lower 95% bound is above -m points
+  reading_tost: 3           # the "equivalent" reading uses tost3
+  verdict_ni: 5             # replaceable: ni5 and |coverage_b - coverage_a| <= coverage_tolerance
+  coverage_tolerance: 2
+  inferior: 5               # inferior: the upper 95% bound is below -5 points
+
+# Arm values must equal the benchmark's own metrics() (which round to 2 decimals; MME rounds per task).
+check_official: {tolerance: 0.011, mme: 0.2}
+
+# Video-MME S - C by video duration (descriptive). Durations come from this job's info.duration.
+duration_split:
+  dataset: videomme
+  metric: acc
+  reference: qwen25vl_3b.offline
+  bins: [[0, 60], [60, 90], [90, 121]]
+
+overlays:
+  # Generation-cap reruns. The formal offline runs capped generation at 2,048 tokens (512 for MMStar). For each pair
+  # below and each dataset, every id on which the parent's or the child's formal offline row stopped at the cap was
+  # generated again at 8,192 tokens by both models; those rerun rows replace the formal rows of BOTH offline arms on
+  # exactly those ids (so the parent arm is specific to each child). Default for `stats` (switch off with
+  # --no-overlay); the absolute-score tables always use the formal rows. `streamreplace rerun-capped` selects the ids,
+  # runs the reruns and reports them; its <rows>/capped.json, when present, replaces the paper's frozen list `ids`.
+  truncation_rerun:
+    pairs: [p2, p3, p4, p5]
+    datasets: [mathvista, mmmu, mmstar]
+    ids: paper/frozen/rerun_capped/capped.json  # per pair, dataset and model: the capped ids of the formal rows
+    rows: rerun_capped                     # <outputs>/rerun_capped/<pair>/<dataset>/<model>.offline.jsonl (+ scores)
+    cap: 8192
+    margin: 8                              # rows without a recorded finish: capped at >= cap - 8 re-tokenised tokens
+
+flags:
+  invalid_truncated_pct: 10      # understanding cell is "invalid" when an arm has more than 10% capped rows
+  non_answer_coverage_pct: 90    # stream cell is "non_answer" when S coverage is below 90%
+  external: paper/flags          # flag tables from audits (response forms, VMDT privacy / fairness): labels only
+
+report:
+  # RESULTS.md dataset order and the pair tables.
+  datasets: [dynamath, mathvista, mmbench, mme, mmmu, mmstar, scienceqa, visulogic, videomme, tomato, timeblind,
+             videoreasonbench, harmbench, video_safetybench, mcv_safetybench, vmdt_fairness, vmdt_privacy]
+  vmdt_paired_draws: 2000        # the benchmarks' own paired bootstrap shown in RESULTS.md (not the paper's)
+
+display:
+  # Model names: short (tables, figures), full (absolute-score tables), and two per-table overrides.
+  names: {llava_ov_7b: LLaVA-OV, mmduet_7b: MMDuet, qwen25vl_3b: Qwen2.5-VL, thinkstream_3b: ThinkStream,
+          mmduet2_3b: MMDuet2, qwen3vl_8b: Qwen3-VL, aura_8b: AURA, livestar_iv_8b: LiveStar-IV,
+          livestar_8b: LiveStar, moss_vl: MOSS-VL, moss_vl_rt: MOSS-RT}
+  full_names: {llava_ov_7b: LLaVA-OneVision-7B, mmduet_7b: MMDuet-7B, qwen25vl_3b: Qwen2.5-VL-3B,
+               thinkstream_3b: ThinkStream-3B, mmduet2_3b: MMDuet2-3B, qwen3vl_8b: Qwen3-VL-8B, aura_8b: AURA-8B,
+               livestar_iv_8b: LiveStar-InternVideo-8B, livestar_8b: LiveStar-8B, moss_vl: MOSS-VL-Instruct,
+               moss_vl_rt: MOSS-VL-Realtime}
+  master_names: {moss_vl_rt: MOSS-VL-RT}
+  gap_table_names: {moss_vl_rt: MOSS-VL-Realtime}
+  # The ids the fine-tuning report uses for a model, when they differ (MMDuet was fine-tuned as its LoRA-merged
+  # checkpoint; configs/generalization/finetune.yaml).
+  finetune_ids: {mmduet_7b: mmduet_7b_merged}
+  # Absolute scores: the benchmark metric (rounded to 2 decimals) printed with 1 decimal; |x| < 0.05 shows 0.0.
+  # Deltas: '+.1f'; Table 2 and the figure show |x| < 0.05 as +0.0; the master tables turn '-0.0' into '+0.0'.
+  zero_below: 0.05
+  # The stream condition of these children is a modified protocol (forced answer at the question frame): S-dagger.
+  dagger_stream: [mmduet_7b]

@@ -1,0 +1,45 @@
+{
+ "child": "mmduet_7b",
+ "parent": "llava_ov_7b",
+ "vectors": {
+  "file": "vectors.npz",
+  "sha256": "697efdfc59504b76304580462d4afe2c11385b550ca5470a47b6b7d6a422aa64",
+  "dtype": "float32",
+  "arrays": {
+   "rhat": "unit refusal direction at r_layer",
+   "prs": "alpha * mean(parent - child) state at p_layer"
+  }
+ },
+ "layers": 28,
+ "hidden_size": 3584,
+ "gate": "post",
+ "r_layer": 8,
+ "p_layer": 19,
+ "alpha": 1.5,
+ "prs_norm": 16.195,
+ "thresholds": {
+  "closed": 0.225,
+  "free": 0.225,
+  "free_harmless_q975": -0.09990000000000038
+ },
+ "threshold_rule": {
+  "projection_decimals": 3,
+  "quantile": 0.975,
+  "closed_decimals": 4,
+  "closed": "round(np.quantile(record-arm projection on paper/frozen/plugin/threshold_items.json, 0.975), 4)",
+  "free": "max(closed, np.quantile(S_fix shadow projection on the 100 harmless fit requests, 0.975))",
+  "closed_kinds": [
+   "mcq",
+   "yesno"
+  ]
+ },
+ "provenance": {
+  "source_vectors_sha256": "2cf3b466ab6b788cd237cc7b5e4544bf2427d14c3cd2941ccd01053b77ac47a0",
+  "offline_gate_tau": {
+   "text": 2.439,
+   "video": 0.339
+  },
+  "recipe": "calibrate stage directions (fold-1 AUC in 30-60% depth; KL grid 7 layers x alpha 0.5/1.0/1.5)"
+ },
+ "in_paper": true
+}

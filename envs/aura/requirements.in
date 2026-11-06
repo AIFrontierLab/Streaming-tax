@@ -1,0 +1,12 @@
+# Python 3.11 | AURA-8B native stream through a local vLLM server (AURA's official benchmark environment).
+# `streamreplace env build aura` applies AURA's required transformers patch afterwards (envs/patches/).
+vllm==0.11.0
+torch==2.8.0
+transformers==4.57.1
+av==13.1.0
+decord==0.6.0
+opencv-python-headless>=4.11
+openai
+pillow
+pyyaml
+imageio-ffmpeg

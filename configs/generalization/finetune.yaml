@@ -1,0 +1,72 @@
+# LoRA fine-tuning experiment (docs/generalization/finetune.md; `streamreplace finetune ...`): every pair member gets
+# the same LoRA recipe on the same nested training subsets of each dataset and is evaluated offline, zero-shot and
+# after each budget. Supp. Tables eval_finetuning / eval_finetuning_gains and the fine-tuning column of Table 2.
+# configs/local.yaml may override any key under `finetune:` (e.g. a smaller `test_size` for a trial run in its own
+# --root folder; never for the paper's numbers).
+
+outputs: finetune                 # experiment root: <outputs root>/finetune (subset.json, train_order.json, adapters/)
+datasets: [openuav_qa, lingoqa, eyepcr]   # report order. OpenUAV-QA is optional (see primary_excludes)
+budgets: [1000, 2000, 5000]       # training samples: nested prefixes of one training order, each trained on its own
+test_size: 2000                   # test questions per dataset: all up to this size, above it a stratified subset
+
+# The pairs as fine-tuned: parent first. MMDuet is fine-tuned as its LoRA-merged checkpoint (the paper's P/C/S
+# evaluation keeps MMDuet's LoRA unmerged).
+pairs:
+  p1: [llava_ov_7b, mmduet_7b_merged]
+  p2: [qwen25vl_3b, thinkstream_3b, mmduet2_3b]
+  p3: [qwen3vl_8b, aura_8b]
+  p4: [livestar_iv_8b, livestar_8b]
+  p5: [moss_vl, moss_vl_rt]
+
+# Members that are not configs/models.yaml ids, derived from one: `from` (the model entry, its pair's video protocol)
+# plus model options.
+models:
+  mmduet_7b_merged: {from: mmduet_7b, options: {merge: true}}     # MMDuet's LoRA merged into the weights
+
+# Applied to the zero-shot and the fine-tuned evaluations alike, identically within a pair.
+overrides:
+  llava_ov_7b: {options: {dtype: bfloat16}}         # LoRA gradients underflow on the builder's fp16 weights
+  mmduet_7b_merged: {options: {dtype: bfloat16}}
+  moss_vl: {settings: {video: {max_pixels: 602112}}}   # MOSS's near-native frames do not fit training memory
+  moss_vl_rt: {settings: {video: {max_pixels: 602112}}}
+
+lora: {r: 16, alpha: 32}          # dropout 0, bias none, every linear layer of the language-model decoder (lora.py)
+train: {lr: 1.0e-4, weight_decay: 0.0, warmup_ratio: 0.03, epochs: 1, grad_accum: 8, clip: 1.0, seed: 0,
+        save_every_steps: 25, save_every_minutes: 10}
+
+# Datasets whose tables are reported but which are left out of the primary endpoint and its Holm family (decided after
+# the results were seen; the reason is printed with the tables).
+primary_excludes:
+  openuav_qa: "answerable from the options' text - blank frames give 98-100% with the 5K adapters and 'the option most similar to the other three' 94.0%: only the zero-shot comparison is informative"
+
+# Controls: each runs in its own folder under the experiment root (its own subset.json), scored there.
+#   size     questions per dataset: the stratified rule of the test subset applied to the test subset (none = all)
+#   budgets  which evaluation ids (0 = zero-shot); models / datasets default to every member / dataset
+#   set      settings overrides of these runs (keys under generation, image, video, stream, system)
+controls:
+  blank:                          # frames replaced by black frames of the same number and size
+    outputs: blank
+    size: 500
+    budgets: [0, 5000]
+    set: {video: {blank: true}}
+  images:                         # OpenUAV-QA's official multi-image input path for one zero-shot anchor
+    outputs: images
+    datasets: [openuav_qa]
+    models: [qwen25vl_3b]
+    budgets: [0]
+    set: {video: {as_images: true}, image: {min_pixels: 200704, max_pixels: 401408}}
+
+# Extra training units (control): 1K samples for 3 epochs, under-fitting check on the saturated dataset.
+extra_units:
+  - {models: [qwen25vl_3b, thinkstream_3b, mmduet2_3b], dataset: openuav_qa, budget: 1000, epochs: 3, tag: e3}
+
+# Training-seed replication: the formal units are seed 0; seed k changes the LoRA initialisation and, with shuffle,
+# the order of the same training samples. Units "<model>@<dataset>-<budget>-s<k>", adapters and evaluations in their
+# own folder (zero-shot rows are read from the formal folder).
+seeds:
+  outputs: seeds
+  datasets: [lingoqa]
+  models: [moss_vl, moss_vl_rt, qwen3vl_8b, aura_8b]
+  budgets: [1000, 2000, 5000]     # run in two stages: 1K for every pair, 2K and 5K when a pair's 1K seed SD > 1.5 pp
+  seeds: [1, 2]
+  shuffle: true

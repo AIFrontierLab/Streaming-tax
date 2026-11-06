@@ -1,0 +1,2878 @@
+{
+ "source": "qwen-vl-utils 0.0.14 functions and torch 2.8.0+cu128 (AVX512) on CPU",
+ "selection": [
+  {
+   "from": "videomme:media/data/dH8l--46j6s.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 2642,
+   "fps": 23.976023903496884,
+   "n": 220,
+   "total_num_frames": 2642,
+   "sample_fps": 1.9964894999126852,
+   "indices_sha256": "91a1c861eaaaf116297eb6609b5a86262382254f6235c2d9854127a246fd7461",
+   "first_last": [
+    0,
+    2641
+   ]
+  },
+  {
+   "from": "videomme:media/data/dH8l--46j6s.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 2642,
+   "fps": 23.976023903496884,
+   "n": 110,
+   "total_num_frames": 2642,
+   "sample_fps": 0.9982447499563426,
+   "indices_sha256": "ae1c6a829219af36c7a43ec541cc0241f61a2708db464617a19684659ed0bfb8",
+   "first_last": [
+    0,
+    2641
+   ]
+  },
+  {
+   "from": "videomme:media/data/g1MCVp5xICM.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 1500,
+   "fps": 25.0,
+   "n": 120,
+   "total_num_frames": 1500,
+   "sample_fps": 2.0,
+   "indices_sha256": "b968c2aeffe86b5c09721bf0d48cb55d557311bbf3c03edf6a5a6481463d54c4",
+   "first_last": [
+    0,
+    1499
+   ]
+  },
+  {
+   "from": "videomme:media/data/g1MCVp5xICM.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 1500,
+   "fps": 25.0,
+   "n": 60,
+   "total_num_frames": 1500,
+   "sample_fps": 1.0,
+   "indices_sha256": "b7270fb3b18fb0e749c319816d1e0025a53ec1ebc3d4ea5627d5e33f208acee6",
+   "first_last": [
+    0,
+    1499
+   ]
+  },
+  {
+   "from": "videomme:media/data/3rTsETO3s9U.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 1306,
+   "fps": 29.97000016751991,
+   "n": 86,
+   "total_num_frames": 1306,
+   "sample_fps": 1.9735222162379111,
+   "indices_sha256": "3e52e45e3b8ff7e819fa39253e8d9bc8b779a4ab6f95e3c7bc890f7740682cb8",
+   "first_last": [
+    0,
+    1305
+   ]
+  },
+  {
+   "from": "videomme:media/data/3rTsETO3s9U.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 1306,
+   "fps": 29.97000016751991,
+   "n": 42,
+   "total_num_frames": 1306,
+   "sample_fps": 0.9638131753720033,
+   "indices_sha256": "7f00fc1a235955bb7fe313639a2ae871c36a249d41c5fbb3bf3d7e355661c49c",
+   "first_last": [
+    0,
+    1305
+   ]
+  },
+  {
+   "from": "videomme:media/data/PYqmI0Hiaho.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 2188,
+   "fps": 25.0,
+   "n": 174,
+   "total_num_frames": 2188,
+   "sample_fps": 1.9881170018281535,
+   "indices_sha256": "20ca91cb218553251c3b02631d0c3b38e4c0ecaa3099786b11d3764ffe4f01b7",
+   "first_last": [
+    0,
+    2187
+   ]
+  },
+  {
+   "from": "videomme:media/data/PYqmI0Hiaho.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 2188,
+   "fps": 25.0,
+   "n": 86,
+   "total_num_frames": 2188,
+   "sample_fps": 0.9826325411334552,
+   "indices_sha256": "923ac54760a5fca87a1dc79f4073dbf3355f48e188aaea5defc7bdb85adf4f01",
+   "first_last": [
+    0,
+    2187
+   ]
+  },
+  {
+   "from": "tomato:media/videos/object/0794-00.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 355,
+   "fps": 59.999996619718495,
+   "n": 10,
+   "indices": [
+    0,
+    39,
+    79,
+    118,
+    157,
+    197,
+    236,
+    275,
+    315,
+    354
+   ],
+   "total_num_frames": 355,
+   "sample_fps": 1.6901407498512253
+  },
+  {
+   "from": "tomato:media/videos/object/0794-00.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 355,
+   "fps": 59.999996619718495,
+   "n": 4,
+   "indices": [
+    0,
+    118,
+    236,
+    354
+   ],
+   "total_num_frames": 355,
+   "sample_fps": 0.6760562999404901
+  },
+  {
+   "from": "tomato:media/videos/object/0742-00.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 659,
+   "fps": 60.000001820940874,
+   "n": 20,
+   "indices": [
+    0,
+    35,
+    69,
+    104,
+    139,
+    173,
+    208,
+    242,
+    277,
+    312,
+    346,
+    381,
+    416,
+    450,
+    485,
+    519,
+    554,
+    589,
+    623,
+    658
+   ],
+   "total_num_frames": 659,
+   "sample_fps": 1.8209408746871283
+  },
+  {
+   "from": "tomato:media/videos/object/0742-00.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 659,
+   "fps": 60.000001820940874,
+   "n": 10,
+   "indices": [
+    0,
+    73,
+    146,
+    219,
+    292,
+    366,
+    439,
+    512,
+    585,
+    658
+   ],
+   "total_num_frames": 659,
+   "sample_fps": 0.9104704373435641
+  },
+  {
+   "from": "tomato:media/videos/object/0373-00.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 723,
+   "fps": 60.0,
+   "n": 24,
+   "indices": [
+    0,
+    31,
+    63,
+    94,
+    126,
+    157,
+    188,
+    220,
+    251,
+    283,
+    314,
+    345,
+    377,
+    408,
+    439,
+    471,
+    502,
+    534,
+    565,
+    596,
+    628,
+    659,
+    691,
+    722
+   ],
+   "total_num_frames": 723,
+   "sample_fps": 1.991701244813278
+  },
+  {
+   "from": "tomato:media/videos/object/0373-00.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 723,
+   "fps": 60.0,
+   "n": 12,
+   "indices": [
+    0,
+    66,
+    131,
+    197,
+    263,
+    328,
+    394,
+    459,
+    525,
+    591,
+    656,
+    722
+   ],
+   "total_num_frames": 723,
+   "sample_fps": 0.995850622406639
+  },
+  {
+   "from": "tomato:media/videos/object/0246-00.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 217,
+   "fps": 25.0,
+   "n": 16,
+   "indices": [
+    0,
+    14,
+    29,
+    43,
+    58,
+    72,
+    86,
+    101,
+    115,
+    130,
+    144,
+    158,
+    173,
+    187,
+    202,
+    216
+   ],
+   "total_num_frames": 217,
+   "sample_fps": 1.8433179723502304
+  },
+  {
+   "from": "tomato:media/videos/object/0246-00.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 217,
+   "fps": 25.0,
+   "n": 8,
+   "indices": [
+    0,
+    31,
+    62,
+    93,
+    123,
+    154,
+    185,
+    216
+   ],
+   "total_num_frames": 217,
+   "sample_fps": 0.9216589861751152
+  },
+  {
+   "from": "timeblind:raw/videos/vid_00188_0.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 104,
+   "fps": 29.99999711538489,
+   "n": 6,
+   "indices": [
+    0,
+    21,
+    41,
+    62,
+    82,
+    103
+   ],
+   "total_num_frames": 104,
+   "sample_fps": 1.7307690643491283
+  },
+  {
+   "from": "timeblind:raw/videos/vid_00188_0.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 104,
+   "fps": 29.99999711538489,
+   "n": 4,
+   "indices": [
+    0,
+    34,
+    69,
+    103
+   ],
+   "total_num_frames": 104,
+   "sample_fps": 1.1538460428994188
+  },
+  {
+   "from": "timeblind:raw/videos/vid_00066_1.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 152,
+   "fps": 29.970031939772856,
+   "n": 10,
+   "indices": [
+    0,
+    17,
+    34,
+    50,
+    67,
+    84,
+    101,
+    117,
+    134,
+    151
+   ],
+   "total_num_frames": 152,
+   "sample_fps": 1.9717126276166352
+  },
+  {
+   "from": "timeblind:raw/videos/vid_00066_1.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 152,
+   "fps": 29.970031939772856,
+   "n": 4,
+   "indices": [
+    0,
+    50,
+    101,
+    151
+   ],
+   "total_num_frames": 152,
+   "sample_fps": 0.7886850510466541
+  },
+  {
+   "from": "timeblind:raw/videos/vid_00297_0.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 368,
+   "fps": 29.99999918478263,
+   "n": 24,
+   "indices": [
+    0,
+    16,
+    32,
+    48,
+    64,
+    80,
+    96,
+    112,
+    128,
+    144,
+    160,
+    176,
+    191,
+    207,
+    223,
+    239,
+    255,
+    271,
+    287,
+    303,
+    319,
+    335,
+    351,
+    367
+   ],
+   "total_num_frames": 368,
+   "sample_fps": 1.9565216859640846
+  },
+  {
+   "from": "timeblind:raw/videos/vid_00297_0.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 368,
+   "fps": 29.99999918478263,
+   "n": 12,
+   "indices": [
+    0,
+    33,
+    67,
+    100,
+    133,
+    167,
+    200,
+    234,
+    267,
+    300,
+    334,
+    367
+   ],
+   "total_num_frames": 368,
+   "sample_fps": 0.9782608429820423
+  },
+  {
+   "from": "timeblind:raw/videos/mcq_vid_00223_1.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 738,
+   "fps": 120.0,
+   "n": 12,
+   "indices": [
+    0,
+    67,
+    134,
+    201,
+    268,
+    335,
+    402,
+    469,
+    536,
+    603,
+    670,
+    737
+   ],
+   "total_num_frames": 738,
+   "sample_fps": 1.9512195121951221
+  },
+  {
+   "from": "timeblind:raw/videos/mcq_vid_00223_1.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 738,
+   "fps": 120.0,
+   "n": 6,
+   "indices": [
+    0,
+    147,
+    295,
+    442,
+    590,
+    737
+   ],
+   "total_num_frames": 738,
+   "sample_fps": 0.9756097560975611
+  },
+  {
+   "from": "videoreasonbench:media/videos/file_sys/state1_op14_start.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 1702,
+   "fps": 23.99999988719154,
+   "n": 140,
+   "total_num_frames": 1702,
+   "sample_fps": 1.9741480518253909,
+   "indices_sha256": "114939ea1e8a59372f6fb6fd79993d916889f544e253732694b2d4afaca46753",
+   "first_last": [
+    0,
+    1701
+   ]
+  },
+  {
+   "from": "videoreasonbench:media/videos/file_sys/state1_op14_start.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 1702,
+   "fps": 23.99999988719154,
+   "n": 70,
+   "total_num_frames": 1702,
+   "sample_fps": 0.9870740259126954,
+   "indices_sha256": "1daad026dab741d441a71f1b4afafcfc1882f1635f35adcb7da0ba73161db885",
+   "first_last": [
+    0,
+    1701
+   ]
+  },
+  {
+   "from": "videoreasonbench:media/videos/card/state2_op7_start.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 2153,
+   "fps": 24.00000008917789,
+   "n": 178,
+   "total_num_frames": 2153,
+   "sample_fps": 1.9842080891192126,
+   "indices_sha256": "3bec8bca79b40205205cdb33951aededed4a0c48924a2a7457055f8485d4d48b",
+   "first_last": [
+    0,
+    2152
+   ]
+  },
+  {
+   "from": "videoreasonbench:media/videos/card/state2_op7_start.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 2153,
+   "fps": 24.00000008917789,
+   "n": 88,
+   "total_num_frames": 2153,
+   "sample_fps": 0.9809568081038804,
+   "indices_sha256": "97612e51664759bc44edc6a08fe26a96e696393cb116b4bb080cebcfc71f4da7",
+   "first_last": [
+    0,
+    2152
+   ]
+  },
+  {
+   "from": "videoreasonbench:media/videos/chip/state2_op6_end.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 1915,
+   "fps": 23.999999899738903,
+   "n": 158,
+   "total_num_frames": 1915,
+   "sample_fps": 1.9801566496912513,
+   "indices_sha256": "637aa8f5201da38ae10cd111df104f50fc517300b8d57bb8af417802a6b38932",
+   "first_last": [
+    0,
+    1914
+   ]
+  },
+  {
+   "from": "videoreasonbench:media/videos/chip/state2_op6_end.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 1915,
+   "fps": 23.999999899738903,
+   "n": 78,
+   "total_num_frames": 1915,
+   "sample_fps": 0.9775456878222634,
+   "indices_sha256": "56929031a545f77e28655336d762ec581b20491ec3cb1de5279770ff2e9ded24",
+   "first_last": [
+    0,
+    1914
+   ]
+  },
+  {
+   "from": "videoreasonbench:media/videos/grid/state4_op6_start.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 156,
+   "fps": 10.0,
+   "n": 30,
+   "indices": [
+    0,
+    5,
+    11,
+    16,
+    21,
+    27,
+    32,
+    37,
+    43,
+    48,
+    53,
+    59,
+    64,
+    69,
+    75,
+    80,
+    86,
+    91,
+    96,
+    102,
+    107,
+    112,
+    118,
+    123,
+    128,
+    134,
+    139,
+    144,
+    150,
+    155
+   ],
+   "total_num_frames": 156,
+   "sample_fps": 1.9230769230769231
+  },
+  {
+   "from": "videoreasonbench:media/videos/grid/state4_op6_start.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 156,
+   "fps": 10.0,
+   "n": 14,
+   "indices": [
+    0,
+    12,
+    24,
+    36,
+    48,
+    60,
+    72,
+    83,
+    95,
+    107,
+    119,
+    131,
+    143,
+    155
+   ],
+   "total_num_frames": 156,
+   "sample_fps": 0.8974358974358975
+  },
+  {
+   "from": "video_safetybench:media/video/11_Suicide_Self-Harm/Suicide/8.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 313,
+   "fps": 30.000000958466487,
+   "n": 20,
+   "indices": [
+    0,
+    16,
+    33,
+    49,
+    66,
+    82,
+    99,
+    115,
+    131,
+    148,
+    164,
+    181,
+    197,
+    213,
+    230,
+    246,
+    263,
+    279,
+    296,
+    312
+   ],
+   "total_num_frames": 313,
+   "sample_fps": 1.9169329685921077
+  },
+  {
+   "from": "video_safetybench:media/video/11_Suicide_Self-Harm/Suicide/8.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 313,
+   "fps": 30.000000958466487,
+   "n": 10,
+   "indices": [
+    0,
+    35,
+    69,
+    104,
+    139,
+    173,
+    208,
+    243,
+    277,
+    312
+   ],
+   "total_num_frames": 313,
+   "sample_fps": 0.9584664842960539
+  },
+  {
+   "from": "video_safetybench:media/video/2_Non-Violent_Crimes/Weapons_Crimes/10.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 313,
+   "fps": 30.000000958466487,
+   "n": 20,
+   "indices": [
+    0,
+    16,
+    33,
+    49,
+    66,
+    82,
+    99,
+    115,
+    131,
+    148,
+    164,
+    181,
+    197,
+    213,
+    230,
+    246,
+    263,
+    279,
+    296,
+    312
+   ],
+   "total_num_frames": 313,
+   "sample_fps": 1.9169329685921077
+  },
+  {
+   "from": "video_safetybench:media/video/2_Non-Violent_Crimes/Weapons_Crimes/10.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 313,
+   "fps": 30.000000958466487,
+   "n": 10,
+   "indices": [
+    0,
+    35,
+    69,
+    104,
+    139,
+    173,
+    208,
+    243,
+    277,
+    312
+   ],
+   "total_num_frames": 313,
+   "sample_fps": 0.9584664842960539
+  },
+  {
+   "from": "video_safetybench:media/video/9_Indiscriminate_Weapons/High-yield_Explosive_Weapons/8.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 313,
+   "fps": 30.000000958466487,
+   "n": 20,
+   "indices": [
+    0,
+    16,
+    33,
+    49,
+    66,
+    82,
+    99,
+    115,
+    131,
+    148,
+    164,
+    181,
+    197,
+    213,
+    230,
+    246,
+    263,
+    279,
+    296,
+    312
+   ],
+   "total_num_frames": 313,
+   "sample_fps": 1.9169329685921077
+  },
+  {
+   "from": "video_safetybench:media/video/9_Indiscriminate_Weapons/High-yield_Explosive_Weapons/8.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 313,
+   "fps": 30.000000958466487,
+   "n": 10,
+   "indices": [
+    0,
+    35,
+    69,
+    104,
+    139,
+    173,
+    208,
+    243,
+    277,
+    312
+   ],
+   "total_num_frames": 313,
+   "sample_fps": 0.9584664842960539
+  },
+  {
+   "from": "video_safetybench:media/video/13_Elections/Political_Campaign/13.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 313,
+   "fps": 30.000000958466487,
+   "n": 20,
+   "indices": [
+    0,
+    16,
+    33,
+    49,
+    66,
+    82,
+    99,
+    115,
+    131,
+    148,
+    164,
+    181,
+    197,
+    213,
+    230,
+    246,
+    263,
+    279,
+    296,
+    312
+   ],
+   "total_num_frames": 313,
+   "sample_fps": 1.9169329685921077
+  },
+  {
+   "from": "video_safetybench:media/video/13_Elections/Political_Campaign/13.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 313,
+   "fps": 30.000000958466487,
+   "n": 10,
+   "indices": [
+    0,
+    35,
+    69,
+    104,
+    139,
+    173,
+    208,
+    243,
+    277,
+    312
+   ],
+   "total_num_frames": 313,
+   "sample_fps": 0.9584664842960539
+  },
+  {
+   "from": "mcv_safetybench:raw/fi_video+T_data/12/29_merged.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 132,
+   "fps": 16.0,
+   "n": 16,
+   "indices": [
+    0,
+    9,
+    17,
+    26,
+    35,
+    44,
+    52,
+    61,
+    70,
+    79,
+    87,
+    96,
+    105,
+    114,
+    122,
+    131
+   ],
+   "total_num_frames": 132,
+   "sample_fps": 1.9393939393939394
+  },
+  {
+   "from": "mcv_safetybench:raw/fi_video+T_data/12/29_merged.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 132,
+   "fps": 16.0,
+   "n": 8,
+   "indices": [
+    0,
+    19,
+    37,
+    56,
+    75,
+    94,
+    112,
+    131
+   ],
+   "total_num_frames": 132,
+   "sample_fps": 0.9696969696969697
+  },
+  {
+   "from": "mcv_safetybench:raw/fi_video+T_data/05/118_merged.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 132,
+   "fps": 16.0,
+   "n": 16,
+   "indices": [
+    0,
+    9,
+    17,
+    26,
+    35,
+    44,
+    52,
+    61,
+    70,
+    79,
+    87,
+    96,
+    105,
+    114,
+    122,
+    131
+   ],
+   "total_num_frames": 132,
+   "sample_fps": 1.9393939393939394
+  },
+  {
+   "from": "mcv_safetybench:raw/fi_video+T_data/05/118_merged.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 132,
+   "fps": 16.0,
+   "n": 8,
+   "indices": [
+    0,
+    19,
+    37,
+    56,
+    75,
+    94,
+    112,
+    131
+   ],
+   "total_num_frames": 132,
+   "sample_fps": 0.9696969696969697
+  },
+  {
+   "from": "mcv_safetybench:raw/fi_video+T_data/04/1_merged.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 132,
+   "fps": 16.0,
+   "n": 16,
+   "indices": [
+    0,
+    9,
+    17,
+    26,
+    35,
+    44,
+    52,
+    61,
+    70,
+    79,
+    87,
+    96,
+    105,
+    114,
+    122,
+    131
+   ],
+   "total_num_frames": 132,
+   "sample_fps": 1.9393939393939394
+  },
+  {
+   "from": "mcv_safetybench:raw/fi_video+T_data/04/1_merged.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 132,
+   "fps": 16.0,
+   "n": 8,
+   "indices": [
+    0,
+    19,
+    37,
+    56,
+    75,
+    94,
+    112,
+    131
+   ],
+   "total_num_frames": 132,
+   "sample_fps": 0.9696969696969697
+  },
+  {
+   "from": "mcv_safetybench:raw/fi_video_only_data/Category9/Category9_00015_acquire_someone_s_confidential_employment_records_without_authorization.mp4_00001_.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 132,
+   "fps": 16.0,
+   "n": 16,
+   "indices": [
+    0,
+    9,
+    17,
+    26,
+    35,
+    44,
+    52,
+    61,
+    70,
+    79,
+    87,
+    96,
+    105,
+    114,
+    122,
+    131
+   ],
+   "total_num_frames": 132,
+   "sample_fps": 1.9393939393939394
+  },
+  {
+   "from": "mcv_safetybench:raw/fi_video_only_data/Category9/Category9_00015_acquire_someone_s_confidential_employment_records_without_authorization.mp4_00001_.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 132,
+   "fps": 16.0,
+   "n": 8,
+   "indices": [
+    0,
+    19,
+    37,
+    56,
+    75,
+    94,
+    112,
+    131
+   ],
+   "total_num_frames": 132,
+   "sample_fps": 0.9696969696969697
+  },
+  {
+   "from": "vmdt_fairness:raw/fairness/vid/decision_making/scifP1EXSdo.005.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 459,
+   "fps": 29.97002997002997,
+   "n": 30,
+   "indices": [
+    0,
+    16,
+    32,
+    47,
+    63,
+    79,
+    95,
+    111,
+    126,
+    142,
+    158,
+    174,
+    190,
+    205,
+    221,
+    237,
+    253,
+    268,
+    284,
+    300,
+    316,
+    332,
+    347,
+    363,
+    379,
+    395,
+    411,
+    426,
+    442,
+    458
+   ],
+   "total_num_frames": 459,
+   "sample_fps": 1.958825488237253
+  },
+  {
+   "from": "vmdt_fairness:raw/fairness/vid/decision_making/scifP1EXSdo.005.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 459,
+   "fps": 29.97002997002997,
+   "n": 14,
+   "indices": [
+    0,
+    35,
+    70,
+    106,
+    141,
+    176,
+    211,
+    247,
+    282,
+    317,
+    352,
+    388,
+    423,
+    458
+   ],
+   "total_num_frames": 459,
+   "sample_fps": 0.9141185611773847
+  },
+  {
+   "from": "vmdt_fairness:raw/fairness/vid/stereotype/CasualConversationsA/1235/1235_09.MP4",
+   "element": {
+    "fps": 2
+   },
+   "total": 1980,
+   "fps": 29.97002997002997,
+   "n": 132,
+   "total_num_frames": 1980,
+   "sample_fps": 1.9980019980019978,
+   "indices_sha256": "3c688733dead8de297099f4d9854302e7c4aa60b1b0d957907ed3fa9b7ab10e3",
+   "first_last": [
+    0,
+    1979
+   ]
+  },
+  {
+   "from": "vmdt_fairness:raw/fairness/vid/stereotype/CasualConversationsA/1235/1235_09.MP4",
+   "element": {
+    "fps": 1
+   },
+   "total": 1980,
+   "fps": 29.97002997002997,
+   "n": 66,
+   "total_num_frames": 1980,
+   "sample_fps": 0.9990009990009989,
+   "indices_sha256": "27771e353c7d5131ac37e0af0863648fc25e92b2b22d325be0fc89e542fb9806",
+   "first_last": [
+    0,
+    1979
+   ]
+  },
+  {
+   "from": "vmdt_fairness:raw/fairness/vid/stereotype/CasualConversationsA/1706/1706_10.MP4",
+   "element": {
+    "fps": 2
+   },
+   "total": 1935,
+   "fps": 29.970029970029973,
+   "n": 128,
+   "total_num_frames": 1935,
+   "sample_fps": 1.9825136104205872,
+   "indices_sha256": "9fee459dde5c63eafe94e99f6556336c62e02d2f82a4e6ef06972e8676789e12",
+   "first_last": [
+    0,
+    1934
+   ]
+  },
+  {
+   "from": "vmdt_fairness:raw/fairness/vid/stereotype/CasualConversationsA/1706/1706_10.MP4",
+   "element": {
+    "fps": 1
+   },
+   "total": 1935,
+   "fps": 29.970029970029973,
+   "n": 64,
+   "total_num_frames": 1935,
+   "sample_fps": 0.9912568052102936,
+   "indices_sha256": "631d23c466711b2f2420bc95726d4742fce85b2a81eef6a5f5482e2bd36720e5",
+   "first_last": [
+    0,
+    1934
+   ]
+  },
+  {
+   "from": "vmdt_fairness:raw/fairness/vid/decision_making/GcuoyJPO-KU.000.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 383,
+   "fps": 25.0,
+   "n": 30,
+   "indices": [
+    0,
+    13,
+    26,
+    40,
+    53,
+    66,
+    79,
+    92,
+    105,
+    119,
+    132,
+    145,
+    158,
+    171,
+    184,
+    198,
+    211,
+    224,
+    237,
+    250,
+    263,
+    277,
+    290,
+    303,
+    316,
+    329,
+    342,
+    356,
+    369,
+    382
+   ],
+   "total_num_frames": 383,
+   "sample_fps": 1.95822454308094
+  },
+  {
+   "from": "vmdt_fairness:raw/fairness/vid/decision_making/GcuoyJPO-KU.000.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 383,
+   "fps": 25.0,
+   "n": 14,
+   "indices": [
+    0,
+    29,
+    59,
+    88,
+    118,
+    147,
+    176,
+    206,
+    235,
+    264,
+    294,
+    323,
+    353,
+    382
+   ],
+   "total_num_frames": 383,
+   "sample_fps": 0.9138381201044387
+  },
+  {
+   "from": "vmdt_privacy:raw/privacy/vids/010799f0-4d81c585.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 1206,
+   "fps": 30.03611282191596,
+   "n": 80,
+   "total_num_frames": 1206,
+   "sample_fps": 1.9924452949861335,
+   "indices_sha256": "dcc1f7b72e04a97ba47d098f8787914c5fc9493ac39d406b1eccbbd55a7c1d71",
+   "first_last": [
+    0,
+    1205
+   ]
+  },
+  {
+   "from": "vmdt_privacy:raw/privacy/vids/010799f0-4d81c585.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 1206,
+   "fps": 30.03611282191596,
+   "n": 40,
+   "indices": [
+    0,
+    31,
+    62,
+    93,
+    124,
+    154,
+    185,
+    216,
+    247,
+    278,
+    309,
+    340,
+    371,
+    402,
+    433,
+    463,
+    494,
+    525,
+    556,
+    587,
+    618,
+    649,
+    680,
+    711,
+    742,
+    772,
+    803,
+    834,
+    865,
+    896,
+    927,
+    958,
+    989,
+    1020,
+    1051,
+    1081,
+    1112,
+    1143,
+    1174,
+    1205
+   ],
+   "total_num_frames": 1206,
+   "sample_fps": 0.9962226474930668
+  },
+  {
+   "from": "vmdt_privacy:raw/privacy/vids/0149d925-c319ce50.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 1211,
+   "fps": 30.100666721068254,
+   "n": 80,
+   "total_num_frames": 1211,
+   "sample_fps": 1.988483350689893,
+   "indices_sha256": "a29e229944bf5bc4fde7aa55765da5cde9af15f1b433183af15934abb74ec8f6",
+   "first_last": [
+    0,
+    1210
+   ]
+  },
+  {
+   "from": "vmdt_privacy:raw/privacy/vids/0149d925-c319ce50.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 1211,
+   "fps": 30.100666721068254,
+   "n": 40,
+   "indices": [
+    0,
+    31,
+    62,
+    93,
+    124,
+    155,
+    186,
+    217,
+    248,
+    279,
+    310,
+    341,
+    372,
+    403,
+    434,
+    465,
+    496,
+    527,
+    558,
+    589,
+    621,
+    652,
+    683,
+    714,
+    745,
+    776,
+    807,
+    838,
+    869,
+    900,
+    931,
+    962,
+    993,
+    1024,
+    1055,
+    1086,
+    1117,
+    1148,
+    1179,
+    1210
+   ],
+   "total_num_frames": 1211,
+   "sample_fps": 0.9942416753449465
+  },
+  {
+   "from": "vmdt_privacy:raw/privacy/vids/00d4b6b7-a0b1a3e0.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 1209,
+   "fps": 30.14837263498298,
+   "n": 80,
+   "total_num_frames": 1209,
+   "sample_fps": 1.9949295374678564,
+   "indices_sha256": "3ac6de19ee34717967489857e918df876f2e46fcc91877e39f8c77397389ffb5",
+   "first_last": [
+    0,
+    1208
+   ]
+  },
+  {
+   "from": "vmdt_privacy:raw/privacy/vids/00d4b6b7-a0b1a3e0.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 1209,
+   "fps": 30.14837263498298,
+   "n": 40,
+   "indices": [
+    0,
+    31,
+    62,
+    93,
+    124,
+    155,
+    186,
+    217,
+    248,
+    279,
+    310,
+    341,
+    372,
+    403,
+    434,
+    465,
+    496,
+    527,
+    558,
+    589,
+    619,
+    650,
+    681,
+    712,
+    743,
+    774,
+    805,
+    836,
+    867,
+    898,
+    929,
+    960,
+    991,
+    1022,
+    1053,
+    1084,
+    1115,
+    1146,
+    1177,
+    1208
+   ],
+   "total_num_frames": 1209,
+   "sample_fps": 0.9974647687339282
+  },
+  {
+   "from": "vmdt_privacy:raw/privacy/vids/02065c11-0966f65d.mp4",
+   "element": {
+    "fps": 2
+   },
+   "total": 603,
+   "fps": 29.98259666888876,
+   "n": 40,
+   "indices": [
+    0,
+    15,
+    31,
+    46,
+    62,
+    77,
+    93,
+    108,
+    123,
+    139,
+    154,
+    170,
+    185,
+    201,
+    216,
+    232,
+    247,
+    262,
+    278,
+    293,
+    309,
+    324,
+    340,
+    355,
+    370,
+    386,
+    401,
+    417,
+    432,
+    448,
+    463,
+    479,
+    494,
+    509,
+    525,
+    540,
+    556,
+    571,
+    587,
+    602
+   ],
+   "total_num_frames": 603,
+   "sample_fps": 1.9888953014188233
+  },
+  {
+   "from": "vmdt_privacy:raw/privacy/vids/02065c11-0966f65d.mp4",
+   "element": {
+    "fps": 1
+   },
+   "total": 603,
+   "fps": 29.98259666888876,
+   "n": 20,
+   "indices": [
+    0,
+    32,
+    63,
+    95,
+    127,
+    158,
+    190,
+    222,
+    253,
+    285,
+    317,
+    349,
+    380,
+    412,
+    444,
+    475,
+    507,
+    539,
+    570,
+    602
+   ],
+   "total_num_frames": 603,
+   "sample_fps": 0.9944476507094117
+  },
+  {
+   "element": {
+    "fps": 2
+   },
+   "total": 12,
+   "fps": 4.0,
+   "n": 6,
+   "indices": [
+    0,
+    2,
+    4,
+    7,
+    9,
+    11
+   ],
+   "total_num_frames": 12,
+   "sample_fps": 2.0
+  },
+  {
+   "element": {
+    "fps": 1
+   },
+   "total": 12,
+   "fps": 4.0,
+   "n": 4,
+   "indices": [
+    0,
+    4,
+    7,
+    11
+   ],
+   "total_num_frames": 12,
+   "sample_fps": 1.3333333333333333
+  },
+  {
+   "element": {
+    "fps": 2,
+    "max_frames": 40
+   },
+   "total": 12,
+   "fps": 4.0,
+   "n": 6,
+   "indices": [
+    0,
+    2,
+    4,
+    7,
+    9,
+    11
+   ],
+   "total_num_frames": 12,
+   "sample_fps": 2.0
+  },
+  {
+   "element": {
+    "fps": 2,
+    "min_frames": 7
+   },
+   "total": 12,
+   "fps": 4.0,
+   "n": 8,
+   "indices": [
+    0,
+    2,
+    3,
+    5,
+    6,
+    8,
+    9,
+    11
+   ],
+   "total_num_frames": 12,
+   "sample_fps": 2.6666666666666665
+  },
+  {
+   "element": {
+    "nframes": 9
+   },
+   "total": 12,
+   "fps": 4.0,
+   "n": 8,
+   "indices": [
+    0,
+    2,
+    3,
+    5,
+    6,
+    8,
+    9,
+    11
+   ],
+   "total_num_frames": 12,
+   "sample_fps": 2.6666666666666665
+  },
+  {
+   "element": {
+    "fps": 2,
+    "video_start": 1.0,
+    "video_end": 5.5
+   },
+   "total": 12,
+   "fps": 4.0,
+   "n": 4,
+   "indices": [
+    4,
+    6,
+    9,
+    11
+   ],
+   "total_num_frames": 8,
+   "sample_fps": 2.0
+  },
+  {
+   "element": {
+    "fps": 2
+   },
+   "total": 30,
+   "fps": 30.0,
+   "n": 4,
+   "indices": [
+    0,
+    10,
+    19,
+    29
+   ],
+   "total_num_frames": 30,
+   "sample_fps": 4.0
+  },
+  {
+   "element": {
+    "fps": 1
+   },
+   "total": 30,
+   "fps": 30.0,
+   "n": 4,
+   "indices": [
+    0,
+    10,
+    19,
+    29
+   ],
+   "total_num_frames": 30,
+   "sample_fps": 4.0
+  },
+  {
+   "element": {
+    "fps": 2,
+    "max_frames": 40
+   },
+   "total": 30,
+   "fps": 30.0,
+   "n": 4,
+   "indices": [
+    0,
+    10,
+    19,
+    29
+   ],
+   "total_num_frames": 30,
+   "sample_fps": 4.0
+  },
+  {
+   "element": {
+    "fps": 2,
+    "min_frames": 7
+   },
+   "total": 30,
+   "fps": 30.0,
+   "n": 8,
+   "indices": [
+    0,
+    4,
+    8,
+    12,
+    17,
+    21,
+    25,
+    29
+   ],
+   "total_num_frames": 30,
+   "sample_fps": 8.0
+  },
+  {
+   "element": {
+    "nframes": 9
+   },
+   "total": 30,
+   "fps": 30.0,
+   "n": 8,
+   "indices": [
+    0,
+    4,
+    8,
+    12,
+    17,
+    21,
+    25,
+    29
+   ],
+   "total_num_frames": 30,
+   "sample_fps": 8.0
+  },
+  {
+   "element": {
+    "fps": 2,
+    "video_start": 1.0,
+    "video_end": 5.5
+   },
+   "total": 30,
+   "fps": 30.0,
+   "error": "Invalid time range: Start frame 30 (at 1.0s) exceeds end frame 29 (at 1.0s). Video duration: 1.00s (30 frames @ 30.0fps)"
+  },
+  {
+   "element": {
+    "fps": 2
+   },
+   "total": 61,
+   "fps": 30.0,
+   "n": 4,
+   "indices": [
+    0,
+    20,
+    40,
+    60
+   ],
+   "total_num_frames": 61,
+   "sample_fps": 1.9672131147540985
+  },
+  {
+   "element": {
+    "fps": 1
+   },
+   "total": 61,
+   "fps": 30.0,
+   "n": 4,
+   "indices": [
+    0,
+    20,
+    40,
+    60
+   ],
+   "total_num_frames": 61,
+   "sample_fps": 1.9672131147540985
+  },
+  {
+   "element": {
+    "fps": 2,
+    "max_frames": 40
+   },
+   "total": 61,
+   "fps": 30.0,
+   "n": 4,
+   "indices": [
+    0,
+    20,
+    40,
+    60
+   ],
+   "total_num_frames": 61,
+   "sample_fps": 1.9672131147540985
+  },
+  {
+   "element": {
+    "fps": 2,
+    "min_frames": 7
+   },
+   "total": 61,
+   "fps": 30.0,
+   "n": 8,
+   "indices": [
+    0,
+    9,
+    17,
+    26,
+    34,
+    43,
+    51,
+    60
+   ],
+   "total_num_frames": 61,
+   "sample_fps": 3.934426229508197
+  },
+  {
+   "element": {
+    "nframes": 9
+   },
+   "total": 61,
+   "fps": 30.0,
+   "n": 8,
+   "indices": [
+    0,
+    9,
+    17,
+    26,
+    34,
+    43,
+    51,
+    60
+   ],
+   "total_num_frames": 61,
+   "sample_fps": 3.934426229508197
+  },
+  {
+   "element": {
+    "fps": 2,
+    "video_start": 1.0,
+    "video_end": 5.5
+   },
+   "total": 61,
+   "fps": 30.0,
+   "n": 4,
+   "indices": [
+    30,
+    40,
+    50,
+    60
+   ],
+   "total_num_frames": 31,
+   "sample_fps": 3.870967741935484
+  },
+  {
+   "element": {
+    "fps": 2
+   },
+   "total": 300,
+   "fps": 29.97,
+   "n": 20,
+   "indices": [
+    0,
+    16,
+    31,
+    47,
+    63,
+    79,
+    94,
+    110,
+    126,
+    142,
+    157,
+    173,
+    189,
+    205,
+    220,
+    236,
+    252,
+    268,
+    283,
+    299
+   ],
+   "total_num_frames": 300,
+   "sample_fps": 1.998
+  },
+  {
+   "element": {
+    "fps": 1
+   },
+   "total": 300,
+   "fps": 29.97,
+   "n": 10,
+   "indices": [
+    0,
+    33,
+    66,
+    100,
+    133,
+    166,
+    199,
+    233,
+    266,
+    299
+   ],
+   "total_num_frames": 300,
+   "sample_fps": 0.999
+  },
+  {
+   "element": {
+    "fps": 2,
+    "max_frames": 40
+   },
+   "total": 300,
+   "fps": 29.97,
+   "n": 20,
+   "indices": [
+    0,
+    16,
+    31,
+    47,
+    63,
+    79,
+    94,
+    110,
+    126,
+    142,
+    157,
+    173,
+    189,
+    205,
+    220,
+    236,
+    252,
+    268,
+    283,
+    299
+   ],
+   "total_num_frames": 300,
+   "sample_fps": 1.998
+  },
+  {
+   "element": {
+    "fps": 2,
+    "min_frames": 7
+   },
+   "total": 300,
+   "fps": 29.97,
+   "n": 20,
+   "indices": [
+    0,
+    16,
+    31,
+    47,
+    63,
+    79,
+    94,
+    110,
+    126,
+    142,
+    157,
+    173,
+    189,
+    205,
+    220,
+    236,
+    252,
+    268,
+    283,
+    299
+   ],
+   "total_num_frames": 300,
+   "sample_fps": 1.998
+  },
+  {
+   "element": {
+    "nframes": 9
+   },
+   "total": 300,
+   "fps": 29.97,
+   "n": 8,
+   "indices": [
+    0,
+    43,
+    85,
+    128,
+    171,
+    214,
+    256,
+    299
+   ],
+   "total_num_frames": 300,
+   "sample_fps": 0.7992
+  },
+  {
+   "element": {
+    "fps": 2,
+    "video_start": 1.0,
+    "video_end": 5.5
+   },
+   "total": 300,
+   "fps": 29.97,
+   "n": 8,
+   "indices": [
+    30,
+    49,
+    68,
+    87,
+    107,
+    126,
+    145,
+    164
+   ],
+   "total_num_frames": 135,
+   "sample_fps": 1.776
+  },
+  {
+   "element": {
+    "fps": 2
+   },
+   "total": 2228,
+   "fps": 29.97002997002997,
+   "n": 148,
+   "total_num_frames": 2228,
+   "sample_fps": 1.9908278436106082,
+   "indices_sha256": "944ae20b8a5ef0ce2dd6cda41caae2d66822f5b4c55d40d233d42e14aed53e9a",
+   "first_last": [
+    0,
+    2227
+   ]
+  },
+  {
+   "element": {
+    "fps": 1
+   },
+   "total": 2228,
+   "fps": 29.97002997002997,
+   "n": 74,
+   "total_num_frames": 2228,
+   "sample_fps": 0.9954139218053041,
+   "indices_sha256": "a785aaeefdc416606fa534cc3095642c7cfd7e44bfdd7dd2d7be612936ff32b3",
+   "first_last": [
+    0,
+    2227
+   ]
+  },
+  {
+   "element": {
+    "fps": 2,
+    "max_frames": 40
+   },
+   "total": 2228,
+   "fps": 29.97002997002997,
+   "n": 40,
+   "indices": [
+    0,
+    57,
+    114,
+    171,
+    228,
+    286,
+    343,
+    400,
+    457,
+    514,
+    571,
+    628,
+    685,
+    742,
+    799,
+    857,
+    914,
+    971,
+    1028,
+    1085,
+    1142,
+    1199,
+    1256,
+    1313,
+    1370,
+    1428,
+    1485,
+    1542,
+    1599,
+    1656,
+    1713,
+    1770,
+    1827,
+    1884,
+    1941,
+    1999,
+    2056,
+    2113,
+    2170,
+    2227
+   ],
+   "total_num_frames": 2228,
+   "sample_fps": 0.5380615793542185
+  },
+  {
+   "element": {
+    "fps": 2,
+    "min_frames": 7
+   },
+   "total": 2228,
+   "fps": 29.97002997002997,
+   "n": 148,
+   "total_num_frames": 2228,
+   "sample_fps": 1.9908278436106082,
+   "indices_sha256": "944ae20b8a5ef0ce2dd6cda41caae2d66822f5b4c55d40d233d42e14aed53e9a",
+   "first_last": [
+    0,
+    2227
+   ]
+  },
+  {
+   "element": {
+    "nframes": 9
+   },
+   "total": 2228,
+   "fps": 29.97002997002997,
+   "n": 8,
+   "indices": [
+    0,
+    318,
+    636,
+    954,
+    1273,
+    1591,
+    1909,
+    2227
+   ],
+   "total_num_frames": 2228,
+   "sample_fps": 0.1076123158708437
+  },
+  {
+   "element": {
+    "fps": 2,
+    "video_start": 1.0,
+    "video_end": 5.5
+   },
+   "total": 2228,
+   "fps": 29.97002997002997,
+   "n": 8,
+   "indices": [
+    30,
+    49,
+    68,
+    87,
+    107,
+    126,
+    145,
+    164
+   ],
+   "total_num_frames": 135,
+   "sample_fps": 1.7760017760017761
+  },
+  {
+   "element": {
+    "fps": 2
+   },
+   "total": 54001,
+   "fps": 25.0,
+   "n": 768,
+   "total_num_frames": 54001,
+   "sample_fps": 0.355548971315346,
+   "indices_sha256": "4b126fa7b715973fdfe5e6eb10616bd9c15368f91bbf8fee7067ea0c7b1d2874",
+   "first_last": [
+    0,
+    54000
+   ]
+  },
+  {
+   "element": {
+    "fps": 1
+   },
+   "total": 54001,
+   "fps": 25.0,
+   "n": 768,
+   "total_num_frames": 54001,
+   "sample_fps": 0.355548971315346,
+   "indices_sha256": "4b126fa7b715973fdfe5e6eb10616bd9c15368f91bbf8fee7067ea0c7b1d2874",
+   "first_last": [
+    0,
+    54000
+   ]
+  },
+  {
+   "element": {
+    "fps": 2,
+    "max_frames": 40
+   },
+   "total": 54001,
+   "fps": 25.0,
+   "n": 40,
+   "indices": [
+    0,
+    1385,
+    2769,
+    4154,
+    5538,
+    6923,
+    8308,
+    9692,
+    11077,
+    12462,
+    13846,
+    15231,
+    16615,
+    18000,
+    19385,
+    20769,
+    22154,
+    23538,
+    24923,
+    26308,
+    27692,
+    29077,
+    30462,
+    31846,
+    33231,
+    34615,
+    36000,
+    37385,
+    38769,
+    40154,
+    41538,
+    42923,
+    44308,
+    45692,
+    47077,
+    48462,
+    49846,
+    51231,
+    52615,
+    54000
+   ],
+   "total_num_frames": 54001,
+   "sample_fps": 0.01851817558934094
+  },
+  {
+   "element": {
+    "fps": 2,
+    "min_frames": 7
+   },
+   "total": 54001,
+   "fps": 25.0,
+   "n": 768,
+   "total_num_frames": 54001,
+   "sample_fps": 0.355548971315346,
+   "indices_sha256": "4b126fa7b715973fdfe5e6eb10616bd9c15368f91bbf8fee7067ea0c7b1d2874",
+   "first_last": [
+    0,
+    54000
+   ]
+  },
+  {
+   "element": {
+    "nframes": 9
+   },
+   "total": 54001,
+   "fps": 25.0,
+   "n": 8,
+   "indices": [
+    0,
+    7714,
+    15429,
+    23143,
+    30857,
+    38571,
+    46286,
+    54000
+   ],
+   "total_num_frames": 54001,
+   "sample_fps": 0.0037036351178681873
+  },
+  {
+   "element": {
+    "fps": 2,
+    "video_start": 1.0,
+    "video_end": 5.5
+   },
+   "total": 54001,
+   "fps": 25.0,
+   "n": 8,
+   "indices": [
+    25,
+    41,
+    57,
+    73,
+    89,
+    105,
+    121,
+    137
+   ],
+   "total_num_frames": 113,
+   "sample_fps": 1.7699115044247788
+  },
+  {
+   "element": {
+    "fps": 2
+   },
+   "total": 1537,
+   "fps": 24.000002,
+   "n": 128,
+   "total_num_frames": 1537,
+   "sample_fps": 1.9986989303838647,
+   "indices_sha256": "fd8fd586ba35c7dead1f9f0ab11523951637b292f337aeeca2f31303f08b12fd",
+   "first_last": [
+    0,
+    1536
+   ]
+  },
+  {
+   "element": {
+    "fps": 1
+   },
+   "total": 1537,
+   "fps": 24.000002,
+   "n": 64,
+   "total_num_frames": 1537,
+   "sample_fps": 0.9993494651919324,
+   "indices_sha256": "6ae6cf6cbd1e40c522b02c40d9488e2c836fd6013605016a526a09385428ef33",
+   "first_last": [
+    0,
+    1536
+   ]
+  },
+  {
+   "element": {
+    "fps": 2,
+    "max_frames": 40
+   },
+   "total": 1537,
+   "fps": 24.000002,
+   "n": 40,
+   "indices": [
+    0,
+    39,
+    79,
+    118,
+    158,
+    197,
+    236,
+    276,
+    315,
+    354,
+    394,
+    433,
+    473,
+    512,
+    551,
+    591,
+    630,
+    670,
+    709,
+    748,
+    788,
+    827,
+    866,
+    906,
+    945,
+    985,
+    1024,
+    1063,
+    1103,
+    1142,
+    1182,
+    1221,
+    1260,
+    1300,
+    1339,
+    1378,
+    1418,
+    1457,
+    1497,
+    1536
+   ],
+   "total_num_frames": 1537,
+   "sample_fps": 0.6245934157449576
+  },
+  {
+   "element": {
+    "fps": 2,
+    "min_frames": 7
+   },
+   "total": 1537,
+   "fps": 24.000002,
+   "n": 128,
+   "total_num_frames": 1537,
+   "sample_fps": 1.9986989303838647,
+   "indices_sha256": "fd8fd586ba35c7dead1f9f0ab11523951637b292f337aeeca2f31303f08b12fd",
+   "first_last": [
+    0,
+    1536
+   ]
+  },
+  {
+   "element": {
+    "nframes": 9
+   },
+   "total": 1537,
+   "fps": 24.000002,
+   "n": 8,
+   "indices": [
+    0,
+    219,
+    439,
+    658,
+    878,
+    1097,
+    1317,
+    1536
+   ],
+   "total_num_frames": 1537,
+   "sample_fps": 0.12491868314899154
+  },
+  {
+   "element": {
+    "fps": 2,
+    "video_start": 1.0,
+    "video_end": 5.5
+   },
+   "total": 1537,
+   "fps": 24.000002,
+   "n": 8,
+   "indices": [
+    25,
+    40,
+    56,
+    71,
+    86,
+    101,
+    117,
+    132
+   ],
+   "total_num_frames": 108,
+   "sample_fps": 1.7777779259259257
+  },
+  {
+   "element": {
+    "fps": 2
+   },
+   "total": 100,
+   "fps": 1.0,
+   "n": 100,
+   "total_num_frames": 100,
+   "sample_fps": 1.0,
+   "indices_sha256": "3aab9a67460ed56a43667fd52a997d2b01e90e52589c44b1f138c7b6fb4a1c4d",
+   "first_last": [
+    0,
+    99
+   ]
+  },
+  {
+   "element": {
+    "fps": 1
+   },
+   "total": 100,
+   "fps": 1.0,
+   "n": 100,
+   "total_num_frames": 100,
+   "sample_fps": 1.0,
+   "indices_sha256": "3aab9a67460ed56a43667fd52a997d2b01e90e52589c44b1f138c7b6fb4a1c4d",
+   "first_last": [
+    0,
+    99
+   ]
+  },
+  {
+   "element": {
+    "fps": 2,
+    "max_frames": 40
+   },
+   "total": 100,
+   "fps": 1.0,
+   "n": 40,
+   "indices": [
+    0,
+    3,
+    5,
+    8,
+    10,
+    13,
+    15,
+    18,
+    20,
+    23,
+    25,
+    28,
+    30,
+    33,
+    36,
+    38,
+    41,
+    43,
+    46,
+    48,
+    51,
+    53,
+    56,
+    58,
+    61,
+    63,
+    66,
+    69,
+    71,
+    74,
+    76,
+    79,
+    81,
+    84,
+    86,
+    89,
+    91,
+    94,
+    96,
+    99
+   ],
+   "total_num_frames": 100,
+   "sample_fps": 0.4
+  },
+  {
+   "element": {
+    "fps": 2,
+    "min_frames": 7
+   },
+   "total": 100,
+   "fps": 1.0,
+   "n": 100,
+   "total_num_frames": 100,
+   "sample_fps": 1.0,
+   "indices_sha256": "3aab9a67460ed56a43667fd52a997d2b01e90e52589c44b1f138c7b6fb4a1c4d",
+   "first_last": [
+    0,
+    99
+   ]
+  },
+  {
+   "element": {
+    "nframes": 9
+   },
+   "total": 100,
+   "fps": 1.0,
+   "n": 8,
+   "indices": [
+    0,
+    14,
+    28,
+    42,
+    57,
+    71,
+    85,
+    99
+   ],
+   "total_num_frames": 100,
+   "sample_fps": 0.08
+  },
+  {
+   "element": {
+    "fps": 2,
+    "video_start": 1.0,
+    "video_end": 5.5
+   },
+   "total": 100,
+   "fps": 1.0,
+   "n": 4,
+   "indices": [
+    1,
+    2,
+    4,
+    5
+   ],
+   "total_num_frames": 5,
+   "sample_fps": 0.8
+  }
+ ],
+ "linspace": [
+  {
+   "start": 0,
+   "end": 99,
+   "steps": 40,
+   "float32_sha256": "28ea54fd897466e6105eb116884be98566ba635028a9da61ae4cbe3413d3a548"
+  },
+  {
+   "start": 0,
+   "end": 2227,
+   "steps": 148,
+   "float32_sha256": "29621ee71dadbbcf702c0fdf44bca0b7651457ee1b0d64cb88808812d66ebfe3"
+  },
+  {
+   "start": 0,
+   "end": 4319,
+   "steps": 33,
+   "float32_sha256": "d8fc508cea4c5e599938510963e47b6171a36612928b92cd0ae257edbad7d0e9"
+  },
+  {
+   "start": 0,
+   "end": 53999,
+   "steps": 768,
+   "float32_sha256": "deef1dc70be7b014f303a142b994924664ac25b783cc4131e66940905c7d48fd"
+  },
+  {
+   "start": 3,
+   "end": 1000,
+   "steps": 17,
+   "float32_sha256": "8ebfd3c2eb645c19f2c024c211844668ffb87b16e09db56a7a2637a434db1f25"
+  },
+  {
+   "start": 31,
+   "end": 165,
+   "steps": 10,
+   "float32_sha256": "69fc352fd3c7ee341c0147f068d06706f719e6a7bd8f13aaeeaca2aae5910705"
+  },
+  {
+   "start": 0,
+   "end": 11,
+   "steps": 4,
+   "float32_sha256": "a3f97c41f67b0e4b7367f3ff9da580f8f3f51a3fff1f5ec698c352eaba2bee23"
+  },
+  {
+   "start": 0,
+   "end": 1,
+   "steps": 2,
+   "float32_sha256": "22b6f43bd8d27738d3213f29e96b62d01d9d6c0ab4f9732aaae803186f51eab7"
+  },
+  {
+   "start": 5,
+   "end": 5,
+   "steps": 1,
+   "float32_sha256": "fca31f1667a6aa1bba12fca4e4ea1becd503379d80da3213af07f6cc5702828d"
+  }
+ ],
+ "float64_differs": [
+  {
+   "start": 0,
+   "end": 12341,
+   "steps": 768,
+   "positions": [
+    528
+   ],
+   "torch": [
+    8496
+   ],
+   "float64": [
+    8495
+   ]
+  },
+  {
+   "start": 0,
+   "end": 12411,
+   "steps": 768,
+   "positions": [
+    538
+   ],
+   "torch": [
+    8706
+   ],
+   "float64": [
+    8705
+   ]
+  },
+  {
+   "start": 0,
+   "end": 12544,
+   "steps": 768,
+   "positions": [
+    540
+   ],
+   "torch": [
+    8832
+   ],
+   "float64": [
+    8831
+   ]
+  },
+  {
+   "start": 0,
+   "end": 12553,
+   "steps": 768,
+   "positions": [
+    550
+   ],
+   "torch": [
+    9002
+   ],
+   "float64": [
+    9001
+   ]
+  },
+  {
+   "start": 0,
+   "end": 12560,
+   "steps": 768,
+   "positions": [
+    510
+   ],
+   "torch": [
+    8352
+   ],
+   "float64": [
+    8351
+   ]
+  },
+  {
+   "start": 0,
+   "end": 12605,
+   "steps": 768,
+   "positions": [
+    524
+   ],
+   "torch": [
+    8612
+   ],
+   "float64": [
+    8611
+   ]
+  },
+  {
+   "start": 0,
+   "end": 12654,
+   "steps": 768,
+   "positions": [
+    511
+   ],
+   "torch": [
+    8430
+   ],
+   "float64": [
+    8431
+   ]
+  },
+  {
+   "start": 0,
+   "end": 12670,
+   "steps": 768,
+   "positions": [
+    529
+   ],
+   "torch": [
+    8738
+   ],
+   "float64": [
+    8739
+   ]
+  },
+  {
+   "start": 0,
+   "end": 12706,
+   "steps": 768,
+   "positions": [
+    524
+   ],
+   "torch": [
+    8680
+   ],
+   "float64": [
+    8681
+   ]
+  },
+  {
+   "start": 0,
+   "end": 12720,
+   "steps": 768,
+   "positions": [
+    547
+   ],
+   "torch": [
+    9072
+   ],
+   "float64": [
+    9071
+   ]
+  },
+  {
+   "start": 0,
+   "end": 12751,
+   "steps": 768,
+   "positions": [
+    510
+   ],
+   "torch": [
+    8478
+   ],
+   "float64": [
+    8479
+   ]
+  },
+  {
+   "start": 0,
+   "end": 12758,
+   "steps": 768,
+   "positions": [
+    550
+   ],
+   "torch": [
+    9148
+   ],
+   "float64": [
+    9149
+   ]
+  }
+ ]
+}

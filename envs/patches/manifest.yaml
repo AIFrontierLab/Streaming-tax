@@ -1,0 +1,14 @@
+# Patches applied to an environment's installed packages by `streamreplace env build` (and checked by
+# `streamreplace env check`). Each target is a file relative to the environment's site-packages; it must have
+# sha256_before when the patch is applied and has sha256_after afterwards. The patch files are unified diffs.
+patches:
+  - name: aura-transformers-qwen3vl-video
+    env: aura
+    file: aura-transformers-4.57.1-qwen3vl-video.patch
+    package: transformers==4.57.1
+    target: transformers/models/qwen3_vl/video_processing_qwen3_vl.py
+    sha256_before: a49a83fc45cd9baa3e391a68af79743c70d47b86d7d6c81a262fda4104f89db7
+    sha256_after: f528a8fc14c04bd4bab220ca0f939e2c26ad0e69ac6ccee113828fa9e769e27b
+    why: >-
+      AURA's official benchmark environment: its stream sends 1-second chunks of 2 frames; the stock Qwen3-VL video
+      processor rejects a chunk with fewer frames than the temporal patch size and samples at least 4 frames.

@@ -1,0 +1,541 @@
+# Third-party code that streamreplace reads at run or scoring time, pinned to exact commits.
+#
+# Nothing listed here is redistributed with this repository. `streamreplace fetch-upstream [NAME ...|all]`
+# downloads exactly the listed files from each project's own GitHub repository at the pinned commit into
+# <upstream root>/<name>/<path in the repository> (upstream root: $STREAMREPLACE_UPSTREAM, default
+# $STREAMREPLACE_HOME/upstream) and checks every file against its git blob SHA-1, the value `git hash-object FILE`
+# prints. `streamreplace fetch-upstream --verify-only` repeats the check offline.
+#
+# Fields
+#   repo, commit  the GitHub repository and the full commit the files are taken from
+#   license       the licence file found at that commit; "none" means the repository has no licence file, so its
+#                 code is fetched from the authors' repository and not copied here beyond the few fragments NOTICE
+#                 lists (see NOTICE and docs/licensing.md)
+#   group         core: P/C/S evaluation and scoring; generalization: prompt robustness and fine-tuning;
+#                 reference: cited for provenance only, never fetched
+#   used_for      what streamreplace takes from the repository
+#   files         repository path -> git blob SHA-1 of the file as streamreplace uses it (after `patches`)
+#   patches       small local edits the paper's runs used, applied right after download. The downloaded file must
+#                 have blob `upstream_blob`; each `old` string must occur exactly `count` times (default 1) and is
+#                 replaced by `new`, in order; the result must have the blob listed under `files`.
+version: 1
+upstream:
+  harmbench:
+    repo: https://github.com/centerforaisafety/HarmBench
+    commit: 8e1604d1171fe8a48d8febecd22f600e462bdcdd
+    license: MIT
+    group: core
+    used_for: >-
+      HarmBench: test-case construction of the DirectRequest and MultiModalDirectRequest baselines, the
+      classifier prompts and copyright hash check (eval_utils.py) and the completion-evaluation procedure
+      (evaluate_completions.py).
+    files:
+      "LICENSE": 0e6b144b4bcac3fabddd0d72aa893fc7c50f2fac
+      "baselines/direct_request/direct_request.py": 513e6beb1695133ec759fe1bb9f5f21eff54232d
+      "baselines/multimodaldirectrequest/multimodaldirectrequest.py": 45a5328da326adee9f4c0d934008b4eb7a485ced
+      "eval_utils.py": be95edd9523de0cde2a7823217b26983d57c496b
+      "evaluate_completions.py": b6aff5e0bfe303333ad7c88cb268fb7533cb9596
+  vmdt:
+    repo: https://github.com/sunblaze-ucb/VMDT
+    commit: 634c8cddfcaa36fd02731be717e20a5efce605ff
+    license: Apache-2.0
+    group: core
+    used_for: >-
+      VMDT fairness and privacy (video-to-text): parse rule, group formulas and aggregate (fairness_score.py,
+      average.py; its JSON-repair fallback prompts are quoted in vmdt_fairness.py and checked against it),
+      factual_accuracy.csv, the privacy prompts and evaluators. The v2t model
+      wrappers document the official generation settings and are read by tests only.
+    files:
+      "LICENSE": 261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64
+      "README.md": c7d4dd700ac1918882a472cc14486f577c4d4c39
+      "VMDT/fairness/video_text/average.py": a50cd2a1b56bfe871c369e7b2c3773316943610a
+      "VMDT/fairness/video_text/factual_accuracy/factual_accuracy.csv": 1b3b2816167422c26b0191a409ba2e097cb92a4e
+      "VMDT/fairness/video_text/fairness_score.py": 5a72cbfbfb4cf668532a274f7e96884997629cf5
+      "VMDT/fairness/video_text/main.py": ee94b2433598a49dc642e2ea8862d611b9f6ad29
+      "VMDT/fairness/video_text/model_responses.py": fe0198aee149a0de361fdb98ef5668290032cb97
+      "VMDT/models/v2t_models/__init__.py": fbb6b85feab70e1a9a463286e9cd3fa649fda9cd
+      "VMDT/models/v2t_models/base.py": 0cdb0981a97a8ced64ed43e4b8cc217e5f51649f
+      "VMDT/models/v2t_models/internvl2_5.py": 9af7c7a4656f384c64412cf27a913bedff4c7929
+      "VMDT/models/v2t_models/llava_video.py": 1b841bdf84921bf9c3b1fde0a8920b53939e6942
+      "VMDT/models/v2t_models/qwen2vl.py": f32629206bd646bee091e27eb770ed0644e10efe
+      "VMDT/models/v2t_models/utils.py": a6f383bdf9f966c732f68c48562974c162322c49
+      "VMDT/privacy/README.md": 8f925a10d6b57d0af8a75fbf460dc805600f5d16
+      "VMDT/privacy/video_text/README.md": 0f839b14d33c1b6481ee10a00fd0fed2cff7e8f1
+      "VMDT/privacy/video_text/main.py": 07d6adee1333d2dee3031d417c7276855d36f8ac
+      "VMDT/privacy/video_text/v2t-city-eval.py": 2b33b5825b055e0bd4d596d9f40721cf5f57bcb2
+      "VMDT/privacy/video_text/v2t-privacy-gen.py": 9de5062b6bf04c129e7a379ed7dc179bfeecbeac
+      "VMDT/privacy/video_text/v2t-state-eval.py": 9121fb74e525da5c38ac7a7c7378edc880f0de9b
+      "VMDT/privacy/video_text/v2t-zipcode-eval.py": 5d6a3b449df894569c2ca9e3fc3c602764606e96
+      "environment.yml": 7f84f2f2589618d6ecea419846467cd739d4faa8
+  llava:
+    repo: https://github.com/LLaVA-VL/LLaVA-NeXT
+    commit: bce12e479bc4dfee2b9c50c88137b01ff51bd483
+    license: Apache-2.0
+    group: core
+    used_for: >-
+      LLaVA-NeXT model code imported by the LLaVA-OneVision and MMDuet adapters.
+    files:
+      "LICENSE": 261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64
+      "README.md": 46044b5dd3b277e30bd70eaad6b375cf060fe97f
+      "cog.yaml": 55b739fd437a1897c1c1ec001f47aac2fbfdf68b
+      "llava/__init__.py": 4d1f016db1028101d45ba7d68cb3f0bcb558c2bb
+      "llava/constants.py": be8cf0204969a6c973f442b383d8e425d684e826
+      "llava/conversation.py": 66ef6963253d30e314a78372869091bd0181021a
+      "llava/eval/evaluate_interleave.py": b00d32f2d3f732614384d648cbda85b69af32466
+      "llava/eval/model_vqa.py": 2ebceedafe23eaf90e51e0971fbdfcae45555838
+      "llava/mm_utils.py": 62a3e50905a9c18799ade86af7d62c59eb029115
+      "llava/model/__init__.py": 1abf0b3629098c96a54fb6942e87e9f44e0e217d
+      "llava/model/apply_delta.py": c183ba19a4e91e9cb95155b542e7406ea5b287a0
+      "llava/model/builder.py": 704b960a6ff3d36c953f2f2b549e9367997928bf
+      "llava/model/consolidate.py": f02e575f6b8e4388e1758776cadd62309147a1ad
+      "llava/model/language_model/llava_gemma.py": 5c0ac173017034bbbb03b158067d4e4f7ff970f6
+      "llava/model/language_model/llava_llama.py": 1a930e97ddee3eda14c226118b51ea42a712de78
+      "llava/model/language_model/llava_mistral.py": 2cc3b0157be23db5ed4aab0c0802f40b4702e116
+      "llava/model/language_model/llava_mixtral.py": ca6c25da47a1a7fbb21db1e4a5406cbfbe4242c6
+      "llava/model/language_model/llava_mpt.py": c3bce7d37e9c0bff41cf8a5fe2f99d29d7cc4495
+      "llava/model/language_model/llava_qwen.py": c19474761e875b10ce0d523404f85a4be313c205
+      "llava/model/language_model/llava_qwen_moe.py": 618a482234d1b59eeb136063783a4111c2768fe8
+      "llava/model/language_model/modeling_llama.py": 0d93738b9dcde4c7b61df79ec577ed3e13edf4ed
+      "llava/model/llava_arch.py": ea98ae8501b0f52d8a1b61323bfc03f6bc3c2541
+      "llava/model/make_delta.py": 7b3fbabe19506d5710dbc194db4000fee62c712d
+      "llava/model/multimodal_encoder/builder.py": b5c77355097a7da207fcc6b352c7f6b23aa36357
+      "llava/model/multimodal_encoder/clip_encoder.py": 212b262b3b3ef8d4d3a98e3a8e45204027538b1a
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/__init__.py": ede6900543160f529b87001346182b526844596c
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/constants.py": a670bb3fab442baeb9af53b91c312e6982af57ee
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/eva_vit_model.py": 23cb38c9230f92cf5e0601a95fb6a610a9e2185c
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/factory.py": 535eeacb7d780d473fad6cf360e38254af86cb13
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/hf_configs.py": ddd2c672fdcc895ce2e437f6da5ee439c09840da
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/hf_model.py": a156624bad999775be6dc2741be648d3d2c15c67
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/loss.py": ec4c995071fd54545d56427fa06c1789467da8e9
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/model.py": b2f3a2317d8dcd512a2f0019dfd7cbdcae79e3b8
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/model_configs/EVA-CLIP-18B.json": 4917556693fe9dcbddeadf7459be363740d55aa5
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/model_configs/EVA-CLIP-8B-plus.json": 7d843daa36c36b6100291fa3a2cb58672db6bbfb
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/model_configs/EVA-CLIP-8B.json": 689492a25d365436fd85ed432e6fb7295ca1c7bd
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/model_configs/EVA01-CLIP-B-16.json": aad2058003962a4ab286bf4e1ae956288af34e62
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/model_configs/EVA01-CLIP-g-14-plus.json": 100279572ff6d1bcca601f0eb526b4d4ff174c7d
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/model_configs/EVA01-CLIP-g-14.json": 5d338b4e6104241d1f0304ee82400035d5385332
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/model_configs/EVA02-CLIP-B-16.json": e4a6e723f77033caa341ddf9b5be1787d64ad42c
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/model_configs/EVA02-CLIP-L-14-336.json": 3e1d124e1118911c5ad7b1ce85df195aca363ac4
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/model_configs/EVA02-CLIP-L-14.json": 03b22ad3cfb92f9c843b9ec8d672e57e7a9ba4a2
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/model_configs/EVA02-CLIP-bigE-14-plus.json": aa04e2545ac1e015daae2c10133956ce969524f7
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/model_configs/EVA02-CLIP-bigE-14.json": 747ffccc8bd49dbb6701b58e15843b7fe3754e64
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/model_configs/Internal-EVA02-CLIP-10B-14-448.json": ad71aff86a4d3b0e34c0bb55ea2b8e3ac220477a
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/model_configs/Internal-EVA02-CLIP-10B-14.json": 21b20680715e6e719b6c8d51c86701a4811ac37f
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/modified_resnet.py": 9f29f84540f92ab7a216c02e77eeca5a6e6653a3
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/openai.py": 9fbf6fc7ecfe2ab3580b9d8af4793e09bc12101f
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/pretrained.py": a603b6047bf86decdb9f5ae247d5cea9a555cf50
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/rope.py": 5fb3cce54e5ff26e53271834e65997714db3a1ad
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/timm_model.py": 65de78df2892a4cbe01b9eef68f07f5f79b8b367
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/tokenizer.py": 5f753e69bc8e24b607b0fa1378ebe236b3d47c27
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/transform.py": 8cad45a167ab85eba8f84eed7feaa132dedc48d4
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/transformer.py": bd5ce4b6e5a3e8eadc0bacef4b270f829cdab762
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_clip/utils.py": 73b6d66273fcbaf5b8c19df5e304db533ba88c49
+      "llava/model/multimodal_encoder/dev_eva_clip/eva_vit.py": 9bd746553cce3bf7fbf508745eac87fe60c1c459
+      "llava/model/multimodal_encoder/eva_clip/eva_clip_encoder.py": aaef516a9b0e958c2f156d29a44bf978dd31eebd
+      "llava/model/multimodal_encoder/eva_clip/eva_clip_processors.py": 7ee1273155ddf1c32f1ac4085f8141582d9259cd
+      "llava/model/multimodal_encoder/eva_clip/eva_vit.py": d2330c322677b860c0c04c3d153b99caaf4f6a7a
+      "llava/model/multimodal_encoder/eva_clip/factory.py": 6d3fafcfd086c6c038a4577246f42c05264d5802
+      "llava/model/multimodal_encoder/eva_clip/model_configs/EVA-CLIP-18B.json": 4917556693fe9dcbddeadf7459be363740d55aa5
+      "llava/model/multimodal_encoder/eva_clip/model_configs/EVA-CLIP-8B-plus.json": 7d843daa36c36b6100291fa3a2cb58672db6bbfb
+      "llava/model/multimodal_encoder/eva_clip/model_configs/EVA-CLIP-8B.json": 689492a25d365436fd85ed432e6fb7295ca1c7bd
+      "llava/model/multimodal_encoder/eva_clip/model_configs/EVA01-CLIP-B-16.json": aad2058003962a4ab286bf4e1ae956288af34e62
+      "llava/model/multimodal_encoder/eva_clip/model_configs/EVA01-CLIP-g-14-plus.json": 100279572ff6d1bcca601f0eb526b4d4ff174c7d
+      "llava/model/multimodal_encoder/eva_clip/model_configs/EVA01-CLIP-g-14.json": 5d338b4e6104241d1f0304ee82400035d5385332
+      "llava/model/multimodal_encoder/eva_clip/model_configs/EVA02-CLIP-B-16.json": e4a6e723f77033caa341ddf9b5be1787d64ad42c
+      "llava/model/multimodal_encoder/eva_clip/model_configs/EVA02-CLIP-L-14-336.json": 3e1d124e1118911c5ad7b1ce85df195aca363ac4
+      "llava/model/multimodal_encoder/eva_clip/model_configs/EVA02-CLIP-L-14.json": 03b22ad3cfb92f9c843b9ec8d672e57e7a9ba4a2
+      "llava/model/multimodal_encoder/eva_clip/model_configs/EVA02-CLIP-bigE-14-plus.json": aa04e2545ac1e015daae2c10133956ce969524f7
+      "llava/model/multimodal_encoder/eva_clip/model_configs/EVA02-CLIP-bigE-14.json": 747ffccc8bd49dbb6701b58e15843b7fe3754e64
+      "llava/model/multimodal_encoder/eva_clip/model_configs/Internal-EVA02-CLIP-10B-14-448.json": ad71aff86a4d3b0e34c0bb55ea2b8e3ac220477a
+      "llava/model/multimodal_encoder/eva_clip/model_configs/Internal-EVA02-CLIP-10B-14.json": 21b20680715e6e719b6c8d51c86701a4811ac37f
+      "llava/model/multimodal_encoder/hf_vision.py": a413208e4028a10e8985818e50a2b078fdc19f8a
+      "llava/model/multimodal_encoder/imagebind.py": 8bbe71c7b42e25ff7e5a8912b403498002a26348
+      "llava/model/multimodal_encoder/mlcd/vit_rope2d_hf.py": 5ddedae5baa9702cb9235a77d562cdeff2c386e1
+      "llava/model/multimodal_encoder/mlcd_encoder.py": 7f1041f0c90373503a359367956179c8efe5b841
+      "llava/model/multimodal_encoder/open_clip_encoder.py": 17a3277f99d1a36e443217d0ace0fb17bf5997cf
+      "llava/model/multimodal_encoder/siglip_encoder.py": f1e101a2fa29a8297541a72edcb20b1057665b33
+      "llava/model/multimodal_projector/builder.py": 3122a0c3bc5b50f1c921ba9b186fd736f018c9cf
+      "llava/model/multimodal_projector/pooler_projector.py": ce5a2e05fa44ad2978272aea6dcf0aa9ca135e55
+      "llava/model/multimodal_resampler/builder.py": 7a4b207f3bded33b89ddef3899233c3825d91701
+      "llava/model/multimodal_resampler/masked_drop.py": 03f0bf0b259ff5d96adea4aad91ee5498d459030
+      "llava/model/multimodal_resampler/perceiver.py": d6b17a559b2225832c7d87c4fb6894617779b9c1
+      "llava/model/multimodal_resampler/qformer.py": b86754c24adbfa5ce34e37ee4726c74e3b7f910f
+      "llava/model/multimodal_resampler/spatial_pool.py": 4bdbe3aecc91183341816c800c8ad1fcfba9a169
+      "llava/model/utils.py": 10652a5f9aaa2e0cddaef0b1a7bc39013a0d957b
+      "llava/serve/__init__.py": e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
+      "llava/serve/cli.py": 88fbfe85dac4e385962c8c83e074af0fa34c2353
+      "llava/serve/controller.py": 261f8c6bd4461e723fff4c7a7557fe10d592bca9
+      "llava/serve/gradio_multi_image.py": ca0e4206f343247c24b205544ce38102dce2adfb
+      "llava/serve/gradio_web_server.py": 4070dfaa3861b5460df57d02add37ecdf5067595
+      "llava/serve/model_worker.py": cd2256189a5c281bf5bfc54fdb043d4081abde5f
+      "llava/serve/register_worker.py": 2c2c40295e0351f25709ba25554c9329f15bf0d2
+      "llava/serve/sglang_worker.py": 09c047f48ea6d8774b30d1c5df159d877edfd742
+      "llava/serve/test_message.py": 45acd534fb23fdc9c85d6dd0575b192cabc0da41
+      "llava/train/llama_flash_attn_monkey_patch.py": c88fe34266d5467cf49ba0ad4fbc5f5eeac5c029
+      "llava/train/llava_trainer.py": 35e06cf4be6dec0dbe0cd38a24a35a6442876f0c
+      "llava/train/llava_trainer_eval.py": e82225852569674e9eea2cb8912153fba76b33fe
+      "llava/train/train.py": 4c524be966283257f35d3e8a0856c9270127f6b2
+      "llava/train/train_dpo.py": daf9ad422de38af78ca71c31acbc0fbe19c3bbb3
+      "llava/train/train_mem.py": 6135ca4134a25d22eb40d994499ba564b9673f34
+      "llava/utils.py": 1e004c33bc503d213df619dec948f39b4c13e53d
+      "predict.py": ae53e11ac0aa33474fc49cfeb6acd0ef495cf6fe
+      "pyproject.toml": 23044a9dfdcaf7bc4ee0205aac2e48d8114d478a
+      "requirements.txt": 66ea557efca57c3784eac2042588240529a81003
+    patches:
+      "llava/model/multimodal_encoder/builder.py":
+        upstream_blob: 0a7b1600fe3226db846f93f25f013571fbcb9481
+        why: >-
+          Upstream sends every existing local directory to the CLIP vision tower, so a SigLIP tower loaded from
+          a local checkpoint folder would be built as CLIP. The edit dispatches SigLIP first; the paper's
+          LLaVA-OneVision and MMDuet runs used it.
+        edits:
+          - old: "    if is_absolute_path_exists or vision_tower.startswith(\"openai\") or vision_tower.startswith(\"laion\") or \"ShareGPT4V\" in vision_tower:\n"
+            new: "    # Local SigLIP directories must be dispatched before the generic local CLIP branch.\n    if \"siglip\" in vision_tower.lower():\n        return SigLipVisionTower(vision_tower, vision_tower_cfg=vision_tower_cfg, **kwargs)\n    elif is_absolute_path_exists or vision_tower.startswith(\"openai\") or vision_tower.startswith(\"laion\") or \"ShareGPT4V\" in vision_tower:\n"
+          - old: "    elif \"siglip\" in vision_tower:\n        return SigLipVisionTower(vision_tower, vision_tower_cfg=vision_tower_cfg, **kwargs)\n"
+            new: ""
+  mmduet:
+    repo: https://github.com/yellow-binary-tree/MMDuet
+    commit: 33be1387cd18643614d3c414c3c237bdd4ff59cc
+    license: MIT
+    group: core
+    used_for: >-
+      MMDuet video-head model and live inference (native stream of MMDuet).
+    files:
+      "LICENSE": 0b5a98cd7267bdbad1dec612dea857f4c4fb9cd2
+      "README.md": def42f2804c851b453f7476b94e8037878f10979
+      "data/__init__.py": 3a8b0f59d96c738da3b830c932ff47f5b48d0415
+      "data/data_collator.py": cfb249e4fc86d2dbfdaf279c6d2bcfde9eedbc42
+      "data/dvc.py": 1afe94c0c17ecbd2a1f95112ecca8518f1645fce
+      "data/grounding.py": acc992165e3bf9635cb2b53bbf5558037593df12
+      "data/magqa.py": 48df3ebed5ad9eab05a3fa1921004beac5d7f1e6
+      "data/stream.py": 27bb673abf785609f7cd46335249f3e197dc48e8
+      "data/utils.py": 2dd08b17dc7f630c29151a579f4768596e0df418
+      "demo/app.py": 22ec65e9e34a04b8e8f566ed63ebbc2e6342a327
+      "demo/liveinfer.py": bc816d35c8382e2886737b63165bfe8c2c57a3d7
+      "models/__init__.py": f5c5982621d9fe2ebea8118a4df36cb6f7f3946c
+      "models/arguments_live.py": 7817f454fdc0a16ba3fbd4cfceb5671f45b013ec
+      "models/configuration_live.py": 87e29b4eb9c601f51a9be9f85872f8edae4ec6cc
+      "models/live_llava/video_head_live_llava_qwen.py": 86c4478997ed5819139c7d758571e4aa73e20069
+      "models/modeling_live.py": 1e2273bf98ffa1d0b8af2de4455ecaa02506f5fb
+      "models/tokenization_live.py": 724ec2d183c710e07894bd8fe7e70b2e9d463235
+      "models/vision_live.py": 9cfe77bd0530030978027345aa0b8fdb642b8b31
+      "requirements.txt": faf3458d4519d9be7f98b4bcc8d252179954a057
+      "test/__init__.py": e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
+      "test/analyze_magqa_results.py": 1a0b213e4090cec2b260c23fe2f8a6de9c50430b
+      "test/datasets.py": 786c698f280d49e1cd4fc0340b4c07504d91afb5
+      "test/dvc/eval_dvc.py": bd0b2a459e1556c443da9645f389171e39b23aee
+      "test/dvc/metrics/README.md": 6ee7a625c403de37244800c42e3f18d788860652
+      "test/dvc/metrics/cider.py": ded7c3eabddc54359f9c813726c3ffc63c2aef95
+      "test/dvc/metrics/cider_scorer.py": e8b0e256cd202f5db5e68ccb582360bf80e78136
+      "test/dvc/metrics/meteor.py": 4b63f8122b38f7f1e2bfb860d06c34af65f69703
+      "test/dvc/metrics/ptbtokenizer.py": 44c7bb481c7b1bab7060d3d28dafce7afb6667c9
+      "test/evaluate.py": 776316895a80d5aa80238eba56db9f49447de4bc
+      "test/inference.py": 88610a371359979f4ad5815bc95e9531a906b688
+      "test/openai_batch.py": 6fb652f95aa1834798e36050b504e76ae8754a64
+      "test/qvh/eval.py": 46fb3268c7237cba513f0bfdb49d25fee33a8169
+      "test/qvh/utils.py": daf933870d4a87af7f8dd5aed9dd96e317d1c1a7
+      "train.py": 1ac8837f417fb6c326e2984803cdb12d423d2ac4
+      "utils/dist_utils.py": 2eeb10ebb9fafac425bd26d41a09792a92dd9ad4
+  mmduet2:
+    repo: https://github.com/yellow-binary-tree/MMDuet2
+    commit: 7bd91d5239adcb273df0977bc6c23faff950912c
+    license: Apache-2.0
+    group: core
+    used_for: >-
+      MMDuet2 proactive streaming client and its Qwen2.5-VL model variant (native stream of MMDuet2).
+    files:
+      "LICENSE": 35ba7d02bdb16fe89d8f2f8b28e4605394b86ec1
+      "README.md": 581c4d472c858b003fbfad1a64122b9784a87045
+      "demo/api_server.py": b7509463adefc7a341305511062b82d7f5b7a8d1
+      "demo/frontend.py": ccbf41bf6b42be3bfd9cf86d3a7385f563b17b22
+      "demo/inference.py": d43b9a520e567f5cf711e814f4f158132a7589e9
+      "demo/requirements.txt": b257510a7be1592e1c4f996b88f394d63d589108
+      "proactive_eval/README.md": e1409366ac95864ce5b6766d22759a87cd7e2e36
+      "proactive_eval/evaluate.py": 5c9d82efb2aa68f5ca13bc4b5394f3308284bf30
+      "proactive_eval/inference.py": d43b9a520e567f5cf711e814f4f158132a7589e9
+      "proactive_eval/qwen2_5_vl/__init__.py": 4b8bd63c4f29eab52e18555e4d02497a84618c95
+      "proactive_eval/qwen2_5_vl/configuration_qwen2_5_vl.py": 52fbd34787fbe42baebb52b916f78652b630d9a9
+      "proactive_eval/qwen2_5_vl/image_processing_qwen2_5_vl.py": 5740547bb8ad5e67636d466964736393659826da
+      "proactive_eval/qwen2_5_vl/modeling_qwen2_5_vl_DTD.py": 3a04cf9a8c8f4f3cdb9920a74238cb30857e90c1
+      "proactive_eval/qwen2_5_vl/modular_qwen2_5_vl.py": da54b231420bf0ab94b7aebdf6ece8136e399122
+      "proactive_eval/qwen2_5_vl/processing_qwen2_5_vl.py": 3cc9bcdb59c159b04adfbef9ea750cbe6156b6b9
+      "proactive_eval/requirements.txt": b257510a7be1592e1c4f996b88f394d63d589108
+      "proactive_eval/scripts/evaluate.sh": d02fa7ee44ddf156b2bf084a73fccb97b9b1e7ac
+      "proactive_eval/scripts/inference.sh": cda5439af940ed26d55be6b439141a695196a0ac
+  thinkstream:
+    repo: https://github.com/CASIA-IVA-Lab/ThinkStream
+    commit: bd5dc284f84a19d1ea822e8b2ef81f1d91f80225
+    license: MIT
+    group: core
+    used_for: >-
+      ThinkStream streaming inference package (native stream of ThinkStream).
+    files:
+      "LICENSE": 2bc6605e88d134a1ebd7493f1c2adf963be4f86e
+      "README.md": 7a93cae0fbb5988d3deedb4ad6f71b858529dcac
+      "requirements.txt": fe5da0f841960c8db9a578afe3b7bda3475c65a5
+      "scripts/demo.py": bd0c203ad3b868accf537511eb45ba2c524dfcc6
+      "thinkstream/data/__init__.py": 0f29101aaac6dbbb422f7c55459d6f7e75e0075a
+      "thinkstream/data/rope2d.py": 1adb4e08a6c4bdb04ff8416f2343ae5d2572c037
+      "thinkstream/data/stream_data_processor.py": 2c3aa23fcd3d339098f3489fb9e34720effdf3fa
+      "thinkstream/eval/eval_common.py": dadcbabd4e2f5dfb48972ab5eab419f7d3a0aa82
+      "thinkstream/eval/ovo_bench/eval_ovo.py": 7bef74142cda89d80bf1efa662332d714f075925
+      "thinkstream/eval/ovo_bench/transfer_annotation_format.py": de45627b27d20294c351c9a429d255ae2eba4980
+      "thinkstream/eval/rtvu/eval_rtvu.py": 925a2438698eaf8af88ea9d575483e9aea524234
+      "thinkstream/eval/rtvu/transfer_annotation_format.py": f948ab4b0af57305021a7f26e0f1ee7bd23fc2e7
+      "thinkstream/model/__init__.py": 9aaef095ff59137370cc5a6052f11ff2af2a5cf1
+      "thinkstream/model/inference.py": b80d395fd7f6dd4f7432c0b9e5e0417a1d5c0cf1
+      "thinkstream/model/patch.py": 707047ec5ce700f32a638c3f3d9860a8698a5ec2
+      "thinkstream/model/streaming_attention.py": a691a229e6a6e0c10a4658d62601e51c1b5002e3
+      "thinkstream/train.py": 7fa6a2eea15d922491644bba0bf3a5584bb8876d
+      "thinkstream/trainer/__init__.py": e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
+      "thinkstream/trainer/builder.py": 6069fddf70165fcf1c28ed61780d041d1faaa9b5
+      "thinkstream/trainer/grpo.py": 023ab3cd64bd129266db3443c11e42514e36d2dc
+      "thinkstream/trainer/scope.py": 27135808d7136c2937fe2904fc135764c2093db5
+      "thinkstream/trainer/sft.py": 6a77c935e344a1225373902144d3b51e06c28027
+    patches:
+      "thinkstream/model/inference.py":
+        upstream_blob: e27dbc98ca70644b08140a34fb2f207bd7bd4763
+        why: >-
+          Upstream's own comment says the last window also takes queries stamped exactly at its end, but the
+          code compares with '<', so a question stamped at the very end of the video (where the S protocol asks
+          it) would never be delivered. The edit implements the documented rule; the paper's ThinkStream stream
+          runs used it.
+        edits:
+          - old: "            if ts < w_end:\n"
+            new: "            if ts < w_end or (is_last_iter and ts == w_end):\n"
+  livestar:
+    repo: https://github.com/sotayang/LiveStar
+    commit: aa1cc540300f3c318f3511df5581605519ecc2a1
+    license: none
+    group: core
+    used_for: >-
+      LiveStar remote model code, tokenizer files and StreamingSession; the LiveStar checkpoints on the Hugging
+      Face Hub ship weights only, so both LiveStar models load their code from here.
+    files:
+      "README.md": 91a30b6bc1cf1436175e570484ce6d4f6f4335db
+      "inference/ablation.py": 04cbc365962df97870c1616790cb326e99c21778
+      "inference/added_tokens.json": c70135a20896b4f10aedecc30efb38ed401b8e04
+      "inference/config.json": c073c1072953868029856e93baadb86f079bf980
+      "inference/configuration_livestar_chat.py": 68ba3378d59127d340a8e64cd067186922a20cc7
+      "inference/configuration_livestar_llm.py": 282b13b1e2066ecc074ecae87b35a19d251f0ed7
+      "inference/configuration_livestar_vit.py": a764ed9156db9c6ce57d4a411b9ae3c474728cb5
+      "inference/conversation.py": 5a771766f21ce3aeeb99b286fb8d188b0038a547
+      "inference/demo.py": 9de5664955c6bfc921d32d9cb40fc640b4d85996
+      "inference/demo_ui.py": b10b988bf37f9f3ff3bd103f8303ad3c7f31ffe3
+      "inference/generation_config.json": c81a5698754206e0746976f59b9ccda24f8aa2d4
+      "inference/kv_check.py": e2a69ce0fb370db12a6837f1d8c9c1ca4d1c40bd
+      "inference/model.safetensors.index.json": f508854db7735fd4d276df54443291e28e4d6a6b
+      "inference/modeling_livestar_chat.py": 6fc1fd7ce4d8d1e9ff8b362324a8f866ebc9e31f
+      "inference/modeling_livestar_llm.py": 91437d56e58b0dc5dec17b00112e830f7d415efa
+      "inference/modeling_livestar_vit.py": d843495cade6a5a54a20bbdc49c3a696ab2ec558
+      "inference/recall_eval.py": c2c068a5eee852677bff43c1b1c0ac3a6979a80a
+      "inference/special_tokens_map.json": cbf34a50d27c43ed8d1e2823b800b4e6f66e637a
+      "inference/streaming_infer.py": 7a5dd0deb09494f734ed3ca290fcfbca2412b55a
+      "inference/tokenization_internlm2.py": 1be581da37ef678de65f2737493fc0ed7160446e
+      "inference/tokenizer.model": 94a2b542a94a2c38502fedd7a734b2435a1f1419
+      "inference/tokenizer_config.json": 37c4e1f5a540e34937966833a1a71723e291704f
+      "inference/trainer_state.json": ddc6f04e948fb2544dc967c759047e54f1db031b
+      "inference/tshm.py": 8dfa56d44816f0504fbfe339cc21fa5c1b428ac0
+      "requirements.txt": e8b5034aa70b49f7fae2324a57a960630b34775c
+      "zero_stage1_config.json": 654d1002f84c898dfc419cac18edb3b9b2e69ead
+      "zero_stage2_config.json": 53db3be439014b2177d1593cca9e6221a81b6ebf
+  tomato:
+    repo: https://github.com/yale-nlp/TOMATO
+    commit: fe2025f4b9e1ce339618e0eecfd10f09caf67142
+    license: none
+    group: core
+    used_for: >-
+      TOMATO official answer pre-parser and GPT-parser prompt (src/parse_result.py).
+    files:
+      "src/parse_result.py": c28c651b7977d3bca5f42f286d5b63ab29fc862a
+  timeblind:
+    repo: https://github.com/Baiqi-Li/TimeBlind
+    commit: 03129551918c0830f3ee727485eb9cfb437e21e5
+    license: none
+    group: core
+    used_for: >-
+      TimeBlind official answer extractor (utils.py) and judge prompt (llm_judge.py). The dataset's tags.json is
+      downloaded from the same commit (manifests/datasets.yaml).
+    files:
+      "llm_judge.py": 8bb7f69deada1af6c8d5ede60ffa63b783138838
+      "utils.py": 876d012504ff1d53352253abd31a5779d4ffbc15
+  videomme:
+    repo: https://github.com/thanku-all/parse_answer
+    commit: afd52cfe3dde5b3685e0d4f760c10c756860c758
+    license: none
+    group: core
+    used_for: >-
+      Video-MME official evaluation script (eval_your_results.py, linked from the Video-MME README): answer
+      extraction regex.
+    files:
+      "eval_your_results.py": 049cc6f32c8e1a8d2319534135d618e19e67a24f
+  videoreasonbench:
+    repo: https://github.com/llyx97/video_reason_bench
+    commit: 2524387968b843e9121707ae148c850f967c1486
+    license: none
+    group: core
+    used_for: >-
+      VideoReasonBench official judge prompts and state checkers (utils/eval_utils.py). The official question files
+      (questions/*.json) are pinned for reference; the checkers get the states from the Hugging Face release.
+    files:
+      "README.md": bdf96e2cceb8d72e3ba75d6c5914b31f222106c2
+      "eval_api.py": 485d6ec256f71bfd9216fa165bfcefcdb7023974
+      "eval_gemini.sh": e759316d1a36c0036754b12d8de5d7206f539ee5
+      "eval_huggingface.py": 8934adf5cf4ef7d91322aaf535e1fd492fad0fdb
+      "eval_openai.sh": ea2af77da8c4b3bc667c4d4f17afb4ec696e2dbe
+      "eval_qwen.sh": 72464a91f97af256166eb19fcd4e2335392b23e5
+      "questions/card.json": d16787f1938ba6f40f70927d2acdeb26a0b471b3
+      "questions/chip.json": d1b0a16fd5edf29b68426a7dc73a5c613a54955a
+      "questions/cup.json": 2cedb0cab8e78248da48f0764d544a25ba5d13a2
+      "questions/file_sys.json": 2c88dd8ba57a206c637cd40280b4c65cf94a386d
+      "questions/grid.json": 148c0d95daab0fe63333bcd2b24f1d01ec12b5d0
+      "questions/hrd.json": ee1f20642724f68d4ba5c8fcf070ac7b034900ed
+      "utils/eval_utils.py": 4993b2bf307add550088794dca1069a93909f1b3
+      "utils/show_results.py": c4ed5de6f0015923a3be78c4fc7ac8341b78b426
+    patches:
+      "utils/eval_utils.py":
+        upstream_blob: f14ebc3a61ad18cd079e3ccfb6f2f91ed0f942c4
+        why: >-
+          The judge's move lists are parsed with ast.literal_eval instead of eval (judge output is never
+          executed), and a malformed list or an unknown cup name fails the state check instead of crashing the
+          scorer. The paper's VideoReasonBench scores used these rules.
+        edits:
+          - old: "import copy, re, openai, os, time\n"
+            new: "import ast\nimport copy, re, openai, os, time\n"
+          - old: "        moves = [m.lower() for m in eval(moves)]\n"
+            new: "        moves = [m.lower() for m in ast.literal_eval(moves)]\n"
+          - old: "    except SyntaxError:\n"
+            new: "    except (SyntaxError, ValueError, TypeError, AttributeError):\n"
+          - old: "        moves = eval(moves)\n"
+            new: "        moves = ast.literal_eval(moves)\n"
+            count: 3
+          - old: "        cup = move.split()[-1]\n"
+            new: "        cup = move.split()[-1]\n        if cup not in states:\n            return False\n"
+  video_safetybench:
+    repo: https://github.com/flageval-baai/Video-SafetyBench
+    commit: 87d2fe959437a2b55dd5fbc762250cff7e50c311
+    license: none
+    group: core
+    used_for: >-
+      Video-SafetyBench official prompt prefix and 16-frame sampling (model_inference/llava_video.py), RJScore
+      judge (eval/evaluator.py, also used for MCV-SafetyBench), unsafe threshold and scenario policies
+      (eval/evaluate.py, eval/scenario.json); the two LLaVA-Video-72B result files provide reference answers for
+      the RJScore judge's self-test.
+    files:
+      "README.md": 91aef510e17dd09729decbbc925e232224264e1f
+      "eval/evaluate.py": 81566127696c2d05cad187f1a75890fa4824efaa
+      "eval/evaluator.py": 26d7b13afc07a10fa016430e859a282e427fda8d
+      "eval/scenario.json": 72d0f16e8474c10b708f2ebf265f0b1e8d2ca968
+      "model_inference/llava_video.py": 66b62d2fc5c331d751fa197c0865351ea38f0e1d
+      "model_results/LLaVA-Video-72B-Qwen2/video_safetybench_benign/video_safetybench_benign.json": de47f210966604ed5c257898260e2f07ec5ee81b
+      "model_results/LLaVA-Video-72B-Qwen2/video_safetybench_harmful/video_safetybench_harmful.json": ff1519f7aa7255a1175ae0dd430ed5cf108f0405
+  mcv_safetybench:
+    repo: https://github.com/ChoongwonKang/MCV_Jailbreak
+    commit: 24dbb044ba98edd23940ec5fc0d4e0668c164c27
+    license: none
+    group: core
+    used_for: >-
+      MCV-SafetyBench questions (Attack/Explicit/Chagned_question/*.json, the folder name is upstream's),
+      official attack prompts, and the policy and score texts used to build the RJScore judge input.
+    files:
+      "Attack/Explicit/Chagned_question/01-Illegal_Activity.json": 639b1ef1f70d9c38df7060ec5925c207350b45b0
+      "Attack/Explicit/Chagned_question/02-HateSpeech.json": 6528e51a6268f935ae343826e0198c47fc50e243
+      "Attack/Explicit/Chagned_question/03-Malware_Generation.json": d9a250eef4263b95db45a9e438e394531c323cfd
+      "Attack/Explicit/Chagned_question/04-Physical_Harm.json": 082afc73637de6789c6a6d130e665058b5dfaf17
+      "Attack/Explicit/Chagned_question/05-EconomicHarm.json": 52b0d7f2f48924029f43f43944b2493feb031dea
+      "Attack/Explicit/Chagned_question/06-Fraud.json": 23b3c2cdbd0905c554883a2ca2b2acb91e9e9fcf
+      "Attack/Explicit/Chagned_question/07-Sex.json": 2b1791da43084d00adb59f358e2ac6af728323ef
+      "Attack/Explicit/Chagned_question/08-Political.json": 44f034ad1d9c478c78b507cd9edd3e9d62c83e42
+      "Attack/Explicit/Chagned_question/09-Privacy_Violence.json": cdbc41d786ba3f26a2b12d1f1b5d20e3cbaba366
+      "Attack/Explicit/Chagned_question/10-Legal_Opinion.json": ab1dc9430f19ac2bb3ca3f14dfe63cdfe4e458f1
+      "Attack/Explicit/Chagned_question/11-Financial_Advice.json": 97b6241eee7e3ef3ccd17ef3134174cb6918a575
+      "Attack/Explicit/Chagned_question/12-Health_Consultation.json": 060f6c95b960d3778f2fc978d44ccfcdcf583713
+      "Attack/Explicit/Chagned_question/13-Gov_Decision.json": 911666993af550041df1ae429bf954bff30ea493
+      "Attack/Explicit/Llava7B_exp.py": 8ea14ac64879d30399ed4d9275ab2ad33b48edcc
+      "Attack/Explicit/Qwen2.5VL_7B_exp.py": 838e743c04bcd6a16b8a150b8ee724a6c46b1ca5
+      "Attack/Implicit/Qwen2.5VL_7B_imp.py": ee43683fb9b3740aa4d46873d7c2def57b168e41
+      "Evaluation/policy.txt": d615aeff09321a697c5b8f2a68ba73e2dab47525
+      "Evaluation/score.txt": 344876d1236826c616ad6098c71c4c1093a26237
+      "Evaluation/score_judgement.py": 3a433bfd56383e85640e1b4f2c9d4a8db37577a8
+      "README.md": 12b7032af95228b876fe706db9e1d52d19a347d8
+  openuav_qa:
+    repo: https://github.com/IntelliSensing/Self-in-Space
+    commit: df449787ebe0e4d536509683cd3331f1bb52f8bd
+    license: Apache-2.0
+    group: generalization
+    used_for: >-
+      OpenUAV-QA prompt template, frame selection and answer extractor (fine-tuning study, optional benchmark).
+    files:
+      "LICENSE": d645695673349e3947e8e5ae42332d0ac3164cd7
+      "README.md": 6f5a47016bdac9d38921d41153ec3282d6714fac
+      "eval/run_eval.sh": ffa040f41aa5671cfb0bcdf14b4a9dd90555b91b
+      "eval/src/uav/vqa/run_uav.py": b8222949efc6d238bbe3734297f75216dafa5e08
+      "eval/src/uav/vqa/uav_dataset.py": 9daa2f4df84e8dcf90c8642d18a1ed20bae32acc
+      "lora/run_eval.sh": 9241a094b5e370382389cff16a39901b420720a8
+      "lora/src/eval/dataset_utils.py": 8170258b38f97dd264891603728ad36a7eed5c95
+      "lora/src/eval/eval.py": e4ea4498998b365a7fde2e518a596b5055d96b1c
+  lingoqa:
+    repo: https://github.com/wayveai/LingoQA
+    commit: 39d86b14b681cbb766aaa32cbb2d4a8f5a0ed636
+    license: "Wayve Dataset Licence Agreement for Non-Commercial Use"
+    group: generalization
+    used_for: >-
+      LingoQA scoring code: Lingo-Judge wrapper (benchmark/judge.py) and the official evaluation loop
+      (fine-tuning study). The licence (LICENCE) covers this code as part of the dataset: personal,
+      non-commercial, non-sublicensable.
+    files:
+      "LICENCE": 95108cdac7d111e9b57b8ee841f8c48bd496cf7b
+      "README.md": 7a0cfbe7cf883451c6a8181adca8b975e91d3fe3
+      "benchmark/constants.py": 3922c9f18451cc89b471a8e37b12d5f86058ca43
+      "benchmark/evaluate.py": 6c9114843206a761ccac71df3ecca01f45397921
+      "benchmark/judge.py": aa96b7ee0d098ad33e0a15a88a1a758546d7b455
+      "requirements.txt": e96b236ebf61ba82dc83fc3de21e6e8448d411cf
+  promptbench:
+    repo: https://github.com/microsoft/promptbench
+    commit: fcda538bd779ad11612818e0645a387a462b5c3b
+    license: MIT
+    group: generalization
+    used_for: >-
+      Source of the PromptBench StressTest sentence that the prompt-robustness code inlines; a test compares the
+      inlined string with this file.
+    files:
+      "LICENSE": 9e841e7a26e4eb057b24511e7b92d42b257a80e5
+      "promptbench/prompt_attack/transformations.py": 2a83349a2649349e413b3a18a8a210f123fb4426
+  vlmevalkit:
+    repo: https://github.com/open-compass/VLMEvalKit
+    commit: 21e52b8df8ce1f628e93c82de547edb2c985f6ac
+    license: Apache-2.0
+    group: generalization
+    used_for: >-
+      VLMEvalKit multiple-choice answer extraction (can_infer, matching prompt), read from source by the
+      prompt-robustness answer-format readout (supplementary; no paper number depends on it).
+    files:
+      "LICENSE": d67ab032b78b96a9ac3fa03cfe62baf4d78b61dc
+      "vlmeval/dataset/utils/multiple_choice.py": 67212094e7044c189321423d6056df267be5eb7d
+      "vlmeval/smp/vlm.py": 7676194005d701229e84978d83c8acedc1891e09
+      "vlmeval/utils/matching_util.py": 2397841f4b61a33cbaf329bb9f6abbbf6f5911cc
+  aura:
+    repo: https://github.com/aurateam2026/AURA
+    commit: 82d78f0f3e0ac61b7a88d065cc59508e3b0d9ad8
+    license: "none (README states Apache-2.0)"
+    group: reference
+    fetch: false
+    used_for: >-
+      Not fetched. Provenance of the AURA live-stream system prompt that the AURA stream adapter inlines
+      (SYSTEM_PROMPT in AURA_bench_eval/OVO-Bench/models/AURA.py) and of the transformers patch the aura
+      environment applies (AURA_bench_eval/README.md, section 'Required Transformers Patch').
+    files:
+      "AURA_bench_eval/OVO-Bench/models/AURA.py": e3dc4abc834ea84c3f696054d5c30c4e77d569da
+      "AURA_bench_eval/README.md": e5891b8ba04ba56d7b476b55a5f9cb1581b7506b
+  moss:
+    repo: https://github.com/OpenMOSS/MOSS-VL
+    commit: d029e00a2857ffdb3b00d927387c2809ff02af63
+    license: Apache-2.0
+    group: reference
+    fetch: false
+    used_for: >-
+      Not fetched. Provenance of the MOSS-VL-Realtime replay procedure that the MOSS-RT stream adapter
+      reimplements (realtime_inference/run_online_inference.py and its README).
+    files:
+      "realtime_inference/README.md": 53a6df15d599a80aabeeaa379250f7cdf7a51f16
+      "realtime_inference/run_online_inference.py": 74e2d34c35ed9e73285b3e0c489d4db24446b700

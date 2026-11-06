@@ -1,0 +1,46 @@
+{
+ "child": "moss_vl_rt",
+ "parent": "moss_vl",
+ "vectors": {
+  "file": "vectors.npz",
+  "sha256": "013960157e1816fe1957c61fbf83421b1fa5edbdf64fd0b1438f521b39ed9095",
+  "dtype": "float32",
+  "arrays": {
+   "rhat": "unit refusal direction at r_layer",
+   "prs": "alpha * mean(parent - child) state at p_layer"
+  }
+ },
+ "layers": 48,
+ "hidden_size": 4096,
+ "gate": "post",
+ "r_layer": 24,
+ "p_layer": 19,
+ "alpha": 1.5,
+ "prs_norm": 27.733,
+ "thresholds": {
+  "closed": 5.2385,
+  "free": 6.433749999999999,
+  "free_harmless_q975": 6.433749999999999
+ },
+ "threshold_rule": {
+  "projection_decimals": 3,
+  "quantile": 0.975,
+  "closed_decimals": 4,
+  "closed": "round(np.quantile(record-arm projection on paper/frozen/plugin/threshold_items.json, 0.975), 4)",
+  "free": "max(closed, np.quantile(S_fix shadow projection on the 100 harmless fit requests, 0.975))",
+  "closed_kinds": [
+   "mcq",
+   "yesno"
+  ]
+ },
+ "provenance": {
+  "source_vectors_sha256": "26a6c4930c2a3fd905f00d3423c246d0b90c321fcda7f359635e1b842758dce8",
+  "offline_gate_tau": {
+   "text": 11.558,
+   "video": 5.101
+  },
+  "recipe": "calibrate stage directions (fold-1 AUC in 30-60% depth; KL grid 7 layers x alpha 0.5/1.0/1.5)"
+ },
+ "in_paper": false,
+ "note": "not part of the paper's reported S+; same calibration recipe as the other children"
+}

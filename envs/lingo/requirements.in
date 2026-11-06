@@ -1,0 +1,16 @@
+# Python 3.10 | the LingoQA judge (Lingo-Judge) only, as judges/lingo.py runs it. These are the pins of LingoQA's own
+# requirements.txt (github.com/wayveai/LingoQA @39d86b1); its benchmark/ code is fetched with
+# `streamreplace fetch-upstream lingoqa`. pytorch-lightning is listed there but never imported by benchmark/, so it is
+# not installed. The classifier runs in fp32; no FlashAttention.
+torch==2.1.2
+transformers==4.36.2
+sentencepiece==0.1.97
+protobuf==4.25.1
+pandas==2.0.3
+datasets==2.16.1
+StrEnum==0.4.15
+click==8.1.7
+tqdm==4.66.1
+numpy<2
+pyyaml
+pillow

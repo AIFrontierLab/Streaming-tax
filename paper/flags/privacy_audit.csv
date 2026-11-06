@@ -1,0 +1,13 @@
+child,mode,verdict
+mmduet_7b,offline,behavioral
+mmduet_7b,stream,behavioral
+thinkstream_3b,offline,behavioral
+thinkstream_3b,stream,non-answering
+mmduet2_3b,offline,non-answering
+mmduet2_3b,stream,non-answering
+aura_8b,offline,non-answering
+aura_8b,stream,extraction/format artifact
+livestar_8b,offline,behavioral
+livestar_8b,stream,behavioral
+moss_vl_rt,offline,extraction/format artifact
+moss_vl_rt,stream,extraction/format artifact

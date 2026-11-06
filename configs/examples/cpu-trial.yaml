@@ -1,0 +1,13 @@
+# A CPU trial of the whole pipeline (README.md, "Try it on a CPU"): a mock parent and child paired as `pm`. The mock
+# adapter (models/mock.py) is a deterministic stand-in without weights that runs in the interpreter of the
+# `streamreplace` command (env "local"); it answers right with probability `accuracy`, so it produces no paper
+# number. This folder is not read automatically: pass the file to every command with --config.
+models:
+  mock_parent: {role: parent, checkpoint: mock/parent@0, offline: {adapter: mock, env: local},
+                options: {accuracy: 0.7}}
+  mock_child: {role: child, checkpoint: mock/child@0, offline: {adapter: mock, env: local},
+               stream: {adapter: mock, env: local}, options: {accuracy: 0.6, seed: 1}}
+pairs:
+  pm: {parent: mock_parent, children: [mock_child]}
+analysis:
+  roster: {children: [mock_child]}      # the statistics and tables of this pair only

@@ -1,0 +1,13 @@
+# Settings every job starts from (layer 1; see src/streamreplace/config/settings.py for the merge order).
+# Benchmarks, the pair's video protocol, the offline frame overrides and --set are merged on top.
+# These are the values every reported number was generated with. Keep them: image-benchmark run identities pin
+# `video` and `stream` to exactly these values.
+defaults:
+  generation: {max_new_tokens: 512}          # greedy decoding; repetition_penalty is per model (models.yaml)
+  image: {max_pixels: 1003520}               # 1280 * 28 * 28
+  video: {nframes: 64, max_pixels: 200704}   # fallback only: every paper model gets its pair's video protocol
+  stream: {fps: 1}                           # streams: frames pushed on the media clock, question at the end
+
+# Defaults of `streamreplace run` that are not generation settings (never part of a run identity).
+run:
+  gpus: [0]                                  # GPU slots when --gpus is not given (repeat an id to pack workers)

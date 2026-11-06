@@ -1,0 +1,929 @@
+{
+ "source": "parent offline rows of the paper's runs (one per pair; every member of a pair has the same digest)",
+ "cases": [
+  {
+   "benchmark": "videomme",
+   "video": "media/data/-ApL8d6tX5U.mp4",
+   "pair": "p1",
+   "digest": "160:2c32ab167071",
+   "frames": 160,
+   "duration": 93.13
+  },
+  {
+   "benchmark": "videomme",
+   "video": "media/data/6Z_XNM_iT4g.mp4",
+   "pair": "p1",
+   "digest": "22:65d52c87dd3e",
+   "frames": 22,
+   "duration": 11.03
+  },
+  {
+   "benchmark": "videomme",
+   "video": "media/data/6NVr0cNiHPM.mp4",
+   "pair": "p1",
+   "digest": "160:643c9574d11d",
+   "frames": 160,
+   "duration": 130.63
+  },
+  {
+   "benchmark": "videomme",
+   "video": "media/data/-ApL8d6tX5U.mp4",
+   "pair": "p2",
+   "digest": "186:b11daaaa5bb6",
+   "frames": 186,
+   "duration": 93.13,
+   "sample_fps": 1.9971
+  },
+  {
+   "benchmark": "videomme",
+   "video": "media/data/6Z_XNM_iT4g.mp4",
+   "pair": "p2",
+   "digest": "22:ebbcdb05361f",
+   "frames": 22,
+   "duration": 11.03,
+   "sample_fps": 1.994
+  },
+  {
+   "benchmark": "videomme",
+   "video": "media/data/6NVr0cNiHPM.mp4",
+   "pair": "p2",
+   "digest": "260:f8138fbe01cb",
+   "frames": 260,
+   "duration": 130.63,
+   "sample_fps": 1.9903
+  },
+  {
+   "benchmark": "videomme",
+   "video": "media/data/-ApL8d6tX5U.mp4",
+   "pair": "p3",
+   "digest": "186:b11daaaa5bb6",
+   "frames": 186,
+   "duration": 93.13,
+   "sample_fps": 1.9971
+  },
+  {
+   "benchmark": "videomme",
+   "video": "media/data/6Z_XNM_iT4g.mp4",
+   "pair": "p3",
+   "digest": "22:ebbcdb05361f",
+   "frames": 22,
+   "duration": 11.03,
+   "sample_fps": 1.994
+  },
+  {
+   "benchmark": "videomme",
+   "video": "media/data/6NVr0cNiHPM.mp4",
+   "pair": "p3",
+   "digest": "260:f8138fbe01cb",
+   "frames": 260,
+   "duration": 130.63,
+   "sample_fps": 1.9903
+  },
+  {
+   "benchmark": "videomme",
+   "video": "media/data/-ApL8d6tX5U.mp4",
+   "pair": "p4",
+   "digest": "93:b41dedf8464e",
+   "frames": 93,
+   "duration": 93.13
+  },
+  {
+   "benchmark": "videomme",
+   "video": "media/data/6Z_XNM_iT4g.mp4",
+   "pair": "p4",
+   "digest": "11:52bf3f746df6",
+   "frames": 11,
+   "duration": 11.03
+  },
+  {
+   "benchmark": "videomme",
+   "video": "media/data/6NVr0cNiHPM.mp4",
+   "pair": "p4",
+   "digest": "130:c879b04315e3",
+   "frames": 130,
+   "duration": 130.63
+  },
+  {
+   "benchmark": "videomme",
+   "video": "media/data/-ApL8d6tX5U.mp4",
+   "pair": "p5",
+   "digest": "93:b41dedf8464e",
+   "frames": 93,
+   "duration": 93.13
+  },
+  {
+   "benchmark": "videomme",
+   "video": "media/data/6Z_XNM_iT4g.mp4",
+   "pair": "p5",
+   "digest": "11:52bf3f746df6",
+   "frames": 11,
+   "duration": 11.03
+  },
+  {
+   "benchmark": "videomme",
+   "video": "media/data/6NVr0cNiHPM.mp4",
+   "pair": "p5",
+   "digest": "130:c879b04315e3",
+   "frames": 130,
+   "duration": 130.63
+  },
+  {
+   "benchmark": "tomato",
+   "video": "media/videos/human/0207-00.mp4",
+   "pair": "p1",
+   "digest": "25:7253f234d3ec",
+   "frames": 25,
+   "duration": 12.8
+  },
+  {
+   "benchmark": "tomato",
+   "video": "media/videos/object/0445-00.mp4",
+   "pair": "p1",
+   "digest": "3:63c3c57fbb4f",
+   "frames": 3,
+   "duration": 1.52
+  },
+  {
+   "benchmark": "tomato",
+   "video": "media/videos/object/0782-00.mp4",
+   "pair": "p1",
+   "digest": "120:62cd742185e5",
+   "frames": 120,
+   "duration": 60.03
+  },
+  {
+   "benchmark": "tomato",
+   "video": "media/videos/human/0924-02.mp4",
+   "pair": "p1",
+   "digest": "12:5d1d487339a4",
+   "frames": 12,
+   "duration": 6.09
+  },
+  {
+   "benchmark": "tomato",
+   "video": "media/videos/human/0207-00.mp4",
+   "pair": "p2",
+   "digest": "24:28f8366cf589",
+   "frames": 24,
+   "duration": 12.8,
+   "sample_fps": 1.8752
+  },
+  {
+   "benchmark": "tomato",
+   "video": "media/videos/object/0445-00.mp4",
+   "pair": "p2",
+   "digest": "4:78a39ca77717",
+   "frames": 4,
+   "duration": 1.52,
+   "sample_fps": 2.6316
+  },
+  {
+   "benchmark": "tomato",
+   "video": "media/videos/object/0782-00.mp4",
+   "pair": "p2",
+   "digest": "120:09a2b65f9b94",
+   "frames": 120,
+   "duration": 60.0,
+   "sample_fps": 2.0
+  },
+  {
+   "benchmark": "tomato",
+   "video": "media/videos/human/0924-02.mp4",
+   "pair": "p2",
+   "digest": "12:f286537c97d8",
+   "frames": 12,
+   "duration": 6.0,
+   "sample_fps": 2.0
+  },
+  {
+   "benchmark": "tomato",
+   "video": "media/videos/human/0207-00.mp4",
+   "pair": "p3",
+   "digest": "24:28f8366cf589",
+   "frames": 24,
+   "duration": 12.8,
+   "sample_fps": 1.8752
+  },
+  {
+   "benchmark": "tomato",
+   "video": "media/videos/object/0445-00.mp4",
+   "pair": "p3",
+   "digest": "4:78a39ca77717",
+   "frames": 4,
+   "duration": 1.52,
+   "sample_fps": 2.6316
+  },
+  {
+   "benchmark": "tomato",
+   "video": "media/videos/object/0782-00.mp4",
+   "pair": "p3",
+   "digest": "120:09a2b65f9b94",
+   "frames": 120,
+   "duration": 60.0,
+   "sample_fps": 2.0
+  },
+  {
+   "benchmark": "tomato",
+   "video": "media/videos/human/0924-02.mp4",
+   "pair": "p3",
+   "digest": "12:f286537c97d8",
+   "frames": 12,
+   "duration": 6.0,
+   "sample_fps": 2.0
+  },
+  {
+   "benchmark": "tomato",
+   "video": "media/videos/human/0207-00.mp4",
+   "pair": "p4",
+   "digest": "12:6c6fc3583a22",
+   "frames": 12,
+   "duration": 12.8
+  },
+  {
+   "benchmark": "tomato",
+   "video": "media/videos/object/0445-00.mp4",
+   "pair": "p4",
+   "digest": "1:5feceb66ffc8",
+   "frames": 1,
+   "duration": 1.52
+  },
+  {
+   "benchmark": "tomato",
+   "video": "media/videos/object/0782-00.mp4",
+   "pair": "p4",
+   "digest": "60:d0ae4f283588",
+   "frames": 60,
+   "duration": 60.03
+  },
+  {
+   "benchmark": "tomato",
+   "video": "media/videos/human/0924-02.mp4",
+   "pair": "p4",
+   "digest": "6:b0e7da33331c",
+   "frames": 6,
+   "duration": 6.09
+  },
+  {
+   "benchmark": "tomato",
+   "video": "media/videos/human/0207-00.mp4",
+   "pair": "p5",
+   "digest": "12:6c6fc3583a22",
+   "frames": 12,
+   "duration": 12.8
+  },
+  {
+   "benchmark": "tomato",
+   "video": "media/videos/object/0445-00.mp4",
+   "pair": "p5",
+   "digest": "1:5feceb66ffc8",
+   "frames": 1,
+   "duration": 1.52
+  },
+  {
+   "benchmark": "tomato",
+   "video": "media/videos/object/0782-00.mp4",
+   "pair": "p5",
+   "digest": "60:d0ae4f283588",
+   "frames": 60,
+   "duration": 60.03
+  },
+  {
+   "benchmark": "tomato",
+   "video": "media/videos/human/0924-02.mp4",
+   "pair": "p5",
+   "digest": "6:b0e7da33331c",
+   "frames": 6,
+   "duration": 6.09
+  },
+  {
+   "benchmark": "timeblind",
+   "video": "raw/videos/mcq_vid_00000_0.mp4",
+   "pair": "p1",
+   "digest": "18:623a76d9174b",
+   "frames": 18,
+   "duration": 9.2
+  },
+  {
+   "benchmark": "timeblind",
+   "video": "raw/videos/mcq_vid_00011_0.mp4",
+   "pair": "p1",
+   "digest": "1:5feceb66ffc8",
+   "frames": 1,
+   "duration": 0.43
+  },
+  {
+   "benchmark": "timeblind",
+   "video": "raw/videos/mcq_vid_00024_0.mp4",
+   "pair": "p1",
+   "digest": "100:bf0528edf292",
+   "frames": 100,
+   "duration": 50.2
+  },
+  {
+   "benchmark": "timeblind",
+   "video": "raw/videos/mcq_vid_00039_0.mp4",
+   "pair": "p1",
+   "digest": "22:e88a8c2c2c38",
+   "frames": 22,
+   "duration": 11.08
+  },
+  {
+   "benchmark": "timeblind",
+   "video": "raw/videos/mcq_vid_00000_0.mp4",
+   "pair": "p2",
+   "digest": "18:5041d7dd3da0",
+   "frames": 18,
+   "duration": 9.2,
+   "sample_fps": 1.9565
+  },
+  {
+   "benchmark": "timeblind",
+   "video": "raw/videos/mcq_vid_00011_0.mp4",
+   "pair": "p2",
+   "digest": "4:2ed35796e43e",
+   "frames": 4,
+   "duration": 0.43,
+   "sample_fps": 9.2215
+  },
+  {
+   "benchmark": "timeblind",
+   "video": "raw/videos/mcq_vid_00024_0.mp4",
+   "pair": "p2",
+   "digest": "100:974bd9ead9ad",
+   "frames": 100,
+   "duration": 50.2,
+   "sample_fps": 1.992
+  },
+  {
+   "benchmark": "timeblind",
+   "video": "raw/videos/mcq_vid_00039_0.mp4",
+   "pair": "p2",
+   "digest": "22:6b0f4fcc4b3e",
+   "frames": 22,
+   "duration": 11.08,
+   "sample_fps": 1.986
+  },
+  {
+   "benchmark": "timeblind",
+   "video": "raw/videos/mcq_vid_00000_0.mp4",
+   "pair": "p3",
+   "digest": "18:5041d7dd3da0",
+   "frames": 18,
+   "duration": 9.2,
+   "sample_fps": 1.9565
+  },
+  {
+   "benchmark": "timeblind",
+   "video": "raw/videos/mcq_vid_00011_0.mp4",
+   "pair": "p3",
+   "digest": "4:2ed35796e43e",
+   "frames": 4,
+   "duration": 0.43,
+   "sample_fps": 9.2215
+  },
+  {
+   "benchmark": "timeblind",
+   "video": "raw/videos/mcq_vid_00024_0.mp4",
+   "pair": "p3",
+   "digest": "100:974bd9ead9ad",
+   "frames": 100,
+   "duration": 50.2,
+   "sample_fps": 1.992
+  },
+  {
+   "benchmark": "timeblind",
+   "video": "raw/videos/mcq_vid_00039_0.mp4",
+   "pair": "p3",
+   "digest": "22:6b0f4fcc4b3e",
+   "frames": 22,
+   "duration": 11.08,
+   "sample_fps": 1.986
+  },
+  {
+   "benchmark": "timeblind",
+   "video": "raw/videos/mcq_vid_00000_0.mp4",
+   "pair": "p4",
+   "digest": "9:eb4a55565a74",
+   "frames": 9,
+   "duration": 9.2
+  },
+  {
+   "benchmark": "timeblind",
+   "video": "raw/videos/mcq_vid_00011_0.mp4",
+   "pair": "p4",
+   "digest": "1:5feceb66ffc8",
+   "frames": 1,
+   "duration": 0.43
+  },
+  {
+   "benchmark": "timeblind",
+   "video": "raw/videos/mcq_vid_00024_0.mp4",
+   "pair": "p4",
+   "digest": "50:0f68cfa3bf11",
+   "frames": 50,
+   "duration": 50.2
+  },
+  {
+   "benchmark": "timeblind",
+   "video": "raw/videos/mcq_vid_00039_0.mp4",
+   "pair": "p4",
+   "digest": "11:4d0cb11bbb3d",
+   "frames": 11,
+   "duration": 11.08
+  },
+  {
+   "benchmark": "timeblind",
+   "video": "raw/videos/mcq_vid_00000_0.mp4",
+   "pair": "p5",
+   "digest": "9:eb4a55565a74",
+   "frames": 9,
+   "duration": 9.2
+  },
+  {
+   "benchmark": "timeblind",
+   "video": "raw/videos/mcq_vid_00011_0.mp4",
+   "pair": "p5",
+   "digest": "1:5feceb66ffc8",
+   "frames": 1,
+   "duration": 0.43
+  },
+  {
+   "benchmark": "timeblind",
+   "video": "raw/videos/mcq_vid_00024_0.mp4",
+   "pair": "p5",
+   "digest": "50:0f68cfa3bf11",
+   "frames": 50,
+   "duration": 50.2
+  },
+  {
+   "benchmark": "timeblind",
+   "video": "raw/videos/mcq_vid_00039_0.mp4",
+   "pair": "p5",
+   "digest": "11:4d0cb11bbb3d",
+   "frames": 11,
+   "duration": 11.08
+  },
+  {
+   "benchmark": "videoreasonbench",
+   "video": "media/videos/card/state1_op10_end.mp4",
+   "pair": "p1",
+   "digest": "160:cb2c316a879d",
+   "frames": 160,
+   "duration": 80.05
+  },
+  {
+   "benchmark": "videoreasonbench",
+   "video": "media/videos/grid/state3_op5_end.mp4",
+   "pair": "p1",
+   "digest": "27:e668cf018846",
+   "frames": 27,
+   "duration": 13.5
+  },
+  {
+   "benchmark": "videoreasonbench",
+   "video": "media/videos/card/state2_op14_start.mp4",
+   "pair": "p1",
+   "digest": "160:7a7e4832cff1",
+   "frames": 160,
+   "duration": 154.75
+  },
+  {
+   "benchmark": "videoreasonbench",
+   "video": "media/videos/card/state1_op10_end.mp4",
+   "pair": "p2",
+   "digest": "160:cddd240efd73",
+   "frames": 160,
+   "duration": 80.05,
+   "sample_fps": 1.9988
+  },
+  {
+   "benchmark": "videoreasonbench",
+   "video": "media/videos/grid/state3_op5_end.mp4",
+   "pair": "p2",
+   "digest": "26:5251701ef8d8",
+   "frames": 26,
+   "duration": 13.5,
+   "sample_fps": 1.9259
+  },
+  {
+   "benchmark": "videoreasonbench",
+   "video": "media/videos/card/state2_op14_start.mp4",
+   "pair": "p2",
+   "digest": "308:fbb7e04ca0ac",
+   "frames": 308,
+   "duration": 154.75,
+   "sample_fps": 1.9903
+  },
+  {
+   "benchmark": "videoreasonbench",
+   "video": "media/videos/card/state1_op10_end.mp4",
+   "pair": "p3",
+   "digest": "160:cddd240efd73",
+   "frames": 160,
+   "duration": 80.05,
+   "sample_fps": 1.9988
+  },
+  {
+   "benchmark": "videoreasonbench",
+   "video": "media/videos/grid/state3_op5_end.mp4",
+   "pair": "p3",
+   "digest": "26:5251701ef8d8",
+   "frames": 26,
+   "duration": 13.5,
+   "sample_fps": 1.9259
+  },
+  {
+   "benchmark": "videoreasonbench",
+   "video": "media/videos/card/state2_op14_start.mp4",
+   "pair": "p3",
+   "digest": "308:fbb7e04ca0ac",
+   "frames": 308,
+   "duration": 154.75,
+   "sample_fps": 1.9903
+  },
+  {
+   "benchmark": "videoreasonbench",
+   "video": "media/videos/card/state1_op10_end.mp4",
+   "pair": "p4",
+   "digest": "80:3d9814e20d91",
+   "frames": 80,
+   "duration": 80.05
+  },
+  {
+   "benchmark": "videoreasonbench",
+   "video": "media/videos/grid/state3_op5_end.mp4",
+   "pair": "p4",
+   "digest": "13:e53649b08a92",
+   "frames": 13,
+   "duration": 13.5
+  },
+  {
+   "benchmark": "videoreasonbench",
+   "video": "media/videos/card/state2_op14_start.mp4",
+   "pair": "p4",
+   "digest": "154:52a51721bbf8",
+   "frames": 154,
+   "duration": 154.75
+  },
+  {
+   "benchmark": "videoreasonbench",
+   "video": "media/videos/card/state1_op10_end.mp4",
+   "pair": "p5",
+   "digest": "80:3d9814e20d91",
+   "frames": 80,
+   "duration": 80.05
+  },
+  {
+   "benchmark": "videoreasonbench",
+   "video": "media/videos/grid/state3_op5_end.mp4",
+   "pair": "p5",
+   "digest": "13:e53649b08a92",
+   "frames": 13,
+   "duration": 13.5
+  },
+  {
+   "benchmark": "videoreasonbench",
+   "video": "media/videos/card/state2_op14_start.mp4",
+   "pair": "p5",
+   "digest": "154:52a51721bbf8",
+   "frames": 154,
+   "duration": 154.75
+  },
+  {
+   "benchmark": "video_safetybench",
+   "video": "media/video/10_Hate/Disability_Discrimination/1.mp4",
+   "pair": "p1",
+   "digest": "16:7287e51f83d3",
+   "frames": 16,
+   "duration": 10.43
+  },
+  {
+   "benchmark": "video_safetybench",
+   "video": "media/video/11_Suicide_Self-Harm/Disordered_Eating/14.mp4",
+   "pair": "p1",
+   "digest": "16:f5cd1cc36c4b",
+   "frames": 16,
+   "duration": 9.93
+  },
+  {
+   "benchmark": "video_safetybench",
+   "video": "media/video/10_Hate/Disability_Discrimination/1.mp4",
+   "pair": "p2",
+   "digest": "16:7287e51f83d3",
+   "frames": 16,
+   "duration": 10.43,
+   "sample_fps": 1.5335
+  },
+  {
+   "benchmark": "video_safetybench",
+   "video": "media/video/11_Suicide_Self-Harm/Disordered_Eating/14.mp4",
+   "pair": "p2",
+   "digest": "16:f5cd1cc36c4b",
+   "frames": 16,
+   "duration": 9.93,
+   "sample_fps": 1.6107
+  },
+  {
+   "benchmark": "video_safetybench",
+   "video": "media/video/10_Hate/Disability_Discrimination/1.mp4",
+   "pair": "p3",
+   "digest": "16:7287e51f83d3",
+   "frames": 16,
+   "duration": 10.43,
+   "sample_fps": 1.5335
+  },
+  {
+   "benchmark": "video_safetybench",
+   "video": "media/video/11_Suicide_Self-Harm/Disordered_Eating/14.mp4",
+   "pair": "p3",
+   "digest": "16:f5cd1cc36c4b",
+   "frames": 16,
+   "duration": 9.93,
+   "sample_fps": 1.6107
+  },
+  {
+   "benchmark": "video_safetybench",
+   "video": "media/video/10_Hate/Disability_Discrimination/1.mp4",
+   "pair": "p4",
+   "digest": "16:7287e51f83d3",
+   "frames": 16,
+   "duration": 10.43
+  },
+  {
+   "benchmark": "video_safetybench",
+   "video": "media/video/11_Suicide_Self-Harm/Disordered_Eating/14.mp4",
+   "pair": "p4",
+   "digest": "16:f5cd1cc36c4b",
+   "frames": 16,
+   "duration": 9.93
+  },
+  {
+   "benchmark": "video_safetybench",
+   "video": "media/video/10_Hate/Disability_Discrimination/1.mp4",
+   "pair": "p5",
+   "digest": "16:7287e51f83d3",
+   "frames": 16,
+   "duration": 10.43
+  },
+  {
+   "benchmark": "video_safetybench",
+   "video": "media/video/11_Suicide_Self-Harm/Disordered_Eating/14.mp4",
+   "pair": "p5",
+   "digest": "16:f5cd1cc36c4b",
+   "frames": 16,
+   "duration": 9.93
+  },
+  {
+   "benchmark": "mcv_safetybench",
+   "video": "raw/fi_video+T_data/01/10_merged.mp4",
+   "pair": "p1",
+   "digest": "33:78d4bc559c04",
+   "frames": 33,
+   "duration": 8.25
+  },
+  {
+   "benchmark": "mcv_safetybench",
+   "video": "raw/fi_video+T_data/01/10_merged.mp4",
+   "pair": "p2",
+   "digest": "33:78d4bc559c04",
+   "frames": 34,
+   "duration": 8.25,
+   "sample_fps": 4.1212
+  },
+  {
+   "benchmark": "mcv_safetybench",
+   "video": "raw/fi_video+T_data/01/10_merged.mp4",
+   "pair": "p3",
+   "digest": "33:78d4bc559c04",
+   "frames": 34,
+   "duration": 8.25,
+   "sample_fps": 4.1212
+  },
+  {
+   "benchmark": "mcv_safetybench",
+   "video": "raw/fi_video+T_data/01/10_merged.mp4",
+   "pair": "p4",
+   "digest": "33:78d4bc559c04",
+   "frames": 33,
+   "duration": 8.25
+  },
+  {
+   "benchmark": "mcv_safetybench",
+   "video": "raw/fi_video+T_data/01/10_merged.mp4",
+   "pair": "p5",
+   "digest": "33:78d4bc559c04",
+   "frames": 33,
+   "duration": 8.25
+  },
+  {
+   "benchmark": "vmdt_fairness",
+   "video": "raw/fairness/vid/decision_making/--Ymqszjv54.000.mp4",
+   "pair": "p1",
+   "digest": "30:9f45efad94db",
+   "frames": 30,
+   "duration": 15.31
+  },
+  {
+   "benchmark": "vmdt_fairness",
+   "video": "raw/fairness/vid/overkill/Apollo Theater performers_0.mp4",
+   "pair": "p1",
+   "digest": "20:e3e45fc8d3d8",
+   "frames": 20,
+   "duration": 10.0
+  },
+  {
+   "benchmark": "vmdt_fairness",
+   "video": "raw/fairness/vid/stereotype/CasualConversationsNO/0332/0332_07.MP4",
+   "pair": "p1",
+   "digest": "160:7542bcea6fce",
+   "frames": 160,
+   "duration": 185.19
+  },
+  {
+   "benchmark": "vmdt_fairness",
+   "video": "raw/fairness/vid/decision_making/--Ymqszjv54.000.mp4",
+   "pair": "p2",
+   "digest": "30:9558845fde6e",
+   "frames": 30,
+   "duration": 15.31,
+   "sample_fps": 1.96
+  },
+  {
+   "benchmark": "vmdt_fairness",
+   "video": "raw/fairness/vid/overkill/Apollo Theater performers_0.mp4",
+   "pair": "p2",
+   "digest": "20:4554beeae354",
+   "frames": 20,
+   "duration": 10.0,
+   "sample_fps": 2.0
+  },
+  {
+   "benchmark": "vmdt_fairness",
+   "video": "raw/fairness/vid/stereotype/CasualConversationsNO/0332/0332_07.MP4",
+   "pair": "p2",
+   "digest": "370:819318249ff9",
+   "frames": 370,
+   "duration": 185.19,
+   "sample_fps": 1.998
+  },
+  {
+   "benchmark": "vmdt_fairness",
+   "video": "raw/fairness/vid/decision_making/--Ymqszjv54.000.mp4",
+   "pair": "p3",
+   "digest": "30:9558845fde6e",
+   "frames": 30,
+   "duration": 15.31,
+   "sample_fps": 1.96
+  },
+  {
+   "benchmark": "vmdt_fairness",
+   "video": "raw/fairness/vid/overkill/Apollo Theater performers_0.mp4",
+   "pair": "p3",
+   "digest": "20:4554beeae354",
+   "frames": 20,
+   "duration": 10.0,
+   "sample_fps": 2.0
+  },
+  {
+   "benchmark": "vmdt_fairness",
+   "video": "raw/fairness/vid/stereotype/CasualConversationsNO/0332/0332_07.MP4",
+   "pair": "p3",
+   "digest": "370:819318249ff9",
+   "frames": 370,
+   "duration": 185.19,
+   "sample_fps": 1.998
+  },
+  {
+   "benchmark": "vmdt_fairness",
+   "video": "raw/fairness/vid/decision_making/--Ymqszjv54.000.mp4",
+   "pair": "p4",
+   "digest": "15:84cb7f46b74e",
+   "frames": 15,
+   "duration": 15.31
+  },
+  {
+   "benchmark": "vmdt_fairness",
+   "video": "raw/fairness/vid/overkill/Apollo Theater performers_0.mp4",
+   "pair": "p4",
+   "digest": "10:9a13e8494aab",
+   "frames": 10,
+   "duration": 10.0
+  },
+  {
+   "benchmark": "vmdt_fairness",
+   "video": "raw/fairness/vid/stereotype/CasualConversationsNO/0332/0332_07.MP4",
+   "pair": "p4",
+   "digest": "185:039a9da08525",
+   "frames": 185,
+   "duration": 185.19
+  },
+  {
+   "benchmark": "vmdt_fairness",
+   "video": "raw/fairness/vid/decision_making/--Ymqszjv54.000.mp4",
+   "pair": "p5",
+   "digest": "15:84cb7f46b74e",
+   "frames": 15,
+   "duration": 15.31
+  },
+  {
+   "benchmark": "vmdt_fairness",
+   "video": "raw/fairness/vid/overkill/Apollo Theater performers_0.mp4",
+   "pair": "p5",
+   "digest": "10:9a13e8494aab",
+   "frames": 10,
+   "duration": 10.0
+  },
+  {
+   "benchmark": "vmdt_fairness",
+   "video": "raw/fairness/vid/stereotype/CasualConversationsNO/0332/0332_07.MP4",
+   "pair": "p5",
+   "digest": "185:039a9da08525",
+   "frames": 185,
+   "duration": 185.19
+  },
+  {
+   "benchmark": "vmdt_privacy",
+   "video": "raw/privacy/vids/00054602-3bf57337.mp4",
+   "pair": "p1",
+   "digest": "81:cecbf3edc066",
+   "frames": 81,
+   "duration": 40.72
+  },
+  {
+   "benchmark": "vmdt_privacy",
+   "video": "raw/privacy/vids/014474aa-accf35e1.mp4",
+   "pair": "p1",
+   "digest": "40:f12e9a9e48d8",
+   "frames": 40,
+   "duration": 20.05
+  },
+  {
+   "benchmark": "vmdt_privacy",
+   "video": "raw/privacy/vids/00054602-3bf57337.mp4",
+   "pair": "p2",
+   "digest": "80:b64f12188470",
+   "frames": 80,
+   "duration": 40.72,
+   "sample_fps": 1.9646
+  },
+  {
+   "benchmark": "vmdt_privacy",
+   "video": "raw/privacy/vids/014474aa-accf35e1.mp4",
+   "pair": "p2",
+   "digest": "40:e345074efc0a",
+   "frames": 40,
+   "duration": 20.05,
+   "sample_fps": 1.9955
+  },
+  {
+   "benchmark": "vmdt_privacy",
+   "video": "raw/privacy/vids/00054602-3bf57337.mp4",
+   "pair": "p3",
+   "digest": "80:b64f12188470",
+   "frames": 80,
+   "duration": 40.72,
+   "sample_fps": 1.9646
+  },
+  {
+   "benchmark": "vmdt_privacy",
+   "video": "raw/privacy/vids/014474aa-accf35e1.mp4",
+   "pair": "p3",
+   "digest": "40:e345074efc0a",
+   "frames": 40,
+   "duration": 20.05,
+   "sample_fps": 1.9955
+  },
+  {
+   "benchmark": "vmdt_privacy",
+   "video": "raw/privacy/vids/00054602-3bf57337.mp4",
+   "pair": "p4",
+   "digest": "40:07bae37afdab",
+   "frames": 40,
+   "duration": 40.72
+  },
+  {
+   "benchmark": "vmdt_privacy",
+   "video": "raw/privacy/vids/014474aa-accf35e1.mp4",
+   "pair": "p4",
+   "digest": "20:b379cd252945",
+   "frames": 20,
+   "duration": 20.05
+  },
+  {
+   "benchmark": "vmdt_privacy",
+   "video": "raw/privacy/vids/00054602-3bf57337.mp4",
+   "pair": "p5",
+   "digest": "40:07bae37afdab",
+   "frames": 40,
+   "duration": 40.72
+  },
+  {
+   "benchmark": "vmdt_privacy",
+   "video": "raw/privacy/vids/014474aa-accf35e1.mp4",
+   "pair": "p5",
+   "digest": "20:b379cd252945",
+   "frames": 20,
+   "duration": 20.05
+  }
+ ]
+}

@@ -1,0 +1,105 @@
+# What `streamreplace prepare` must produce from the pinned raw data (manifests/datasets.yaml), per benchmark: every
+# benchmark of the paper (the 17 of the P/C/S evaluation and the 3 of the fine-tuning experiment). The paper's runs
+# used exactly these samples and prompts; `streamreplace prepare --verify` and the requires_data tests compare a local
+# preparation against these values (a benchmark without a row is reported as not verified).
+#
+# Fields
+#   count           number of prepared samples (lines of <dataset>/prepared/samples.jsonl)
+#   samples_sha256  sha256 of prepared/samples.jsonl as prepare writes it: one JSON object per line,
+#                   json.dumps(Sample.to_dict(), ensure_ascii=False) + "\n", media paths relative to the dataset folder
+#   prompts_sha256  sha256 of the id -> prompt map: the UTF-8 bytes of
+#                   json.dumps({id: benchmark.prompt(sample view) for every prepared sample}, sort_keys=True,
+#                   ensure_ascii=False). P, C and S send these prompts unchanged.
+#
+# Video-MME's samples differ from the original preparation in one documented field only: metadata.subtitle is now
+# relative to the dataset folder (media/subtitle/<video>.srt) instead of an absolute path. No prompt reads it.
+version: 1
+prepared:
+  # image understanding
+  dynamath:
+    count: 5010
+    samples_sha256: 30f716dd617cce41a17baedf579cfc87390729387d779e1ad5e48361365a95db
+    prompts_sha256: 6f7a25c34d092d86b9fd8245caa1ec9aed75e79072f52d7b4d591bfd2c44fea7
+  mathvista:
+    count: 1000
+    samples_sha256: 09ea4324b14eef86f1d14002a86324902a880430e1ffaf78619d109b01a02d2e
+    prompts_sha256: 208a0767f2a993444c88fd4d8fbc728ab3e13a4c50b191abb4aa9c1aca0076b6
+  mmbench:
+    count: 4329
+    samples_sha256: 1e55e3686ae075c0df58b546c4d27bc2aaf2b8179b71edab2cdee753029cf423
+    prompts_sha256: 8c0055ec987ded39b03e1242aa356a56849980e67a233c3cdc9e63feda318ea6
+  mme:
+    count: 2374
+    samples_sha256: 927cae5d512436b5c1c1cdb98966ea02dd3cc5087895e10806bd885ebbc464d3
+    prompts_sha256: 82943124ec5cc38549b52aa551824ab49cfc43844dc18f88ce43dbc497fcd6e4
+  mmmu:
+    count: 900
+    samples_sha256: 9e7fffee181e3c260169da04ba9e5e6566280b352149e5c3d402ee83ad2267b2
+    prompts_sha256: b2217b8fe9ce1676e4f49e45a21008357b94955756c05a2dcf1a30a8655c2569
+  mmstar:
+    count: 1500
+    samples_sha256: 586e27e2c4bded6f9dbba6a1c25b118349b5e6425a7950f88956dc14ee8a9391
+    prompts_sha256: 799c980dd724581b68052fbc92f0118ebc4975bb8f51abc0bd4b9f35c36873b6
+  scienceqa:
+    count: 2017
+    samples_sha256: c90b150661d0edf50bc72653be7674127e2928ba73dc61ac3bd962fdccb0cade
+    prompts_sha256: f359c003b0bcb73fbc3574fa8dc76c060de8cfc16925480579ce36df7af18e08
+  visulogic:
+    count: 1000
+    samples_sha256: cbbcc1da2d9a36aa8ea4a100cdcd9f9a0b921fe712d61267d786b25a03d7c161
+    prompts_sha256: 9cc65c0d96d0037f966857f1b0aa2f8851c26cda0cc038a70fc4d96aede0744e
+  # video understanding
+  videomme:
+    count: 900
+    samples_sha256: 9d05174296cb8840eaf8ba58c658f919dccdd9c70a96307ee662c38db2fbf4b3
+    prompts_sha256: 66cf8433945c88c54c97ff0672a0aa7e467ae09749204fb26feed5f68c50bbdb
+  tomato:
+    count: 1484
+    samples_sha256: bb959c9945a4337e1da5ee9b0c0850f04447ebdbda8db0eee6d7ce10aa30fbc7
+    prompts_sha256: 78d41710b0f2dd78f7e75b68eb7c946c377d8c0c660443e3c1f9feeb565306a2
+  timeblind:
+    count: 2400
+    samples_sha256: 518b227f3ef1329e2b9b5b112d33d0f42a33204610bdf61e2fa1caf8715ad0cd
+    prompts_sha256: b9319725285076cb598c662db1d2998e44275c2a1a0fb70b1b5f738181b96e71
+  videoreasonbench:
+    count: 1440
+    samples_sha256: c58e9894b85e51fd13ec0b62e700c651f790f3decdb6d8ec44a80c47b88217ee
+    prompts_sha256: db0d1702c2c646677ca4aaa5c39fb9eeec5c8357160351b0e8f3e35dc2428442
+  # safety
+  harmbench:
+    count: 510
+    samples_sha256: 3d8c93fbfb27251df2258e45225de39c861f359af17a82ad140bf8a4d9f234a3
+    prompts_sha256: 6d4ec21e199c3c06de48d128928eda921ca0a3c19956b1e843453ca196207b61
+  video_safetybench:
+    count: 2264
+    samples_sha256: 8403fea4f26f6eed12572fa658fdbb73e61a6062f6fa896e69aa0a85e6e11f2d
+    prompts_sha256: f64a6daacce41ef7b595932809473dfc242577929b98fd73bf5639885a649ff5
+  mcv_safetybench:
+    count: 2920
+    samples_sha256: e3d23000dd50141c54ad885cc8308ea059402e2f5367ab4366ea0087a39ea886
+    prompts_sha256: cfaa34760892bcba01bb61a7a922f3f4120132864f6c305b1a4dfbb7ac9886fc
+  # trustworthiness (VMDT video-to-text)
+  vmdt_fairness:
+    count: 2000
+    samples_sha256: e5784120e08f9e48990a9fd5a9b7e63eb783303d178bc16b9f1ae01c9ae8b6b0
+    prompts_sha256: 85d1918bb8e2dbf993f13e7d82d6f381df60aca5cf4c9c1e38a673dba71ea5ee
+  vmdt_privacy:
+    count: 600
+    samples_sha256: ba201118cf1adedc2c1cf330b2583a276c319b9618a0eacfc6afc5b9cf9207cf
+    prompts_sha256: c1f8485d45f44cfd606026fe35dbf81ebc8c5cb15750364b743bd43292d5bfb0
+  # fine-tuning experiment (test splits). The training splits (prepared/train.jsonl) are not checked by prepare; the
+  # paper's were: lingoqa 413,829 rows, sha256 ec3c179aedccf23cb0161cf544e8626b238cccc0b49de3a5a641100e683dd44d;
+  # eyepcr 39,504 rows, 7a27e183fddf058c76e387a8e59471989568217eaa957e405bfe88a2ca2bd087; openuav_qa 11,443 rows,
+  # d31def379bd47365616681543f8fe9c4a7a06d5f36b7f5cc2eaf57850386952b.
+  lingoqa:
+    count: 500
+    samples_sha256: 72ac639135126d1ae168cbde89d7f1ba6a716831350d60b6512cad5bf16cd741
+    prompts_sha256: dfa9ac746972639c9384c65e1399af7c24e1e6e73d285fadc271483e1fff47a1
+  eyepcr:
+    count: 3492
+    samples_sha256: 85bce3cbbf6b6aac7d359331bb0b196550f2f149e961f43458da05a953287703
+    prompts_sha256: 729aa94c4c112dd63b870cc6549d0736394e46206d889308e45237884c551d40
+  openuav_qa:
+    count: 3893
+    samples_sha256: 92649b4d77cd63ae2d5798e086993eb34cce12cfd3c1ea7ff95b5ef7f3ad018a
+    prompts_sha256: 2afebfe2e47035a009816ce55d5e7dd86dcc6127bf9e252d3905e7620cb2e049

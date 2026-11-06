@@ -1,0 +1,88 @@
+# The streaming plugin (docs/plugin.md): S_fix = Recall + Respond; S+ = S_fix + hidden-state gate + parent-
+# restoration steering (PRS). Per-child numbers (direction, vector, layers, thresholds) live in
+# plugin_artefacts/<child>/{vectors.npz, manifest.json}.
+
+refusal: "I'm sorry, but I can't help with that request."
+
+# Plugin arms, run as jobs <child>@<arm>.stream. gate: shadow = project and log, never act (the paper's runs; the
+# threshold is applied afterwards by `plugin assemble` / `plugin report`, which reads shadow arms only); live = reply
+# with the fixed refusal when the logged projection passes the threshold (deployment; same decision as the post-hoc
+# rule), ending the answer turn at its first step except on ThinkStream's `deadline` path, whose turn runs to its end;
+# record = log the projection and end the answer turn at its first step, again except ThinkStream's (threshold
+# calibration); null = no gate.
+arms:
+  sfix:     {recall: full, respond: true, gate: shadow, prs: false}
+  sfix_prs: {recall: full, respond: true, gate: shadow, prs: true}
+  record:   {recall: full, respond: true, gate: record, prs: false}
+  inert:    {recall: native, respond: false, gate: null, prs: false}   # plugin attached, nothing changed (fidelity)
+  hf:       {recall: native, respond: false, gate: null, prs: false}   # AURA's HF stream rebuild alone (S_HF)
+
+# S+ in the paper = the sfix_prs arm with the post-hoc gate.
+splus_arm: sfix_prs
+
+thresholds:
+  variant: higher               # higher (the paper) | rule | old  (docs/plugin.md, "Thresholds")
+  quantile: 0.975
+  projection_decimals: 3        # the gate compares the projection rounded to 3 decimals, as it was logged
+  closed_decimals: 4
+  closed_kinds: [mcq, yesno]    # closed-choice items use tau_closed, everything else tau_free
+  min_fit_requests: 100
+
+# A fired item takes the fixed refusal's own scored row; on these understanding sets it is unanswered and wrong
+# instead (their parsers would otherwise credit the refusal with an option).
+unanswered_on_fire: [videomme, tomato, timeblind]
+
+# Recall: settings deltas merged into the child's stream settings for arms with recall: full. The other children
+# already keep their whole history. AURA's Recall can be bounded by adding `budget: B` (segments): past B,
+# aura_stream_hf keeps the last min(30, B) and a hash-priority reservoir of older segments (plugin/recall.py). The
+# paper's arms set no budget: on its sets Recall is the full history.
+recall:
+  thinkstream_3b: {stream: {window: full, max_len: 81920}}   # 120 chunks instead of the native 20-chunk window
+  aura_8b: {stream: {window: full}}                          # every 1-s segment instead of the last 30 (aura_stream_hf
+                                                             # cuts all floor(d) segments, aligned to the video's end)
+
+# Stream adapter of the plugin arms when it differs from the model's own stream adapter: AURA's native stream runs in
+# a vLLM server without hidden states, so its plugin arms run on the Hugging Face rebuild.
+engines:
+  aura_8b: aura_stream_hf
+
+# Each child's answer turn as its stream adapter runs it (docs/plugin.md, "Per child"); both keys are required.
+#   silence: the marker the turn may not open with under Respond: one token of the child's tokenizer (banned with
+#            <|im_end|>), "NO REPLY" (MMDuet2's two-token reply, logits processor only; plugin/respond.py) or null
+#            (no marker; the only choice for logits deadline).
+#   logits:  where the adapter hands the hooks the turn's logits: processor (a Hugging Face logits processor in the
+#            answer turn's generate), first_step (the LM head; rules on the first step), opening (the LM head; rules
+#            on the opening steps until the first visible token after <|response|>) or deadline (none: the option
+#            readout comes from the deadline fork, and a live or record gate cannot end the turn early).
+# Arms with Respond or a live / record gate refuse a child without an entry; a logits call on another path raises.
+answer_turn:
+  mmduet_7b:      {silence: null, logits: first_step}            # its stream forces a reply: no marker
+  thinkstream_3b: {silence: null, logits: deadline}              # answers after its thought
+  mmduet2_3b:     {silence: "NO REPLY", logits: processor}
+  aura_8b:        {silence: "<|silent|>", logits: processor}
+  livestar_8b:    {silence: null, logits: processor}             # no silence marker
+  moss_vl_rt:     {silence: "<|silence|>", logits: opening}
+
+children: [mmduet_7b, thinkstream_3b, mmduet2_3b, aura_8b, livestar_8b, moss_vl_rt]
+paper_children: [mmduet_7b, thinkstream_3b, mmduet2_3b, aura_8b, livestar_8b]   # MOSS-VL-Realtime: not in the paper's S+
+
+# Item sets (benchmark ids only): `--items pilot2` or a path to a {dataset: [ids]} file.
+items:
+  pilot2: paper/frozen/plugin/pilot2_items.json        # the paper's figure (second pilot, 908 items)
+  full: paper/frozen/plugin/full_items.json            # every non-dev item outside both pilots (10,140)
+  threshold: paper/frozen/plugin/threshold_items.json  # 301 harmless dev-slice items behind tau_closed
+  dev: paper/frozen/plugin/dev_slice.json              # 451-item dev slice (never evaluated)
+  dev_exclude: paper/frozen/plugin/dev_exclude.json
+
+calibration:
+  texts: paper/frozen/plugin/calibration_texts.json    # AdvBench / Alpaca row indices + fold
+  videos: paper/frozen/plugin/calibration_videos.json  # Video-MME short videos in sha256 order
+  harmless: paper/frozen/plugin/harmless_requests.json # harmless requests on benign clips: windows, templates
+  capture_benchmark: video_safetybench                 # offline settings of the state capture (16 uniform frames)
+  harmless_benchmark: video_safetybench                # stream settings of the harmless requests
+  harmless_max_new_tokens: 160
+  fold0_videos: 96
+  fold1_videos: 48
+  depth: [0.3, 0.6]                                    # refusal layer searched in [int(0.3 L), int(0.6 L))
+  prs_depths: [0.2, 0.8, 7]                            # np.linspace(0.2, 0.8, 7) of (L - 1)
+  alphas: [0.5, 1.0, 1.5]

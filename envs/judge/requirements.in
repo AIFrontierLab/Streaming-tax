@@ -1,0 +1,19 @@
+# Python 3.12 | judges: the extraction judge served by vLLM, the HarmBench classifiers, the RJScore judge of
+# Video-SafetyBench / MCV-SafetyBench. The +cu129 builds of vLLM and torch target CUDA 12.8-12.9 drivers (the
+# default PyPI builds target CUDA 13). torchaudio is not installed (no judge needs it, and vLLM's pin does not load
+# with this torch).
+--extra-index-url https://download.pytorch.org/whl/cu129
+vllm @ https://github.com/vllm-project/vllm/releases/download/v0.30.0/vllm-0.30.0+cu129-cp38-abi3-manylinux_2_28_x86_64.whl
+torch==2.13.0+cu129
+torchvision==0.28.0+cu129
+transformers                # the HarmBench classifiers and the RJScore judge load through transformers (the
+                            # version vLLM requires; 5.17.0 in the lock)
+accelerate                  # the RJScore judge loads with device_map="auto"
+openai                      # the extraction judge's client of the local vLLM server
+google-genai                # imported at module level by VideoReasonBench's official evaluation utilities
+spacy==3.8.16               # HarmBench's evaluation utilities import spaCy, en_core_web_sm and datasketch at import
+datasketch==1.6.5           # time (the copyright behaviours' n-gram hash check)
+en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
+numpy
+pyyaml
+ninja

@@ -1,0 +1,24 @@
+# The five parent -> child pairs. A pair has ONE video protocol, applied verbatim to every member in the offline
+# pipeline (P and C), so parent and child see exactly the same frames. Each protocol follows the child's native
+# streaming input:
+#   p1  fixed 2 fps; videos longer than 80 s get 160 uniform frames (LLaVA-OneVision's 32k context); frames are
+#       padded to a square like MMDuet's own video loader
+#   p2  Qwen's qwen-vl-utils sampler at 2 fps (an even number of uniform frames), 200,704-401,408 pixels per frame
+#       (ThinkStream's official evaluation; MMDuet2's 640-pixel frames fall inside this range)
+#   p3  qwen-vl-utils at 2 fps, at most 602,112 pixels per frame (AURA's stream)
+#   p4  fixed 1 fps (LiveStar's 448x448 tiles)
+#   p5  fixed 1 fps at MOSS-VL-Realtime's official pixel budget: at most 16,777,216 pixels per frame and
+#       65,536,000 per video (native resolution unless a video exceeds the total)
+# Video-SafetyBench and MCV-SafetyBench replace only the frame sampling offline (benchmarks.yaml offline_frames);
+# pixel budgets and padding stay the pair's.
+pairs:
+  p1: {parent: llava_ov_7b, children: [mmduet_7b],
+       video: {fps: 2, max_frames: 160, pad_square: true}}
+  p2: {parent: qwen25vl_3b, children: [thinkstream_3b, mmduet2_3b],
+       video: {sampler: qwen_vl_utils, fps: 2, min_pixels: 200704, max_pixels: 401408}}
+  p3: {parent: qwen3vl_8b, children: [aura_8b],
+       video: {sampler: qwen_vl_utils, fps: 2, max_pixels: 602112}}
+  p4: {parent: livestar_iv_8b, children: [livestar_8b],
+       video: {fps: 1}}
+  p5: {parent: moss_vl, children: [moss_vl_rt],
+       video: {fps: 1, max_pixels: 16777216, video_max_pixels: 65536000}}

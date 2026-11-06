@@ -1,0 +1,11 @@
+# Python 3.12 | the orchestrator: data preparation, run planning and dispatch, scoring, statistics, reports, plugin
+# post-processing, downloads. No model code: the model environments run the adapters with this repository on PYTHONPATH.
+numpy==2.5.3                # pinned: the paper's bootstrap statistics were computed with this numpy
+PyYAML==6.0.3
+Pillow==12.3.0
+av==13.1.0                  # decodable frame counts (PyAV), the version of every model environment
+decord==0.6.0               # source fps of videos (video_meta), as in the model environments
+pyarrow==25.0.1             # parquet sources of some benchmarks (prepare)
+huggingface_hub==0.36.2     # `streamreplace download`: checkpoints and Hugging Face datasets (as in the model envs)
+gdown==5.2.0                # `streamreplace download`: Google Drive files (TOMATO videos, LingoQA)
+pytest==9.1.1

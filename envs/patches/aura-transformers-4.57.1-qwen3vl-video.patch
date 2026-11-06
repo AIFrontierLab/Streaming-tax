@@ -1,0 +1,26 @@
+AURA's "Required Transformers Patch" (AURA_bench_eval/README.md, https://github.com/aurateam2026/AURA at 82d78f0)
+for its 1-second video chunks: transformers 4.57.1's Qwen3-VL video processor otherwise rejects a chunk with fewer
+frames than the temporal patch size (2) and samples at least 4 frames. Paths are relative to the aura environment's
+site-packages; `streamreplace env build aura` applies it and checks the file's sha256 before and after
+(envs/patches/manifest.yaml).
+
+--- a/transformers/models/qwen3_vl/video_processing_qwen3_vl.py
++++ b/transformers/models/qwen3_vl/video_processing_qwen3_vl.py
+@@ -41,7 +41,7 @@
+     max_pixels: int = 16 * 16 * 2 * 2 * 2 * 6144,
+ ):
+     if num_frames < temporal_factor:
+-        raise ValueError(f"t:{num_frames} must be larger than temporal_factor:{temporal_factor}")
++        num_frames = temporal_factor
+     if height < factor or width < factor:
+         raise ValueError(f"height:{height} or width:{width} must be larger than factor:{factor}")
+     elif max(height, width) / min(height, width) > 200:
+@@ -97,7 +97,7 @@
+     temporal_patch_size = 2
+     merge_size = 2
+     fps = 2
+-    min_frames = 4
++    min_frames = 2
+     max_frames = 768
+     do_sample_frames = True
+     valid_kwargs = Qwen3VLVideoProcessorInitKwargs

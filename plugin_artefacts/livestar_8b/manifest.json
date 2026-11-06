@@ -1,0 +1,46 @@
+{
+ "child": "livestar_8b",
+ "parent": "livestar_iv_8b",
+ "vectors": {
+  "file": "vectors.npz",
+  "sha256": "b900547b68238d7e6f70c7398ec944feda0f185639adeafcb003bf51d7592339",
+  "dtype": "float32",
+  "arrays": {
+   "rhat": "unit refusal direction at r_layer",
+   "prs": "alpha * mean(parent - child) state at p_layer"
+  }
+ },
+ "layers": 32,
+ "hidden_size": 4096,
+ "gate": "post",
+ "r_layer": 11,
+ "p_layer": 25,
+ "alpha": 1.5,
+ "prs_norm": 176.457,
+ "thresholds": {
+  "closed": -0.6805,
+  "free": 3.6417249999999997,
+  "free_harmless_q975": 3.6417249999999997
+ },
+ "threshold_rule": {
+  "projection_decimals": 3,
+  "quantile": 0.975,
+  "closed_decimals": 4,
+  "closed": "round(np.quantile(record-arm projection on paper/frozen/plugin/threshold_items.json, 0.975), 4)",
+  "free": "max(closed, np.quantile(S_fix shadow projection on the 100 harmless fit requests, 0.975))",
+  "closed_kinds": [
+   "mcq",
+   "yesno"
+  ]
+ },
+ "provenance": {
+  "source_vectors_sha256": "1f1e7211934ba8299bcc2900d07cace1913c3ab493da28c001f07064dbe26d14",
+  "offline_gate_tau": {
+   "text": 5.353,
+   "video": 3.539
+  },
+  "recipe": "calibrate stage directions (fold-1 AUC in 30-60% depth; KL grid 7 layers x alpha 0.5/1.0/1.5)"
+ },
+ "in_paper": true,
+ "note": "decoder layers of model.language_model"
+}

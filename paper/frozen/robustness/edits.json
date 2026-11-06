@@ -1,0 +1,82 @@
+{
+ "seed": 0,
+ "file": "prompt_overrides.jsonl",
+ "conditions": {
+  "typo": {
+   "rows": 1418,
+   "sha256": "4527ac29263eaf04ad4c3e88ce4188a7d469e8f192017483bdeef9a6f1d62640",
+   "skipped": {}
+  },
+  "para": {
+   "rows": 1418,
+   "sha256": "0f83f342a99f7898d45df4dea6219b3745ad8cbe22d011a9ba222315b158cd33",
+   "skipped": {
+    "videomme": {
+     "029-2": "rules: too similar",
+     "033-1": "judged not equivalent",
+     "083-2": "rules: too similar",
+     "109-1": "rules: too similar",
+     "177-3": "judged not equivalent",
+     "232-3": "rules: too similar"
+    },
+    "mmbench": {
+     "1001": "rules: too similar",
+     "1085": "judged not equivalent",
+     "1288": "rules: too similar",
+     "1299": "rules: too similar",
+     "1495": "rules: too similar",
+     "1544": "judged not equivalent",
+     "1554": "judged not equivalent",
+     "362": "rules: too similar",
+     "399": "rules: too similar",
+     "618": "judged not equivalent",
+     "619": "judged not equivalent",
+     "620": "judged not equivalent",
+     "621": "judged not equivalent",
+     "626": "judged not equivalent",
+     "692": "rules: too similar"
+    }
+   }
+  },
+  "stress": {
+   "rows": 1418,
+   "sha256": "02d0a92474bdce8cf8bc89765889328d4ef1afd007631f75cbc572132c28893f",
+   "skipped": {}
+  },
+  "irrelevant": {
+   "rows": 1418,
+   "sha256": "cb7480eed6606952148ea1a1292cffd6f4fd83fbac584d716592bf6b78567ced",
+   "skipped": {}
+  },
+  "ins_typo": {
+   "rows": 373,
+   "sha256": "66a12ce67da4a94c89a7381bf121a0415660e3fb602b770948fa609d36eadc75",
+   "skipped": {}
+  },
+  "ins_para": {
+   "rows": 373,
+   "sha256": "e36419af8d2c4fa0dfa74300b739a7f074263938b0eda1dad8f875fbe5825f95",
+   "skipped": {}
+  },
+  "ins_irrelevant": {
+   "rows": 373,
+   "sha256": "d7c743ff9cfbd5c1cc39e50dc61c69c31591bc4bd503fab696ee60d5eb907d18",
+   "skipped": {}
+  },
+  "ins300_typo": {
+   "rows": 1118,
+   "sha256": "219d6bfe63c29b8bf86b4b5d82ce18645f08e8572aa2baf7ddb63ee050c21a95",
+   "skipped": {}
+  },
+  "ins300_para": {
+   "rows": 1118,
+   "sha256": "7db08884f51265ef5e5dc06398cc4fa3c83b5531623d3cff41fbb5dd5839f301",
+   "skipped": {}
+  },
+  "ins300_irrelevant": {
+   "rows": 1118,
+   "sha256": "8dee81a3641ff344b8fafe2fdc0a67c4e072c0e3b74c0f45be8523596a99dfb4",
+   "skipped": {}
+  }
+ }
+}

@@ -1,0 +1,45 @@
+{
+ "child": "thinkstream_3b",
+ "parent": "qwen25vl_3b",
+ "vectors": {
+  "file": "vectors.npz",
+  "sha256": "e5a09c03135f2d78dd29ff06528cd9af3e64193fbd50a911c36199420097c34f",
+  "dtype": "float32",
+  "arrays": {
+   "rhat": "unit refusal direction at r_layer",
+   "prs": "alpha * mean(parent - child) state at p_layer"
+  }
+ },
+ "layers": 36,
+ "hidden_size": 2048,
+ "gate": "post",
+ "r_layer": 20,
+ "p_layer": 14,
+ "alpha": 1.5,
+ "prs_norm": 24.084,
+ "thresholds": {
+  "closed": 16.064,
+  "free": 16.064,
+  "free_harmless_q975": 15.395999999999995
+ },
+ "threshold_rule": {
+  "projection_decimals": 3,
+  "quantile": 0.975,
+  "closed_decimals": 4,
+  "closed": "round(np.quantile(record-arm projection on paper/frozen/plugin/threshold_items.json, 0.975), 4)",
+  "free": "max(closed, np.quantile(S_fix shadow projection on the 100 harmless fit requests, 0.975))",
+  "closed_kinds": [
+   "mcq",
+   "yesno"
+  ]
+ },
+ "provenance": {
+  "source_vectors_sha256": "0af02a5eeed46a0e562beeb8b9f89468d77f3b52fc8440a408e6103b85c2bb57",
+  "offline_gate_tau": {
+   "text": 17.164,
+   "video": 17.265
+  },
+  "recipe": "calibrate stage directions (fold-1 AUC in 30-60% depth; KL grid 7 layers x alpha 0.5/1.0/1.5)"
+ },
+ "in_paper": true
+}

@@ -1,0 +1,54 @@
+# Distractor pool of the `irrelevant` condition (streamreplace.generalization.robustness.perturb.pick_irrelevant).
+# Everyday personal remarks that say nothing about any image or video: no numbers, colours, people descriptions,
+# animals, vehicles, clothing, spatial words (left/right/top/front/behind) or time-order words (before/after/first/
+# last/next/then/start/end/finally). Changing a sentence changes the prompts: regenerate the edits and rerun.
+I have been meaning to call my aunt this weekend.
+My cousin finally passed her driving test.
+I think I need to catch up on sleep.
+Our team meeting got moved to another day.
+I keep forgetting to renew my library card.
+My friend recommended a podcast about history.
+I am trying to drink more water these days.
+The internet at my place has been slow lately.
+I still have to reply to a few emails.
+My brother is thinking about learning Spanish.
+I promised to help a friend move soon.
+My manager wants the report by Friday.
+I am not sure what to cook for dinner tonight.
+My sister says the new bakery near her office is nice.
+I should really clean out my inbox.
+My grandmother loves doing crossword puzzles.
+I have a dentist appointment on Thursday.
+My roommate has started taking online classes.
+I wonder whether it will rain this weekend.
+My uncle just retired from his job.
+I need to remember to pay my phone bill.
+My friend is planning a trip abroad.
+I have been reading a novel about a detective.
+My parents are visiting in a few weeks.
+I think my laptop needs an update.
+My colleague brings homemade cookies on Fridays.
+I am considering joining a gym.
+The name of my neighbor's wifi network is really funny.
+I forgot my umbrella at the office again.
+My nephew wants to become an astronaut.
+I have a lot of laundry to do.
+My friend just moved into a new apartment.
+I am looking forward to the holidays.
+My classmate lent me her notes.
+I could not find parking this morning.
+My aunt is organizing a family reunion.
+I need to buy a birthday gift for my mom.
+My coworker is training for a marathon.
+I have been listening to a lot of jazz recently.
+My cousin is studying to become a nurse.
+I should probably update my resume.
+My best friend is getting married in the spring.
+I signed up for a cooking class.
+My landlord is fixing the heating soon.
+I keep meaning to write in a journal.
+My sister is redecorating her apartment.
+I heard the museum has a new exhibition.
+My friend keeps losing his keys.
+I am trying to spend less time online.
+My neighbor bakes bread every weekend.

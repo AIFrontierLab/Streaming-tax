@@ -1,0 +1,26 @@
+# workspace: data, checkpoints, envs, outputs, caches, fetched upstream code (STREAMREPLACE_HOME default)
+/workspace/
+/outputs/
+/cache/
+/.venvs/
+# outputs folders of the examples in README.md and docs/ (`--outputs runs/<name>`, `--outputs plugin_runs`): their
+# rows hold benchmark text and model replies, which must not be committed
+/runs/
+/plugin_runs/
+# local configuration (paths, overrides)
+/configs/local.yaml
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+# editors and OS
+.idea/
+.vscode/
+.DS_Store

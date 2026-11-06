@@ -1,0 +1,169 @@
+streamreplace
+Copyright 2026 The streamreplace Authors
+
+streamreplace is licensed under the Apache License, Version 2.0 (see LICENSE). That licence covers the code and
+files of this repository only.
+
+This repository does not redistribute third-party code, model weights or benchmark data. `streamreplace
+fetch-upstream` and `streamreplace download` fetch them from their publishers at pinned versions, on the user's
+request, and each remains under its own licence and terms (docs/licensing.md). This NOTICE lists:
+  1. the short third-party texts quoted verbatim in this repository, with their origin and licence;
+  2. the third-party code fetched at run time;
+  3. the model checkpoints and datasets the evaluation uses, with the licences their publishers declare.
+
+
+1. Third-party text quoted in this repository
+=============================================
+
+a) AURA live-stream system prompt
+   Used in:  src/streamreplace/models/aura_stream.py (SYSTEM)
+   Source:   https://github.com/aurateam2026/AURA, commit 82d78f0f3e0ac61b7a88d065cc59508e3b0d9ad8,
+             AURA_bench_eval/OVO-Bench/models/AURA.py (SYSTEM_PROMPT)
+   Licence:  the repository has no licence file at that commit; its README states Apache-2.0.
+   The AURA environment's transformers edit (envs/patches/) follows the "Required Transformers Patch" section of
+   AURA_bench_eval/README.md at the same commit; it edits two lines of transformers (Apache-2.0).
+
+b) PromptBench StressTest sentence (" and true is true " repeated five times)
+   Used in:  src/streamreplace/generalization/robustness/perturb.py
+   Source:   https://github.com/microsoft/promptbench, commit fcda538bd779ad11612818e0645a387a462b5c3b,
+             promptbench/prompt_attack/transformations.py (StressTestTransformation)
+   Licence:  MIT License, Copyright (c) Microsoft Corporation.
+
+c) Benchmark prompt templates of lmms-eval
+   Used in:  src/streamreplace/benchmarks/video/tomato.py (PROMPT; lmms-eval's tomato task, which takes it from
+             TOMATO's construct_prompt), configs/benchmarks.yaml (TOMATO's system prompt, "You are an expert in
+             understanding dynamics of objects."; also quoted in docs/ and the tests that check it),
+             src/streamreplace/benchmarks/video/videomme.py (OPTION_PROMPT, POST_PROMPT; videomme_doc_to_text),
+             src/streamreplace/benchmarks/image/mmbench.py (SYS_PROMPT, POST_PROMPT; mmbench.yaml),
+             src/streamreplace/benchmarks/image/mmstar.py (POST_PROMPT), and the ScienceQA prompt layout in
+             src/streamreplace/benchmarks/image/scienceqa.py
+   Source:   https://github.com/EvolvingLMMs-Lab/lmms-eval, lmms_eval/tasks/{tomato,videomme,mmbench,mmstar,scienceqa}
+             (the strings are present at commit 2446351bbc49bfa2ae81a9624a823bb8a2b6feda)
+   Licence:  MIT License (lmms-eval).
+   The TOMATO prompt text originates in https://github.com/yale-nlp/TOMATO (commit
+   fe2025f4b9e1ce339618e0eecfd10f09caf67142, src/generate_lib/construct_prompt.py; no licence file).
+
+d) DynaMath answer guide and per-type instructions
+   Used in:  src/streamreplace/benchmarks/image/dynamath.py (GUIDE, INSTRUCTIONS)
+   Source:   https://github.com/open-compass/VLMEvalKit, commit 21e52b8df8ce1f628e93c82de547edb2c985f6ac,
+             vlmeval/dataset/dynamath.py
+   Licence:  Apache-2.0, Copyright 2023 VLMEvalKit Authors.
+
+e) VisuLogic answer instruction
+   Used in:  src/streamreplace/benchmarks/image/visulogic.py (SFT_PROMPT)
+   Source:   https://github.com/VisuLogic-Benchmark/VisuLogic-Eval, commit 00fba6ddafdc0d6805a4b9455c8df36502aeda2a,
+             models/prompts.py
+   Licence:  Apache-2.0.
+
+f) Short answer instructions shared by several benchmarks
+   ("Answer with the option's letter from the given choices directly." and the like)
+   Used in:  src/streamreplace/benchmarks/common/prompts.py
+   Source:   the evaluation prompts of LLaVA (https://github.com/haotian-liu/LLaVA, Apache-2.0) as used by lmms-eval
+             (MIT).
+
+g) qwen-vl-utils frame selection
+   Used in:  src/streamreplace/media/qwen_sampling.py (the functions marked "Verbatim"; a CPU mirror used to check
+             frame selection)
+   Source:   qwen-vl-utils 0.0.14 (https://github.com/QwenLM/Qwen2.5-VL, qwen-vl-utils/)
+   Licence:  Apache-2.0, Copyright Alibaba Cloud (Qwen team).
+
+h) MMDuet frame geometry
+   Used in:  src/streamreplace/models/llava_offline.py (the resize rule of demo/liveinfer.py load_video)
+   Source:   https://github.com/yellow-binary-tree/MMDuet, commit 33be1387cd18643614d3c414c3c237bdd4ff59cc
+   Licence:  MIT License.
+
+i) Video-SafetyBench prompt prefix ("These are frames of a video.\n")
+   Used in:  src/streamreplace/plugin/recipe.py (VIDEO_PREFIX; the benchmark module reads the official prompt from
+             the fetched file, and tests/trust/test_video_safetybench.py compares it with VIDEO_PREFIX)
+   Source:   https://github.com/flageval-baai/Video-SafetyBench, commit 87d2fe959437a2b55dd5fbc762250cff7e50c311,
+             model_inference/llava_video.py (no licence file).
+
+j) TimeBlind answer-format suffixes (" Please output Yes or No." and " Please output A or B.")
+   Used in:  src/streamreplace/benchmarks/video/timeblind.py (prompt; the official add_question_suffix) and the prompt
+             tests that check it
+   Source:   https://github.com/Baiqi-Li/TimeBlind, commit 03129551918c0830f3ee727485eb9cfb437e21e5, utils.py
+             (no licence file).
+
+k) VMDT fallback prompts and refusal phrases
+   Used in:  src/streamreplace/benchmarks/trust/vmdt_fairness.py (FALLBACK: the JSON-repair prompt of
+             fairness_score.py stereotype_average / decision_making_average), src/streamreplace/benchmarks/trust/
+             vmdt_privacy.py (REFUSAL: the refusal patterns of evaluate_predictions in v2t-{state,city,zipcode}-eval.py)
+   Source:   https://github.com/sunblaze-ucb/VMDT, commit 634c8cddfcaa36fd02731be717e20a5efce605ff,
+             VMDT/fairness/video_text/fairness_score.py and VMDT/privacy/video_text/
+   Licence:  Apache-2.0.
+
+l) EyePCR conversation turns
+   Used in:  src/streamreplace/benchmarks/finetune/eyepcr.py (INTRO, the opening instruction of the dataset's
+             multiple-choice conversations, which the prompt repeats; REPLY, the acknowledgement turn that follows it,
+             used to recognise those conversations)
+   Source:   EyePCR (Gui et al. 2025), https://huggingface.co/datasets/EvergreenTree/EyePCR, revision
+             5a25c1e855940d98b67fd59d51b062fef9f8203e, train.json / test.json
+   Licence:  CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/); quoted unchanged.
+
+m) Fragments of upstream code
+   - manifests/upstream.yaml (`patches`) stores small old/new fragments of three upstream files, applied after
+     download: LLaVA-NeXT llava/model/multimodal_encoder/builder.py (Apache-2.0), ThinkStream
+     thinkstream/model/inference.py (MIT), video_reason_bench utils/eval_utils.py (no licence file).
+   - src/streamreplace/models/patches/mmduet2_client.py quotes one argument of MMDuet2's demo/api_server.py
+     (Apache-2.0), which it edits at load time.
+   - src/streamreplace/models/patches/qwen25_rope.py quotes one expression of transformers' Qwen2.5-VL modelling
+     code (Apache-2.0, Copyright The HuggingFace Team), which it edits at load time.
+
+
+2. Third-party code fetched at run time (not distributed)
+========================================================
+
+`streamreplace fetch-upstream` downloads only the files listed in manifests/upstream.yaml, from each project's
+GitHub repository at the pinned commit, and checks every file's git blob SHA-1. "none" = no licence file in the
+repository at that commit: such code is used as published by its authors and is not copied into this repository,
+apart from the few words and lines listed in section 1 (a, c, i, j, m). The tests check its other texts (judge
+prompts, policies, scoring code) through sha256 digests and a few identifying words instead of quoting them.
+
+  name               repository @ commit                                        licence
+  harmbench          github.com/centerforaisafety/HarmBench @8e1604d1           MIT
+  vmdt               github.com/sunblaze-ucb/VMDT @634c8cdd                     Apache-2.0
+  llava              github.com/LLaVA-VL/LLaVA-NeXT @bce12e47                   Apache-2.0
+  mmduet             github.com/yellow-binary-tree/MMDuet @33be1387             MIT
+  mmduet2            github.com/yellow-binary-tree/MMDuet2 @7bd91d52            Apache-2.0
+  thinkstream        github.com/CASIA-IVA-Lab/ThinkStream @bd5dc284             MIT
+  livestar           github.com/sotayang/LiveStar @aa1cc540                     none
+  tomato             github.com/yale-nlp/TOMATO @fe2025f4                       none
+  timeblind          github.com/Baiqi-Li/TimeBlind @03129551                    none
+  videomme           github.com/thanku-all/parse_answer @afd52cfe               none
+  videoreasonbench   github.com/llyx97/video_reason_bench @25243879             none
+  video_safetybench  github.com/flageval-baai/Video-SafetyBench @87d2fe95       none
+  mcv_safetybench    github.com/ChoongwonKang/MCV_Jailbreak @24dbb044           none
+  openuav_qa         github.com/IntelliSensing/Self-in-Space @df449787          Apache-2.0
+  lingoqa            github.com/wayveai/LingoQA @39d86b14                       Wayve Dataset Licence Agreement for
+                                                                                Non-Commercial Use
+  promptbench        github.com/microsoft/promptbench @fcda538b                 MIT
+  vlmevalkit         github.com/open-compass/VLMEvalKit @21e52b8d               Apache-2.0
+Cited for provenance only, never fetched: AURA (github.com/aurateam2026/AURA @82d78f0f; no licence file, README
+states Apache-2.0) and MOSS-VL (github.com/OpenMOSS/MOSS-VL @d029e00a; Apache-2.0).
+
+
+3. Model checkpoints and datasets (not distributed)
+===================================================
+
+Model checkpoints (manifests/checkpoints.yaml; licence as declared on each model card at the pinned revision):
+  lmms-lab/llava-onevision-qwen2-7b-ov (apache-2.0), google/siglip-so400m-patch14-384 (apache-2.0),
+  wangyueqian/MMDuet (mit), Qwen/Qwen2.5-VL-3B-Instruct (qwen-research), CASIA-IVA-Lab/ThinkStream-3B (not
+  declared), wangyueqian/MMDuet2 (qwen-research), Qwen/Qwen3-VL-8B-Instruct (apache-2.0), aurateam/AURA
+  (apache-2.0), yzy666/LiveStar_InternVideo_8B (apache-2.0), yzy666/LiveStar_8B (apache-2.0),
+  OpenMOSS-Team/MOSS-VL-Instruct-0708 (apache-2.0), OpenMOSS-Team/MOSS-VL-Realtime (apache-2.0).
+Judges: Qwen/Qwen3.8-27B-FP8 (apache-2.0), cais/HarmBench-Llama-2-13b-cls and
+  cais/HarmBench-Llama-2-13b-cls-multimodal-behaviors (mit), Qwen/Qwen2.5-72B-Instruct (qwen),
+  wayveai/Lingo-Judge (other; see its model card).
+
+Datasets (manifests/datasets.yaml; licence as declared by each publisher):
+  DynaMath (apache-2.0), MathVista (cc-by-sa-4.0), MMBench (see open-compass/MMBench), MME (see its project),
+  MMMU (apache-2.0), MMStar (see its project), ScienceQA (original ScienceQA terms), VisuLogic (apache-2.0),
+  Video-MME (Video-MME terms of use), TOMATO (cc-by-sa-4.0), TimeBlind (see its project), VideoReasonBench (see its
+  project), HarmBench data (MIT), Video-SafetyBench (cc-by-nc-sa-4.0, gated), MCV-SafetyBench (apache-2.0),
+  VMDT video-to-text fairness and privacy (see its project; the fairness videos come from third-party face-video
+  datasets with their own terms), LingoQA (Wayve Dataset Licence Agreement for Non-Commercial Use), EyePCR
+  (cc-by-4.0), OpenUAV-QA (apache-2.0), AdvBench (MIT; plugin calibration), Stanford Alpaca (CC BY-NC 4.0; plugin
+  calibration).
+
+Several of these datasets contain harmful requests (HarmBench, Video-SafetyBench, MCV-SafetyBench, AdvBench) and are
+used for safety evaluation only.

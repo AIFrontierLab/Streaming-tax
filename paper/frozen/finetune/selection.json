@@ -1,0 +1,45 @@
+{
+  "lingoqa": {
+    "test": 500,
+    "test_subset": 500,
+    "train": 413829,
+    "pool": 413829,
+    "dropped_group": 0,
+    "dropped_near_duplicate": 3,
+    "near_duplicate_ids": [
+      "95f2bae549ec5683cd882b5d7389caa9",
+      "d521e53907a919947b51b2343cf68061",
+      "f9e3feafe448bf53a67a233f3baadec6"
+    ],
+    "budget": 5000,
+    "test_sha256": "e5d4cd6dcf8a68c1ce0bba20bfff575194b421d58fdbeeb2bb617d9e40dce291",
+    "train_sha256": "4f9727d2dd9cc570f265e36070fd113551e664c393efbd858795eef84cc6aa65",
+    "seed": 0
+  },
+  "openuav_qa": {
+    "test": 3893,
+    "test_subset": 2000,
+    "train": 11443,
+    "pool": 11443,
+    "dropped_group": 0,
+    "dropped_near_duplicate": 0,
+    "near_duplicate_ids": [],
+    "budget": 5000,
+    "test_sha256": "1167f9645f16aa40b646d5f854c2355d35fd23a4fa1cb6d635f1a08d9b9b3083",
+    "train_sha256": "8bf694e6a54f77aa569b5d8a26c6f8d130b97c3c1f61812fcf04471adf111594",
+    "seed": 0
+  },
+  "eyepcr": {
+    "test": 3492,
+    "test_subset": 2000,
+    "train": 39504,
+    "pool": 39504,
+    "dropped_group": 0,
+    "dropped_near_duplicate": 0,
+    "near_duplicate_ids": [],
+    "budget": 5000,
+    "test_sha256": "ce7175017dd6c87589b3825b223019fb3c352ab9af1781b51e9273058b6fae86",
+    "train_sha256": "13911bf6625d0a0d74110f5b58e8bf9fb4348735d6463ffc801513400efae200",
+    "seed": 0
+  }
+}

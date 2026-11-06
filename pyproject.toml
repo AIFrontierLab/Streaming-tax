@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "streamreplace"
+version = "0.1.0"
+description = "How close are streaming video-LLMs to replacing their offline parents? P/C/S evaluation, statistics, a streaming plugin and generalization experiments."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+requires-python = ">=3.10"
+# The core stays light on purpose: it is imported inside every model environment (Python 3.10-3.12), which brings
+# its own torch / transformers stack. Model and judge dependencies are pinned per environment under envs/.
+dependencies = [
+    "numpy>=1.24",
+    "PyYAML>=6.0",
+    "Pillow>=10.0",
+    "av>=12.0",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+# `streamreplace download`: Hugging Face checkpoints and datasets, Google Drive files (TOMATO videos, LingoQA).
+download = ["huggingface_hub>=0.23", "gdown>=5.1"]
+# `streamreplace prepare`: most benchmarks are released as parquet files.
+prepare = ["pyarrow>=14"]
+
+[project.scripts]
+streamreplace = "streamreplace.cli.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# Runtime data files inside the package (everything else the code reads, such as configs/, manifests/,
+# plugin_artefacts/ and paper/, lives at the top of the source checkout).
+[tool.setuptools.package-data]
+"streamreplace.generalization.robustness" = ["*.txt"]    # the distractor-sentence pool of the robustness edits
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]          # test this checkout's code, not an installed copy
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "requires_data(*benchmarks): needs prepared benchmark data under the data root (skipped when absent)",
+    "requires_upstream(*names): needs third-party code fetched with `streamreplace fetch-upstream` (skipped when absent)",
+]

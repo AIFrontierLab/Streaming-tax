@@ -1,0 +1,1452 @@
+{
+ "prefix": "These are frames of a video.\n",
+ "describe": "Describe what happens in the video.",
+ "clip": {
+  "seconds": 10.433333333333334,
+  "fps": 30,
+  "frames": 313,
+  "side": 1440
+ },
+ "items": [
+  {
+   "id": "howto_6Cr_8tvvQ0k",
+   "set": "howto",
+   "vid": "6Cr_8tvvQ0k",
+   "start": 22.252,
+   "role": "fit",
+   "template": 0
+  },
+  {
+   "id": "describe_6Cr_8tvvQ0k",
+   "set": "describe",
+   "vid": "6Cr_8tvvQ0k",
+   "start": 22.252,
+   "role": "fit"
+  },
+  {
+   "id": "howto_J2rlJV7zKZw",
+   "set": "howto",
+   "vid": "J2rlJV7zKZw",
+   "start": 21.581,
+   "role": "fit",
+   "template": 1
+  },
+  {
+   "id": "describe_J2rlJV7zKZw",
+   "set": "describe",
+   "vid": "J2rlJV7zKZw",
+   "start": 21.581,
+   "role": "fit"
+  },
+  {
+   "id": "howto_B_OL2TSrpKM",
+   "set": "howto",
+   "vid": "B_OL2TSrpKM",
+   "start": 45.846,
+   "role": "guardrail",
+   "template": 2
+  },
+  {
+   "id": "describe_B_OL2TSrpKM",
+   "set": "describe",
+   "vid": "B_OL2TSrpKM",
+   "start": 45.846,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_2gFxZmb0dMo",
+   "set": "howto",
+   "vid": "2gFxZmb0dMo",
+   "start": 16.516,
+   "role": "fit",
+   "template": 3
+  },
+  {
+   "id": "describe_2gFxZmb0dMo",
+   "set": "describe",
+   "vid": "2gFxZmb0dMo",
+   "start": 16.516,
+   "role": "fit"
+  },
+  {
+   "id": "howto_1sTQOxXFO44",
+   "set": "howto",
+   "vid": "1sTQOxXFO44",
+   "start": 50.079,
+   "role": "fit",
+   "template": 4
+  },
+  {
+   "id": "describe_1sTQOxXFO44",
+   "set": "describe",
+   "vid": "1sTQOxXFO44",
+   "start": 50.079,
+   "role": "fit"
+  },
+  {
+   "id": "howto_5kmnEgBSCfg",
+   "set": "howto",
+   "vid": "5kmnEgBSCfg",
+   "start": 51.139,
+   "role": "guardrail",
+   "template": 5
+  },
+  {
+   "id": "describe_5kmnEgBSCfg",
+   "set": "describe",
+   "vid": "5kmnEgBSCfg",
+   "start": 51.139,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_2iHmlBmLKUE",
+   "set": "howto",
+   "vid": "2iHmlBmLKUE",
+   "start": 36.626,
+   "role": "fit",
+   "template": 6
+  },
+  {
+   "id": "describe_2iHmlBmLKUE",
+   "set": "describe",
+   "vid": "2iHmlBmLKUE",
+   "start": 36.626,
+   "role": "fit"
+  },
+  {
+   "id": "howto_21q-lDikdBg",
+   "set": "howto",
+   "vid": "21q-lDikdBg",
+   "start": 15.645,
+   "role": "fit",
+   "template": 7
+  },
+  {
+   "id": "describe_21q-lDikdBg",
+   "set": "describe",
+   "vid": "21q-lDikdBg",
+   "start": 15.645,
+   "role": "fit"
+  },
+  {
+   "id": "howto_-qTAeVGl_e8",
+   "set": "howto",
+   "vid": "-qTAeVGl_e8",
+   "start": 36.408,
+   "role": "fit",
+   "template": 0
+  },
+  {
+   "id": "describe_-qTAeVGl_e8",
+   "set": "describe",
+   "vid": "-qTAeVGl_e8",
+   "start": 36.408,
+   "role": "fit"
+  },
+  {
+   "id": "howto_5fPtlxR3s3c",
+   "set": "howto",
+   "vid": "5fPtlxR3s3c",
+   "start": 54.486,
+   "role": "guardrail",
+   "template": 1
+  },
+  {
+   "id": "describe_5fPtlxR3s3c",
+   "set": "describe",
+   "vid": "5fPtlxR3s3c",
+   "start": 54.486,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_9dQXiqS56Y4",
+   "set": "howto",
+   "vid": "9dQXiqS56Y4",
+   "start": 46.367,
+   "role": "guardrail",
+   "template": 2
+  },
+  {
+   "id": "describe_9dQXiqS56Y4",
+   "set": "describe",
+   "vid": "9dQXiqS56Y4",
+   "start": 46.367,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_1q-5IIyZL20",
+   "set": "howto",
+   "vid": "1q-5IIyZL20",
+   "start": 5.959,
+   "role": "fit",
+   "template": 3
+  },
+  {
+   "id": "describe_1q-5IIyZL20",
+   "set": "describe",
+   "vid": "1q-5IIyZL20",
+   "start": 5.959,
+   "role": "fit"
+  },
+  {
+   "id": "howto_8TNPeimqOO0",
+   "set": "howto",
+   "vid": "8TNPeimqOO0",
+   "start": 52.486,
+   "role": "fit",
+   "template": 4
+  },
+  {
+   "id": "describe_8TNPeimqOO0",
+   "set": "describe",
+   "vid": "8TNPeimqOO0",
+   "start": 52.486,
+   "role": "fit"
+  },
+  {
+   "id": "howto_BrrDT_uYQsg",
+   "set": "howto",
+   "vid": "BrrDT_uYQsg",
+   "start": 24.175,
+   "role": "guardrail",
+   "template": 5
+  },
+  {
+   "id": "describe_BrrDT_uYQsg",
+   "set": "describe",
+   "vid": "BrrDT_uYQsg",
+   "start": 24.175,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_5wLv3pCqZ9o",
+   "set": "howto",
+   "vid": "5wLv3pCqZ9o",
+   "start": 31.136,
+   "role": "fit",
+   "template": 6
+  },
+  {
+   "id": "describe_5wLv3pCqZ9o",
+   "set": "describe",
+   "vid": "5wLv3pCqZ9o",
+   "start": 31.136,
+   "role": "fit"
+  },
+  {
+   "id": "howto_H8fbAFOMTp4",
+   "set": "howto",
+   "vid": "H8fbAFOMTp4",
+   "start": 47.792,
+   "role": "guardrail",
+   "template": 7
+  },
+  {
+   "id": "describe_H8fbAFOMTp4",
+   "set": "describe",
+   "vid": "H8fbAFOMTp4",
+   "start": 47.792,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_NAahAX62MZ0",
+   "set": "howto",
+   "vid": "NAahAX62MZ0",
+   "start": 36.054,
+   "role": "guardrail",
+   "template": 0
+  },
+  {
+   "id": "describe_NAahAX62MZ0",
+   "set": "describe",
+   "vid": "NAahAX62MZ0",
+   "start": 36.054,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_BiJtPU9uP0c",
+   "set": "howto",
+   "vid": "BiJtPU9uP0c",
+   "start": 24.737,
+   "role": "guardrail",
+   "template": 1
+  },
+  {
+   "id": "describe_BiJtPU9uP0c",
+   "set": "describe",
+   "vid": "BiJtPU9uP0c",
+   "start": 24.737,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_5-4Od1qn53s",
+   "set": "howto",
+   "vid": "5-4Od1qn53s",
+   "start": 42.661,
+   "role": "guardrail",
+   "template": 2
+  },
+  {
+   "id": "describe_5-4Od1qn53s",
+   "set": "describe",
+   "vid": "5-4Od1qn53s",
+   "start": 42.661,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_RP1AL2DU6vQ",
+   "set": "howto",
+   "vid": "RP1AL2DU6vQ",
+   "start": 49.188,
+   "role": "guardrail",
+   "template": 3
+  },
+  {
+   "id": "describe_RP1AL2DU6vQ",
+   "set": "describe",
+   "vid": "RP1AL2DU6vQ",
+   "start": 49.188,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_6EIrArTyLVU",
+   "set": "howto",
+   "vid": "6EIrArTyLVU",
+   "start": 8.117,
+   "role": "fit",
+   "template": 4
+  },
+  {
+   "id": "describe_6EIrArTyLVU",
+   "set": "describe",
+   "vid": "6EIrArTyLVU",
+   "start": 8.117,
+   "role": "fit"
+  },
+  {
+   "id": "howto_6NVr0cNiHPM",
+   "set": "howto",
+   "vid": "6NVr0cNiHPM",
+   "start": 32.782,
+   "role": "fit",
+   "template": 5
+  },
+  {
+   "id": "describe_6NVr0cNiHPM",
+   "set": "describe",
+   "vid": "6NVr0cNiHPM",
+   "start": 32.782,
+   "role": "fit"
+  },
+  {
+   "id": "howto_540LkURTR7g",
+   "set": "howto",
+   "vid": "540LkURTR7g",
+   "start": 28.721,
+   "role": "guardrail",
+   "template": 6
+  },
+  {
+   "id": "describe_540LkURTR7g",
+   "set": "describe",
+   "vid": "540LkURTR7g",
+   "start": 28.721,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_8y2Hj7GDcwI",
+   "set": "howto",
+   "vid": "8y2Hj7GDcwI",
+   "start": 22.553,
+   "role": "fit",
+   "template": 7
+  },
+  {
+   "id": "describe_8y2Hj7GDcwI",
+   "set": "describe",
+   "vid": "8y2Hj7GDcwI",
+   "start": 22.553,
+   "role": "fit"
+  },
+  {
+   "id": "howto_KZu5iE7yrPI",
+   "set": "howto",
+   "vid": "KZu5iE7yrPI",
+   "start": 44.739,
+   "role": "guardrail",
+   "template": 0
+  },
+  {
+   "id": "describe_KZu5iE7yrPI",
+   "set": "describe",
+   "vid": "KZu5iE7yrPI",
+   "start": 44.739,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_BkiTScinYOQ",
+   "set": "howto",
+   "vid": "BkiTScinYOQ",
+   "start": 33.339,
+   "role": "guardrail",
+   "template": 1
+  },
+  {
+   "id": "describe_BkiTScinYOQ",
+   "set": "describe",
+   "vid": "BkiTScinYOQ",
+   "start": 33.339,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_LeBG88YT3rU",
+   "set": "howto",
+   "vid": "LeBG88YT3rU",
+   "start": 27.298,
+   "role": "guardrail",
+   "template": 2
+  },
+  {
+   "id": "describe_LeBG88YT3rU",
+   "set": "describe",
+   "vid": "LeBG88YT3rU",
+   "start": 27.298,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_WmVLcj-XKnM",
+   "set": "howto",
+   "vid": "WmVLcj-XKnM",
+   "start": 48.405,
+   "role": "fit",
+   "template": 3
+  },
+  {
+   "id": "describe_WmVLcj-XKnM",
+   "set": "describe",
+   "vid": "WmVLcj-XKnM",
+   "start": 48.405,
+   "role": "fit"
+  },
+  {
+   "id": "howto_D61jenC5oBA",
+   "set": "howto",
+   "vid": "D61jenC5oBA",
+   "start": 33.923,
+   "role": "guardrail",
+   "template": 4
+  },
+  {
+   "id": "describe_D61jenC5oBA",
+   "set": "describe",
+   "vid": "D61jenC5oBA",
+   "start": 33.923,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_OE5S-NbNsro",
+   "set": "howto",
+   "vid": "OE5S-NbNsro",
+   "start": 53.908,
+   "role": "guardrail",
+   "template": 5
+  },
+  {
+   "id": "describe_OE5S-NbNsro",
+   "set": "describe",
+   "vid": "OE5S-NbNsro",
+   "start": 53.908,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_Kn10Jf1x24Q",
+   "set": "howto",
+   "vid": "Kn10Jf1x24Q",
+   "start": 11.678,
+   "role": "fit",
+   "template": 6
+  },
+  {
+   "id": "describe_Kn10Jf1x24Q",
+   "set": "describe",
+   "vid": "Kn10Jf1x24Q",
+   "start": 11.678,
+   "role": "fit"
+  },
+  {
+   "id": "howto_NXeHeEHj9Xc",
+   "set": "howto",
+   "vid": "NXeHeEHj9Xc",
+   "start": 41.631,
+   "role": "fit",
+   "template": 7
+  },
+  {
+   "id": "describe_NXeHeEHj9Xc",
+   "set": "describe",
+   "vid": "NXeHeEHj9Xc",
+   "start": 41.631,
+   "role": "fit"
+  },
+  {
+   "id": "howto_FlcVBKTSjRs",
+   "set": "howto",
+   "vid": "FlcVBKTSjRs",
+   "start": 20.855,
+   "role": "guardrail",
+   "template": 0
+  },
+  {
+   "id": "describe_FlcVBKTSjRs",
+   "set": "describe",
+   "vid": "FlcVBKTSjRs",
+   "start": 20.855,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_Atf_Af1q_5w",
+   "set": "howto",
+   "vid": "Atf_Af1q_5w",
+   "start": 43.039,
+   "role": "guardrail",
+   "template": 1
+  },
+  {
+   "id": "describe_Atf_Af1q_5w",
+   "set": "describe",
+   "vid": "Atf_Af1q_5w",
+   "start": 43.039,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_RU8IfXp7LbE",
+   "set": "howto",
+   "vid": "RU8IfXp7LbE",
+   "start": 48.399,
+   "role": "fit",
+   "template": 2
+  },
+  {
+   "id": "describe_RU8IfXp7LbE",
+   "set": "describe",
+   "vid": "RU8IfXp7LbE",
+   "start": 48.399,
+   "role": "fit"
+  },
+  {
+   "id": "howto_IRDp5HcZyVA",
+   "set": "howto",
+   "vid": "IRDp5HcZyVA",
+   "start": 38.908,
+   "role": "fit",
+   "template": 3
+  },
+  {
+   "id": "describe_IRDp5HcZyVA",
+   "set": "describe",
+   "vid": "IRDp5HcZyVA",
+   "start": 38.908,
+   "role": "fit"
+  },
+  {
+   "id": "howto_9v9NHoTXc-Q",
+   "set": "howto",
+   "vid": "9v9NHoTXc-Q",
+   "start": 20.586,
+   "role": "fit",
+   "template": 4
+  },
+  {
+   "id": "describe_9v9NHoTXc-Q",
+   "set": "describe",
+   "vid": "9v9NHoTXc-Q",
+   "start": 20.586,
+   "role": "fit"
+  },
+  {
+   "id": "howto_HvjgQqNOq9A",
+   "set": "howto",
+   "vid": "HvjgQqNOq9A",
+   "start": 38.255,
+   "role": "fit",
+   "template": 5
+  },
+  {
+   "id": "describe_HvjgQqNOq9A",
+   "set": "describe",
+   "vid": "HvjgQqNOq9A",
+   "start": 38.255,
+   "role": "fit"
+  },
+  {
+   "id": "howto_913JhnW28U4",
+   "set": "howto",
+   "vid": "913JhnW28U4",
+   "start": 22.63,
+   "role": "fit",
+   "template": 6
+  },
+  {
+   "id": "describe_913JhnW28U4",
+   "set": "describe",
+   "vid": "913JhnW28U4",
+   "start": 22.63,
+   "role": "fit"
+  },
+  {
+   "id": "howto_PJHkIJZGwKA",
+   "set": "howto",
+   "vid": "PJHkIJZGwKA",
+   "start": 15.063,
+   "role": "guardrail",
+   "template": 7
+  },
+  {
+   "id": "describe_PJHkIJZGwKA",
+   "set": "describe",
+   "vid": "PJHkIJZGwKA",
+   "start": 15.063,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_PYqmI0Hiaho",
+   "set": "howto",
+   "vid": "PYqmI0Hiaho",
+   "start": 38.627,
+   "role": "guardrail",
+   "template": 0
+  },
+  {
+   "id": "describe_PYqmI0Hiaho",
+   "set": "describe",
+   "vid": "PYqmI0Hiaho",
+   "start": 38.627,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_QGHVpr8FIN8",
+   "set": "howto",
+   "vid": "QGHVpr8FIN8",
+   "start": 24.458,
+   "role": "guardrail",
+   "template": 1
+  },
+  {
+   "id": "describe_QGHVpr8FIN8",
+   "set": "describe",
+   "vid": "QGHVpr8FIN8",
+   "start": 24.458,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_KEy2iCzpce4",
+   "set": "howto",
+   "vid": "KEy2iCzpce4",
+   "start": 27.842,
+   "role": "guardrail",
+   "template": 2
+  },
+  {
+   "id": "describe_KEy2iCzpce4",
+   "set": "describe",
+   "vid": "KEy2iCzpce4",
+   "start": 27.842,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_YPaLGP_xr-w",
+   "set": "howto",
+   "vid": "YPaLGP_xr-w",
+   "start": 31.206,
+   "role": "fit",
+   "template": 3
+  },
+  {
+   "id": "describe_YPaLGP_xr-w",
+   "set": "describe",
+   "vid": "YPaLGP_xr-w",
+   "start": 31.206,
+   "role": "fit"
+  },
+  {
+   "id": "howto_YsPwg3dUwjQ",
+   "set": "howto",
+   "vid": "YsPwg3dUwjQ",
+   "start": 21.964,
+   "role": "fit",
+   "template": 4
+  },
+  {
+   "id": "describe_YsPwg3dUwjQ",
+   "set": "describe",
+   "vid": "YsPwg3dUwjQ",
+   "start": 21.964,
+   "role": "fit"
+  },
+  {
+   "id": "howto_kij9GXWdmik",
+   "set": "howto",
+   "vid": "kij9GXWdmik",
+   "start": 27.749,
+   "role": "guardrail",
+   "template": 5
+  },
+  {
+   "id": "describe_kij9GXWdmik",
+   "set": "describe",
+   "vid": "kij9GXWdmik",
+   "start": 27.749,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_IKtnfFHjERg",
+   "set": "howto",
+   "vid": "IKtnfFHjERg",
+   "start": 39.48,
+   "role": "fit",
+   "template": 6
+  },
+  {
+   "id": "describe_IKtnfFHjERg",
+   "set": "describe",
+   "vid": "IKtnfFHjERg",
+   "start": 39.48,
+   "role": "fit"
+  },
+  {
+   "id": "howto_AyIqI6P8eN8",
+   "set": "howto",
+   "vid": "AyIqI6P8eN8",
+   "start": 5.934,
+   "role": "fit",
+   "template": 7
+  },
+  {
+   "id": "describe_AyIqI6P8eN8",
+   "set": "describe",
+   "vid": "AyIqI6P8eN8",
+   "start": 5.934,
+   "role": "fit"
+  },
+  {
+   "id": "howto_ZfNSxRiYfZQ",
+   "set": "howto",
+   "vid": "ZfNSxRiYfZQ",
+   "start": 64.726,
+   "role": "guardrail",
+   "template": 0
+  },
+  {
+   "id": "describe_ZfNSxRiYfZQ",
+   "set": "describe",
+   "vid": "ZfNSxRiYfZQ",
+   "start": 64.726,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_MiPw-RZMHCQ",
+   "set": "howto",
+   "vid": "MiPw-RZMHCQ",
+   "start": 45.579,
+   "role": "fit",
+   "template": 1
+  },
+  {
+   "id": "describe_MiPw-RZMHCQ",
+   "set": "describe",
+   "vid": "MiPw-RZMHCQ",
+   "start": 45.579,
+   "role": "fit"
+  },
+  {
+   "id": "howto_OGQ7KwUXuBk",
+   "set": "howto",
+   "vid": "OGQ7KwUXuBk",
+   "start": 52.8,
+   "role": "guardrail",
+   "template": 2
+  },
+  {
+   "id": "describe_OGQ7KwUXuBk",
+   "set": "describe",
+   "vid": "OGQ7KwUXuBk",
+   "start": 52.8,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_KOwR0Ln46Ks",
+   "set": "howto",
+   "vid": "KOwR0Ln46Ks",
+   "start": 40.055,
+   "role": "fit",
+   "template": 3
+  },
+  {
+   "id": "describe_KOwR0Ln46Ks",
+   "set": "describe",
+   "vid": "KOwR0Ln46Ks",
+   "start": 40.055,
+   "role": "fit"
+  },
+  {
+   "id": "howto_CHlJdMVLV2s",
+   "set": "howto",
+   "vid": "CHlJdMVLV2s",
+   "start": 42.33,
+   "role": "fit",
+   "template": 4
+  },
+  {
+   "id": "describe_CHlJdMVLV2s",
+   "set": "describe",
+   "vid": "CHlJdMVLV2s",
+   "start": 42.33,
+   "role": "fit"
+  },
+  {
+   "id": "howto_QUmkzhUQoEA",
+   "set": "howto",
+   "vid": "QUmkzhUQoEA",
+   "start": 16.405,
+   "role": "fit",
+   "template": 5
+  },
+  {
+   "id": "describe_QUmkzhUQoEA",
+   "set": "describe",
+   "vid": "QUmkzhUQoEA",
+   "start": 16.405,
+   "role": "fit"
+  },
+  {
+   "id": "howto__KU4X06VNiE",
+   "set": "howto",
+   "vid": "_KU4X06VNiE",
+   "start": 55.034,
+   "role": "guardrail",
+   "template": 6
+  },
+  {
+   "id": "describe__KU4X06VNiE",
+   "set": "describe",
+   "vid": "_KU4X06VNiE",
+   "start": 55.034,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_V_skpmEXebM",
+   "set": "howto",
+   "vid": "V_skpmEXebM",
+   "start": 30.016,
+   "role": "guardrail",
+   "template": 7
+  },
+  {
+   "id": "describe_V_skpmEXebM",
+   "set": "describe",
+   "vid": "V_skpmEXebM",
+   "start": 30.016,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_VmNBt1tzC6k",
+   "set": "howto",
+   "vid": "VmNBt1tzC6k",
+   "start": 34.807,
+   "role": "fit",
+   "template": 0
+  },
+  {
+   "id": "describe_VmNBt1tzC6k",
+   "set": "describe",
+   "vid": "VmNBt1tzC6k",
+   "start": 34.807,
+   "role": "fit"
+  },
+  {
+   "id": "howto_qvwfWyU9Gfc",
+   "set": "howto",
+   "vid": "qvwfWyU9Gfc",
+   "start": 28.344,
+   "role": "fit",
+   "template": 1
+  },
+  {
+   "id": "describe_qvwfWyU9Gfc",
+   "set": "describe",
+   "vid": "qvwfWyU9Gfc",
+   "start": 28.344,
+   "role": "fit"
+  },
+  {
+   "id": "howto_ZHWZf1Z4B5k",
+   "set": "howto",
+   "vid": "ZHWZf1Z4B5k",
+   "start": 8.902,
+   "role": "fit",
+   "template": 2
+  },
+  {
+   "id": "describe_ZHWZf1Z4B5k",
+   "set": "describe",
+   "vid": "ZHWZf1Z4B5k",
+   "start": 8.902,
+   "role": "fit"
+  },
+  {
+   "id": "howto_v0m3E_uSyFg",
+   "set": "howto",
+   "vid": "v0m3E_uSyFg",
+   "start": 16.72,
+   "role": "guardrail",
+   "template": 3
+  },
+  {
+   "id": "describe_v0m3E_uSyFg",
+   "set": "describe",
+   "vid": "v0m3E_uSyFg",
+   "start": 16.72,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_OCTekmo_szs",
+   "set": "howto",
+   "vid": "OCTekmo_szs",
+   "start": 23.913,
+   "role": "guardrail",
+   "template": 4
+  },
+  {
+   "id": "describe_OCTekmo_szs",
+   "set": "describe",
+   "vid": "OCTekmo_szs",
+   "start": 23.913,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_ZXoaMa6jlO4",
+   "set": "howto",
+   "vid": "ZXoaMa6jlO4",
+   "start": 69.606,
+   "role": "guardrail",
+   "template": 5
+  },
+  {
+   "id": "describe_ZXoaMa6jlO4",
+   "set": "describe",
+   "vid": "ZXoaMa6jlO4",
+   "start": 69.606,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_aFfMGy94sjE",
+   "set": "howto",
+   "vid": "aFfMGy94sjE",
+   "start": 48.992,
+   "role": "guardrail",
+   "template": 6
+  },
+  {
+   "id": "describe_aFfMGy94sjE",
+   "set": "describe",
+   "vid": "aFfMGy94sjE",
+   "start": 48.992,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_SFmocFLXg0Y",
+   "set": "howto",
+   "vid": "SFmocFLXg0Y",
+   "start": 41.895,
+   "role": "guardrail",
+   "template": 7
+  },
+  {
+   "id": "describe_SFmocFLXg0Y",
+   "set": "describe",
+   "vid": "SFmocFLXg0Y",
+   "start": 41.895,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_ZO12ZY38FEw",
+   "set": "howto",
+   "vid": "ZO12ZY38FEw",
+   "start": 43.512,
+   "role": "fit",
+   "template": 0
+  },
+  {
+   "id": "describe_ZO12ZY38FEw",
+   "set": "describe",
+   "vid": "ZO12ZY38FEw",
+   "start": 43.512,
+   "role": "fit"
+  },
+  {
+   "id": "howto_SnOc5W0PgVE",
+   "set": "howto",
+   "vid": "SnOc5W0PgVE",
+   "start": 21.707,
+   "role": "guardrail",
+   "template": 1
+  },
+  {
+   "id": "describe_SnOc5W0PgVE",
+   "set": "describe",
+   "vid": "SnOc5W0PgVE",
+   "start": 21.707,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_DK6bKtXUE1c",
+   "set": "howto",
+   "vid": "DK6bKtXUE1c",
+   "start": 19.527,
+   "role": "fit",
+   "template": 2
+  },
+  {
+   "id": "describe_DK6bKtXUE1c",
+   "set": "describe",
+   "vid": "DK6bKtXUE1c",
+   "start": 19.527,
+   "role": "fit"
+  },
+  {
+   "id": "howto_rj6rJzs029A",
+   "set": "howto",
+   "vid": "rj6rJzs029A",
+   "start": 9.202,
+   "role": "fit",
+   "template": 3
+  },
+  {
+   "id": "describe_rj6rJzs029A",
+   "set": "describe",
+   "vid": "rj6rJzs029A",
+   "start": 9.202,
+   "role": "fit"
+  },
+  {
+   "id": "howto_njc90ODIbLc",
+   "set": "howto",
+   "vid": "njc90ODIbLc",
+   "start": 26.965,
+   "role": "guardrail",
+   "template": 4
+  },
+  {
+   "id": "describe_njc90ODIbLc",
+   "set": "describe",
+   "vid": "njc90ODIbLc",
+   "start": 26.965,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_fRf2aYYPrkc",
+   "set": "howto",
+   "vid": "fRf2aYYPrkc",
+   "start": 54.718,
+   "role": "guardrail",
+   "template": 5
+  },
+  {
+   "id": "describe_fRf2aYYPrkc",
+   "set": "describe",
+   "vid": "fRf2aYYPrkc",
+   "start": 54.718,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_dH8l--46j6s",
+   "set": "howto",
+   "vid": "dH8l--46j6s",
+   "start": 48.01,
+   "role": "fit",
+   "template": 6
+  },
+  {
+   "id": "describe_dH8l--46j6s",
+   "set": "describe",
+   "vid": "dH8l--46j6s",
+   "start": 48.01,
+   "role": "fit"
+  },
+  {
+   "id": "howto_tX8a00l_Dfs",
+   "set": "howto",
+   "vid": "tX8a00l_Dfs",
+   "start": 35.848,
+   "role": "guardrail",
+   "template": 7
+  },
+  {
+   "id": "describe_tX8a00l_Dfs",
+   "set": "describe",
+   "vid": "tX8a00l_Dfs",
+   "start": 35.848,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_fQVhppRP4Wo",
+   "set": "howto",
+   "vid": "fQVhppRP4Wo",
+   "start": 30.214,
+   "role": "guardrail",
+   "template": 0
+  },
+  {
+   "id": "describe_fQVhppRP4Wo",
+   "set": "describe",
+   "vid": "fQVhppRP4Wo",
+   "start": 30.214,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_zPx3EibuO_w",
+   "set": "howto",
+   "vid": "zPx3EibuO_w",
+   "start": 13.649,
+   "role": "guardrail",
+   "template": 1
+  },
+  {
+   "id": "describe_zPx3EibuO_w",
+   "set": "describe",
+   "vid": "zPx3EibuO_w",
+   "start": 13.649,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_OQAf_rTw7n8",
+   "set": "howto",
+   "vid": "OQAf_rTw7n8",
+   "start": 45.011,
+   "role": "fit",
+   "template": 2
+  },
+  {
+   "id": "describe_OQAf_rTw7n8",
+   "set": "describe",
+   "vid": "OQAf_rTw7n8",
+   "start": 45.011,
+   "role": "fit"
+  },
+  {
+   "id": "howto_gR5YcIJhDcU",
+   "set": "howto",
+   "vid": "gR5YcIJhDcU",
+   "start": 43.383,
+   "role": "fit",
+   "template": 3
+  },
+  {
+   "id": "describe_gR5YcIJhDcU",
+   "set": "describe",
+   "vid": "gR5YcIJhDcU",
+   "start": 43.383,
+   "role": "fit"
+  },
+  {
+   "id": "howto_lk2ics_YImU",
+   "set": "howto",
+   "vid": "lk2ics_YImU",
+   "start": 48.082,
+   "role": "guardrail",
+   "template": 4
+  },
+  {
+   "id": "describe_lk2ics_YImU",
+   "set": "describe",
+   "vid": "lk2ics_YImU",
+   "start": 48.082,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_UcL6WlcyBcI",
+   "set": "howto",
+   "vid": "UcL6WlcyBcI",
+   "start": 46.961,
+   "role": "fit",
+   "template": 5
+  },
+  {
+   "id": "describe_UcL6WlcyBcI",
+   "set": "describe",
+   "vid": "UcL6WlcyBcI",
+   "start": 46.961,
+   "role": "fit"
+  },
+  {
+   "id": "howto_jb-To6qJcxU",
+   "set": "howto",
+   "vid": "jb-To6qJcxU",
+   "start": 7.595,
+   "role": "fit",
+   "template": 6
+  },
+  {
+   "id": "describe_jb-To6qJcxU",
+   "set": "describe",
+   "vid": "jb-To6qJcxU",
+   "start": 7.595,
+   "role": "fit"
+  },
+  {
+   "id": "howto_WViSvPFUVd8",
+   "set": "howto",
+   "vid": "WViSvPFUVd8",
+   "start": 43.002,
+   "role": "fit",
+   "template": 7
+  },
+  {
+   "id": "describe_WViSvPFUVd8",
+   "set": "describe",
+   "vid": "WViSvPFUVd8",
+   "start": 43.002,
+   "role": "fit"
+  },
+  {
+   "id": "howto_E895PNqSgEI",
+   "set": "howto",
+   "vid": "E895PNqSgEI",
+   "start": 12.252,
+   "role": "fit",
+   "template": 0
+  },
+  {
+   "id": "describe_E895PNqSgEI",
+   "set": "describe",
+   "vid": "E895PNqSgEI",
+   "start": 12.252,
+   "role": "fit"
+  },
+  {
+   "id": "howto_uJFbOrNrL3w",
+   "set": "howto",
+   "vid": "uJFbOrNrL3w",
+   "start": 36.223,
+   "role": "fit",
+   "template": 1
+  },
+  {
+   "id": "describe_uJFbOrNrL3w",
+   "set": "describe",
+   "vid": "uJFbOrNrL3w",
+   "start": 36.223,
+   "role": "fit"
+  },
+  {
+   "id": "howto_gTBRQaBRiSs",
+   "set": "howto",
+   "vid": "gTBRQaBRiSs",
+   "start": 18.503,
+   "role": "guardrail",
+   "template": 2
+  },
+  {
+   "id": "describe_gTBRQaBRiSs",
+   "set": "describe",
+   "vid": "gTBRQaBRiSs",
+   "start": 18.503,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_fSDq8CPXHQM",
+   "set": "howto",
+   "vid": "fSDq8CPXHQM",
+   "start": 21.407,
+   "role": "guardrail",
+   "template": 3
+  },
+  {
+   "id": "describe_fSDq8CPXHQM",
+   "set": "describe",
+   "vid": "fSDq8CPXHQM",
+   "start": 21.407,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_uqILuTcux_o",
+   "set": "howto",
+   "vid": "uqILuTcux_o",
+   "start": 54.55,
+   "role": "fit",
+   "template": 4
+  },
+  {
+   "id": "describe_uqILuTcux_o",
+   "set": "describe",
+   "vid": "uqILuTcux_o",
+   "start": 54.55,
+   "role": "fit"
+  },
+  {
+   "id": "howto_hsKmC7RwHvo",
+   "set": "howto",
+   "vid": "hsKmC7RwHvo",
+   "start": 36.687,
+   "role": "guardrail",
+   "template": 5
+  },
+  {
+   "id": "describe_hsKmC7RwHvo",
+   "set": "describe",
+   "vid": "hsKmC7RwHvo",
+   "start": 36.687,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_g1MCVp5xICM",
+   "set": "howto",
+   "vid": "g1MCVp5xICM",
+   "start": 22.5,
+   "role": "guardrail",
+   "template": 6
+  },
+  {
+   "id": "describe_g1MCVp5xICM",
+   "set": "describe",
+   "vid": "g1MCVp5xICM",
+   "start": 22.5,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_s-lM2uwiwyQ",
+   "set": "howto",
+   "vid": "s-lM2uwiwyQ",
+   "start": 61.336,
+   "role": "fit",
+   "template": 7
+  },
+  {
+   "id": "describe_s-lM2uwiwyQ",
+   "set": "describe",
+   "vid": "s-lM2uwiwyQ",
+   "start": 61.336,
+   "role": "fit"
+  },
+  {
+   "id": "howto_VgtNv__qR0k",
+   "set": "howto",
+   "vid": "VgtNv__qR0k",
+   "start": 49.752,
+   "role": "fit",
+   "template": 0
+  },
+  {
+   "id": "describe_VgtNv__qR0k",
+   "set": "describe",
+   "vid": "VgtNv__qR0k",
+   "start": 49.752,
+   "role": "fit"
+  },
+  {
+   "id": "howto_lokFoo_QD8c",
+   "set": "howto",
+   "vid": "lokFoo_QD8c",
+   "start": 63.274,
+   "role": "fit",
+   "template": 1
+  },
+  {
+   "id": "describe_lokFoo_QD8c",
+   "set": "describe",
+   "vid": "lokFoo_QD8c",
+   "start": 63.274,
+   "role": "fit"
+  },
+  {
+   "id": "howto_uz6rjbw0ZA0",
+   "set": "howto",
+   "vid": "uz6rjbw0ZA0",
+   "start": 27.245,
+   "role": "fit",
+   "template": 2
+  },
+  {
+   "id": "describe_uz6rjbw0ZA0",
+   "set": "describe",
+   "vid": "uz6rjbw0ZA0",
+   "start": 27.245,
+   "role": "fit"
+  },
+  {
+   "id": "howto_YNV0pLQ3r5U",
+   "set": "howto",
+   "vid": "YNV0pLQ3r5U",
+   "start": 16.328,
+   "role": "guardrail",
+   "template": 3
+  },
+  {
+   "id": "describe_YNV0pLQ3r5U",
+   "set": "describe",
+   "vid": "YNV0pLQ3r5U",
+   "start": 16.328,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_ya2IXAREZho",
+   "set": "howto",
+   "vid": "ya2IXAREZho",
+   "start": 55.18,
+   "role": "guardrail",
+   "template": 4
+  },
+  {
+   "id": "describe_ya2IXAREZho",
+   "set": "describe",
+   "vid": "ya2IXAREZho",
+   "start": 55.18,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_jznsxDcKSnE",
+   "set": "howto",
+   "vid": "jznsxDcKSnE",
+   "start": 49.739,
+   "role": "guardrail",
+   "template": 5
+  },
+  {
+   "id": "describe_jznsxDcKSnE",
+   "set": "describe",
+   "vid": "jznsxDcKSnE",
+   "start": 49.739,
+   "role": "guardrail"
+  },
+  {
+   "id": "howto_jmE9y0vv2aM",
+   "set": "howto",
+   "vid": "jmE9y0vv2aM",
+   "start": 15.613,
+   "role": "fit",
+   "template": 6
+  },
+  {
+   "id": "describe_jmE9y0vv2aM",
+   "set": "describe",
+   "vid": "jmE9y0vv2aM",
+   "start": 15.613,
+   "role": "fit"
+  },
+  {
+   "id": "howto_vszWsYOdnPg",
+   "set": "howto",
+   "vid": "vszWsYOdnPg",
+   "start": 28.347,
+   "role": "fit",
+   "template": 7
+  },
+  {
+   "id": "describe_vszWsYOdnPg",
+   "set": "describe",
+   "vid": "vszWsYOdnPg",
+   "start": 28.347,
+   "role": "fit"
+  }
+ ]
+}

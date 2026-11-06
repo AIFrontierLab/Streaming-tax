@@ -1,0 +1,65 @@
+# Prompt robustness (docs/generalization/robustness.md; streamreplace.generalization.robustness).
+# The question stem of a fixed item set is perturbed with typos, paraphrases and distractor sentences (PromptRobust,
+# Zhu et al. 2023); parents and children are evaluated offline on the perturbed prompts and their accuracy drops
+# compared: dRob = Drop_parent - Drop_child, + = the child loses less. Instruction-level conditions apply the same
+# edits to MMBench's answer instruction instead. Only the perturbed span changes: options, hint, frames and decoding
+# are those of the main evaluation.
+#
+# Each condition is one outputs folder <outputs root>/<outputs>/<condition> holding subset.json and (except clean)
+# prompt_overrides.jsonl; it is run like any experiment folder:
+#   streamreplace --outputs <folder> run --pairs p1,p2,p3,p4,p5 --protocols P,C --benchmarks videomme,mmbench
+# configs/local.yaml may override any key under `robustness:` (e.g. the paraphrase endpoint).
+# Changing a seed, a size, a condition's name or its parameters changes the prompts the models see.
+
+outputs: robustness                 # experiment root, relative to the outputs root
+seed: 0
+datasets: {videomme: 300, mmbench: 300}     # units: Video-MME one question per video; MMBench questions x all rotations
+pairs: [p1, p2, p3, p4, p5]
+
+# Fields: edit = generator (typo | para | stress | irrelevant | choice); family = primary-endpoint group of a
+# question-stem condition; target: instruction = perturb MMBench's answer instruction instead of the stem, compared
+# with its stem `twin`; datasets / units = run on these benchmarks and on a stratified `units`-unit sub-sample of the
+# shared items; seed_as = draw the edits with that condition's seed (the units both share get identical edits).
+conditions:
+  clean: {}
+  typo: {edit: typo, family: typo, rate: 0.2, max_words: 4}           # DeepWordBug operations on 20% of the words (1-4)
+  para: {edit: para, family: para, pivot: Chinese}                    # back-translation, verified (paraphrase.py)
+  stress: {edit: stress, family: distraction}                         # PromptBench StressTest " and true is true "*5
+  irrelevant: {edit: irrelevant, family: distraction}                 # a sentence of irrelevant.txt
+  # Instruction level, on 100 of the 300 MMBench questions (373 rows); ins_para picks one of 8 hand-written
+  # rewrites per question (the same demand: the letter, directly).
+  ins_typo: {edit: typo, target: instruction, twin: typo, datasets: [mmbench], units: 100, rate: 0.2, max_words: 4}
+  ins_para:
+    edit: choice
+    target: instruction
+    twin: para
+    datasets: [mmbench]
+    units: 100
+    texts: &instruction_rewrites
+      - "Respond directly with the letter of the correct option from the given choices."
+      - "Reply with the letter of the right option among the choices provided, directly."
+      - "From the given choices, answer directly with the letter of the option."
+      - "Give the letter of the chosen option from the listed choices as your direct answer."
+      - "Directly state the letter of the option you choose from the given choices."
+      - "Your answer should be the letter of the option from the choices given, stated directly."
+      - "Pick from the given choices and respond directly with that option's letter."
+      - "Answer directly using the letter of the option from the choices given."
+  ins_irrelevant: {edit: irrelevant, target: instruction, twin: irrelevant, datasets: [mmbench], units: 100}
+  # The same on all 300 MMBench questions; seed_as keeps the 100 earlier questions' edits identical. Reported as a
+  # separate group with its own Holm family.
+  ins300_typo: {edit: typo, target: instruction, twin: typo, datasets: [mmbench], units: 300, rate: 0.2, max_words: 4,
+                seed_as: ins_typo}
+  ins300_para: {edit: choice, target: instruction, twin: para, datasets: [mmbench], units: 300,
+                texts: *instruction_rewrites, seed_as: ins_para}
+  ins300_irrelevant: {edit: irrelevant, target: instruction, twin: irrelevant, datasets: [mmbench], units: 300,
+                      seed_as: ins_irrelevant}
+
+paraphrase:
+  min_change: 0.2           # minimum word-level edit ratio of an accepted paraphrase
+  endpoint: null            # OpenAI-compatible base URL serving the paraphrasing model, e.g. http://127.0.0.1:8000/v1
+  model: judge              # served model name
+  api_key_env: OPENAI_API_KEY   # environment variable holding the endpoint's key, if it needs one
+  max_tokens: 1024
+  temperature: 0
+  enable_thinking: false    # chat_template_kwargs.enable_thinking
+  threads: 32               # requests in flight

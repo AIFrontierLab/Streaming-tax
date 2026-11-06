@@ -1,0 +1,157 @@
+# Model and judge checkpoints of the paper, each pinned to the Hugging Face revision every reported number was
+# generated with. `streamreplace download models|judges` reads the checkpoint references from configs/models.yaml and
+# configs/judges.yaml ("<repo>@<revision>") and checks them against this list; nothing listed here is redistributed.
+#
+# Fields
+#   key          the Hugging Face model repository
+#   revision     the full commit downloaded (the local folders' download metadata recorded it for every file)
+#   role         model (a paper model's weights) | vision (a vision tower loaded separately) | judge
+#   used_by      model id (configs/models.yaml) or judge id (configs/judges.yaml) -> the field that references the
+#                checkpoint there (checkpoint, base, vision, checkpoints.<kind>)
+#   dir          the folder under the checkpoints root (default <checkpoints>/<repo>; a paths file can map a
+#                repository elsewhere with `checkpoint_dirs`)
+#   license      as declared on the model card at this revision; check it yourself before use
+#   files        number of files in the repository at this revision
+#   notes        anything a downloader should know
+version: 1
+checkpoints:
+  # pair p1: LLaVA-OneVision-7B -> MMDuet
+  lmms-lab/llava-onevision-qwen2-7b-ov:
+    revision: 0b07bf7565e244cf4f39982249eafe8cd799d6dd
+    role: model
+    used_by: {llava_ov_7b: checkpoint, mmduet_7b: base}
+    dir: lmms-lab/llava-onevision-qwen2-7b-ov
+    license: apache-2.0
+    files: 18
+  google/siglip-so400m-patch14-384:
+    revision: 9fdffc58afc957d1a03a25b10dba0329ab15c2a3
+    role: vision
+    used_by: {llava_ov_7b: vision, mmduet_7b: vision}
+    dir: google/siglip-so400m-patch14-384
+    license: apache-2.0
+    files: 9
+  wangyueqian/MMDuet:
+    revision: 23669174afcaed24044225a6b89eae8427557cce
+    role: model
+    used_by: {mmduet_7b: checkpoint}
+    dir: wangyueqian/MMDuet
+    license: mit
+    files: 10
+    notes: A LoRA adapter (plus MMDuet's heads) on top of LLaVA-OneVision-7B; download the base model too.
+
+  # pair p2: Qwen2.5-VL-3B -> ThinkStream-3B, MMDuet2
+  Qwen/Qwen2.5-VL-3B-Instruct:
+    revision: 66285546d2b821cf421d4f5eb2576359d3770cd3
+    role: model
+    used_by: {qwen25vl_3b: checkpoint}
+    dir: Qwen/Qwen2.5-VL-3B-Instruct
+    license: qwen-research
+    files: 14
+  CASIA-IVA-Lab/ThinkStream-3B:
+    revision: 9bc0b5aabfb3b4529f9cb21197ad200d7737dd7e
+    role: model
+    used_by: {thinkstream_3b: checkpoint}
+    dir: CASIA-IVA-Lab/ThinkStream-3B
+    license: not declared on the model card
+    files: 16
+  wangyueqian/MMDuet2:
+    revision: 3224235ebb6256e2af7c196f2c265d6cf20c311a
+    role: model
+    used_by: {mmduet2_3b: checkpoint}
+    dir: wangyueqian/MMDuet2
+    license: qwen-research
+    files: 16
+
+  # pair p3: Qwen3-VL-8B -> AURA
+  Qwen/Qwen3-VL-8B-Instruct:
+    revision: 0c351dd01ed87e9c1b53cbc748cba10e6187ff3b
+    role: model
+    used_by: {qwen3vl_8b: checkpoint}
+    dir: Qwen/Qwen3-VL-8B-Instruct
+    license: apache-2.0
+    files: 16
+  aurateam/AURA:
+    revision: 88ee550629fcb4d84428cdbfb346d07f01ea6e03
+    role: model
+    used_by: {aura_8b: checkpoint}
+    dir: aurateam/AURA
+    license: apache-2.0
+    files: 21
+
+  # pair p4: LiveStar-InternVideo-8B -> LiveStar-8B (both load their model code from the fetched LiveStar repository)
+  yzy666/LiveStar_InternVideo_8B:
+    revision: 902503c3395a5f79a8e6196ede522f1303b30218
+    role: model
+    used_by: {livestar_iv_8b: checkpoint}
+    dir: yzy666/LiveStar_InternVideo_8B
+    license: apache-2.0
+    files: 7
+    notes: Weights only; code and tokenizer come from `streamreplace fetch-upstream livestar`.
+  yzy666/LiveStar_8B:
+    revision: fe12f966639ace9562a6db8843dfa5733ccc0d24
+    role: model
+    used_by: {livestar_8b: checkpoint}
+    dir: yzy666/LiveStar_8B
+    license: apache-2.0
+    files: 7
+    notes: Weights only; code and tokenizer come from `streamreplace fetch-upstream livestar`.
+
+  # pair p5: MOSS-VL-Instruct -> MOSS-VL-Realtime
+  OpenMOSS-Team/MOSS-VL-Instruct-0708:
+    revision: abd2185369e9bdb4ce16d8836ff1b24d1e218ea4
+    role: model
+    used_by: {moss_vl: checkpoint}
+    dir: OpenMOSS-Team/MOSS-VL-Instruct-0708
+    license: apache-2.0
+    files: 23
+  OpenMOSS-Team/MOSS-VL-Realtime:
+    revision: 06b067617677661194cf837970fe3a10f1a0e56d
+    role: model
+    used_by: {moss_vl_rt: checkpoint}
+    dir: OpenMOSS-Team/MOSS-VL-Realtime
+    license: apache-2.0
+    files: 23
+
+  # judges (configs/judges.yaml)
+  Qwen/Qwen3.8-27B-FP8:
+    revision: 017b9c7af6b5689d5dd426a76e0bc077eb5ca20a
+    role: judge
+    used_by: {extract: checkpoint}
+    dir: Qwen/Qwen3.8-27B-FP8
+    license: apache-2.0
+    files: 81
+    notes: >-
+      The answer-extraction judge (Qwen3.5 architecture, 27B, FP8), served with vLLM. The revision resolves on the
+      Hub under this repository id; every file of the paper's copy was downloaded at this commit.
+  cais/HarmBench-Llama-2-13b-cls:
+    revision: bda705349d1144fa618770bea64d99ce54e3835b
+    role: judge
+    used_by: {harmbench_cls: checkpoints.text}
+    dir: cais/HarmBench-Llama-2-13b-cls
+    license: mit
+    files: 15
+    notes: HarmBench's classifier for text behaviours.
+  cais/HarmBench-Llama-2-13b-cls-multimodal-behaviors:
+    revision: 928eaf3333b75a0eba1d7632d26256a56223b949
+    role: judge
+    used_by: {harmbench_cls: checkpoints.multimodal}
+    dir: cais/HarmBench-Llama-2-13b-cls-multimodal-behaviors
+    license: mit
+    files: 15
+    notes: HarmBench's classifier for multimodal behaviours.
+  Qwen/Qwen2.5-72B-Instruct:
+    revision: 495f39366efef23836d0cfae4fbe635880d2be31
+    role: judge
+    used_by: {rjscore: checkpoint}
+    dir: Qwen/Qwen2.5-72B-Instruct
+    license: qwen
+    files: 47
+    notes: Video-SafetyBench's RJScore judge (also scores MCV-SafetyBench); about 145 GB in bf16.
+  wayveai/Lingo-Judge:
+    revision: a1a6e2194fd1aedaba02bde82316a6b73753d1d5
+    role: judge
+    used_by: {lingo: checkpoint}
+    dir: wayveai/Lingo-Judge
+    license: other (see the model card)
+    files: 10
+    notes: LingoQA's official judge (fine-tuning study).

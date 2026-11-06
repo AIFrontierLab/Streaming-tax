@@ -1,0 +1,462 @@
+# Where every benchmark's data comes from, pinned. `streamreplace download datasets NAME... | SUITE | all` reads this
+# file; nothing listed here is redistributed with the repository. Files go to <data>/<benchmark>/raw/ (data root:
+# $STREAMREPLACE_DATA, default $STREAMREPLACE_HOME/data), which is what `streamreplace prepare` reads.
+#
+# Source types (`sources`, processed in order):
+#   hf         Hugging Face dataset repository at a full commit `revision`; `allow` = the file patterns fetched
+#              (fnmatch, as huggingface_hub). `files`/`bytes`: what the patterns match at that revision.
+#              `checksums`: per-file size and sha256 (or git blob SHA-1 for small non-LFS files), from the copies
+#              the paper used; `folders`: file count and size of many-file media folders (no per-file sums).
+#   github     files of a GitHub repository at a full `commit`: `files` lists path -> size + sha256, or `tree`
+#              names a folder taken whole, checked by `tree_files` and `tree_sha256` (sha256 of the sorted
+#              "<path> <git blob SHA-1>" lines of the folder at that commit).
+#   url        one file from a fixed URL, checked by size and sha256 (and md5 where the publisher gives one).
+#   gdrive     one file from Google Drive by file id (needs gdown), checked by size and sha256; `unzip: true`
+#              unpacks the archive next to itself.
+#   modelscope a ModelScope dataset without immutable revisions (pinned: false): refused unless
+#              --allow-unpinned is given.
+# `to`         the path under raw/ (default: the source path).
+# `license`    the licence as the publisher declares it; check it yourself before use.
+# `terms`      printed before the download; with `requires_acceptance: true` the download needs
+#              --accept-terms NAME.
+# `group`      image | video | safety | trust | finetune (the paper's benchmarks) | calibration (plugin inputs).
+version: 1
+datasets:
+  dynamath:
+    group: image
+    license: "apache-2.0 (dataset card)"
+    sources:
+      - type: hf
+        repo: DynaMath/DynaMath_Sample
+        revision: bc7fcd1ae58caa445d61f6dc0c241b0bb8a7f4c6
+        allow: ["README.md", "data/*.parquet"]
+        files: 11
+        bytes: 183238683
+        checksums:
+          "README.md": {size: 7453, blob: e851a917e94e704779920220ace18a4ae304a6d4}
+          "data/sample1-00000-of-00001.parquet": {size: 18317120, sha256: 7cc1e3e75ff4b6087795db7c3996f70123ed8b4059e99ee43aa609436456ff26}
+          "data/sample10-00000-of-00010.parquet": {size: 18284319, sha256: d11fa37d8452b59bf6404f2a2178baab1be7983eafaf075f56d5a638167c4c32}
+          "data/sample2-00000-of-00002.parquet": {size: 18346173, sha256: 6576705f17c4c4c220f9f89ba2f58a8c0f91af79653ae0359bff40509035313f}
+          "data/sample3-00000-of-00003.parquet": {size: 18443285, sha256: a15a2cb0866c8271f04f88db2cb1fa15c955b247301cdb02d93dcbbc0b8112ad}
+          "data/sample4-00000-of-00004.parquet": {size: 18264466, sha256: dac29670da0f05ed5c6d071526fe41bfe765a40667af5caadbbd897d16f759d2}
+          "data/sample5-00000-of-00005.parquet": {size: 18208335, sha256: 8ac0352061a7acaeb1f62ab8062d91f1d16e79a0491b4e2f65df012811d45944}
+          "data/sample6-00000-of-00006.parquet": {size: 18408086, sha256: c0c6f41cf1cb0e2d281ddbdf24c5252c103ee8f366dcf555bb8d2c578f297a75}
+          "data/sample7-00000-of-00007.parquet": {size: 18234696, sha256: dd85c285f8c469018990c20539e335b7e41564a31d87a92dd8da243d570e41c6}
+          "data/sample8-00000-of-00008.parquet": {size: 18381180, sha256: d886452bd8360b6a5b564811515b1620591a3ccb61f51fc9a01c5c914da775eb}
+          "data/sample9-00000-of-00009.parquet": {size: 18343570, sha256: 05d5941f0e6b62f21225f933d1c7338234a5d6d70de39ec96b82521a3ffac1fc}
+  mathvista:
+    group: image
+    license: "cc-by-sa-4.0 (dataset card)"
+    notes: "Only the testmini split is evaluated."
+    sources:
+      - type: hf
+        repo: AI4Math/MathVista
+        revision: 2b6ad69445fbb5695c9b165475e8decdbeb97747
+        allow: ["README.md", "data/testmini-*.parquet"]
+        files: 2
+        bytes: 141579726
+        checksums:
+          "README.md": {size: 11600, blob: 3fa1a05f0b4c20392be00d22abd3a8b7d0fb51e2}
+          "data/testmini-00000-of-00001-725687bf7a18d64b.parquet": {size: 141568126, sha256: 373f6c0b412a9be2cec36711cee724e03f4c5db6908f3c13db903aa9694d4f2d}
+  mmbench:
+    group: image
+    license: "not stated with the file; see https://github.com/open-compass/MMBench"
+    notes: "The legacy-format DEV_EN TSV (4,329 rows over 1,164 questions with circular rotations), from the OpenCompass download mirror that the MMBench README links."
+    sources:
+      - type: url
+        url: https://opencompass.oss-cn-shanghai.aliyuncs.com/utils/MMBench/MMBench_DEV_EN_legacy.tsv
+        to: MMBench_DEV_EN_legacy.tsv
+        size: 136359519
+        sha256: 466b319db876c8190a95fa69beaba31b911281c55cb60681d346cbe4ca7e208d
+        md5: 6be6358b6c8d6f633e7cd3c602a49c6b
+  mme:
+    group: image
+    license: "not declared on the dataset card; see the MME project page"
+    sources:
+      - type: hf
+        repo: lmms-lab/MME
+        revision: d6c9023f017b564f7b3ccccf5348166bce8fdbcd
+        allow: ["README.md", "data/test-*.parquet"]
+        files: 5
+        bytes: 864018772
+        checksums:
+          "README.md": {size: 493, blob: 56cbc78cbf3e94289238e3e5a1da78cec9908227}
+          "data/test-00000-of-00004-a25dbe3b44c4fda6.parquet": {size: 34854593, sha256: 1563fd59c8049dbbabe211a049c38b2e20a6d58da94a75c90cfc937d1f6c52e3}
+          "data/test-00001-of-00004-7d22c7f1aba6fca4.parquet": {size: 109541429, sha256: 3623728c0c98807cc7eef9cbd10dfa18c21654321c4b02b7b19bc8e6fc86d830}
+          "data/test-00002-of-00004-594798fd3f5b029c.parquet": {size: 694888210, sha256: c169d85bdf84e21b005170698217e96380bef172e8bd7432fc75ddce51dcaabe}
+          "data/test-00003-of-00004-53ae1794f93b1e35.parquet": {size: 24734047, sha256: aec84886b2bb6dd7bffc94eb3bbca9319e0671f3ee989a08e0758bc2de6c67f6}
+  mmmu:
+    group: image
+    license: "apache-2.0 (dataset card)"
+    notes: "Only the validation split (900 questions) is evaluated."
+    sources:
+      - type: hf
+        repo: MMMU/MMMU
+        revision: 98e6ac0cb9b7b2cd2c991b85a50762edc4aedc68
+        allow: ["README.md", "*/validation-*.parquet"]
+        files: 31
+        bytes: 341206827
+        checksums:
+          "Accounting/validation-00000-of-00001.parquet": {size: 1535386, sha256: f1bedfc8ad70d24f8c1daa50a309d9b3b88ea14caea60299b648c69049fa870f}
+          "Agriculture/validation-00000-of-00001.parquet": {size: 119223107, sha256: f95765c549ebaeedd89c14bfe39d1deefcb9ec6b8b082f5945ffc547f2c4e20c}
+          "Architecture_and_Engineering/validation-00000-of-00001.parquet": {size: 726950, sha256: 09792c72c949565ba9378366562818d9687eba5b4f6fc3e84482a8862cf4dd9c}
+          "Art/validation-00000-of-00001.parquet": {size: 29939738, sha256: d86be1080d7a33a76e9b98f0df0d7ebacbd37b1c29927bbf592489cc4b996c57}
+          "Art_Theory/validation-00000-of-00001.parquet": {size: 29783856, sha256: ba4e709ace78695df3b2ed8859e7cfb36e3cd9c60abd5a0fade9800653b695d6}
+          "Basic_Medical_Science/validation-00000-of-00001.parquet": {size: 4131430, sha256: 577102f6f742471a947a82579df0ffa8b7bfd1b10dc2eadbf90f9ea5ff0cddd4}
+          "Biology/validation-00000-of-00001.parquet": {size: 8494798, sha256: 644e5b10eb90689a0e41a7c738526113551f59ab5e66c44a870e6bca52d39e08}
+          "Chemistry/validation-00000-of-00001.parquet": {size: 1522870, sha256: ff62af1b99c6f60d2b2228bf438152d9e44c06e42455d5eb5e229954aa95b00b}
+          "Clinical_Medicine/validation-00000-of-00001.parquet": {size: 10888251, sha256: 2c3d29a6c838e279974731ea92fa459e15107f9213970a9a4f9312c1f102bd58}
+          "Computer_Science/validation-00000-of-00001.parquet": {size: 2078701, sha256: 73c8ef8ba23a050b85c524363614801cdc73db36ad7a7348643006766da037f5}
+          "Design/validation-00000-of-00001.parquet": {size: 16227878, sha256: c69b48ecde9ad80bb8b530dec4da99ae051b17f90abefd2b98230313580c5b7f}
+          "Diagnostics_and_Laboratory_Medicine/validation-00000-of-00001.parquet": {size: 37089865, sha256: cefb7363510a05284dd8a0b12cb7cc7f20843c65d6b7101eefe3929d4061a592}
+          "Economics/validation-00000-of-00001.parquet": {size: 1424097, sha256: 1a6b0ef6edf3eb76f2fae37cbff28d6723eec4bd94d4b3d6e676aa4ea924d95b}
+          "Electronics/validation-00000-of-00001.parquet": {size: 644538, sha256: 558d6970c95c9961c63da8b1ebd7a885524059a83838fa67e6be8c6522a536ba}
+          "Energy_and_Power/validation-00000-of-00001.parquet": {size: 1646107, sha256: 46f8d320be746b990145c4e2bf6b88fc493f0e8e322759ee2a9e2fcc8ee404b5}
+          "Finance/validation-00000-of-00001.parquet": {size: 1002833, sha256: 194f838578ac4fe08c0784b833bfbd89087a0bd2e83dc02c89e7d4e9d5b6d326}
+          "Geography/validation-00000-of-00001.parquet": {size: 6677774, sha256: 536505f8dc6199713effcd7cf9b8ae2da2325e51ec17d0fcfabc75956965701c}
+          "History/validation-00000-of-00001.parquet": {size: 8430352, sha256: fe6ba5fa13133d43afbd63abfe75b49ac45c5de566ac896fbc370cb1492c8f82}
+          "Literature/validation-00000-of-00001.parquet": {size: 14246788, sha256: 3ad02815b3af320c574b254c7a2134f31288a360c0168035ee051c8946cb8b1b}
+          "Manage/validation-00000-of-00001.parquet": {size: 3139783, sha256: 838ecee5c3c9708b3fb70e414b83bfee35725814290908a853b24d06bbd832fe}
+          "Marketing/validation-00000-of-00001.parquet": {size: 1361340, sha256: 0b4854d8a509e8e0f401255d5788fd83e489e4d5d5207826856dcffa1157feb2}
+          "Materials/validation-00000-of-00001.parquet": {size: 2309857, sha256: 6881364f70c6911f0610005ad5aaf10f4394a7f578ead566e528b574da534e54}
+          "Math/validation-00000-of-00001.parquet": {size: 1447995, sha256: ebe73665a3b1db2bfd33ae67a00efcf86b6d817463a12d995e30716d69aae8e7}
+          "Mechanical_Engineering/validation-00000-of-00001.parquet": {size: 876772, sha256: 8381e04c04dc8e0b3a21404e251a1fc2deb52d3f5b2485e5e8bc99e4907d21d7}
+          "Music/validation-00000-of-00001.parquet": {size: 9363650, sha256: 132f8e3965276788f1b5388c39565d5475b8eb61af3142522be446e9a131af8f}
+          "Pharmacy/validation-00000-of-00001.parquet": {size: 1551086, sha256: 93bc3de041d8f69b9e7cd29886ad68f26ac5b11bdf221cabb5f84b8b8d8ca6a9}
+          "Physics/validation-00000-of-00001.parquet": {size: 1117086, sha256: 649a7c85ae9f1aa0762059eca0c082e3862f669f07a1283c36ada31def2c391d}
+          "Psychology/validation-00000-of-00001.parquet": {size: 4311520, sha256: 16101fe448e07ce654d95b5ef5793988fb6e7f5fe42b94575c33c9ffbd4ad919}
+          "Public_Health/validation-00000-of-00001.parquet": {size: 1510182, sha256: c8525f7af4a47ffd3c2959816147911203782c8e1116267f4e6e54026ef0f923}
+          "README.md": {size: 42680, blob: 4c4d56e7d9393cb163a7e3cf733ac482e550779b}
+          "Sociology/validation-00000-of-00001.parquet": {size: 18459557, sha256: a38e31036b6cfb6df82c069f2715b8df0158969405e86a08c1732c334638ac32}
+  mmstar:
+    group: image
+    license: "not declared on the dataset card; see https://github.com/MMStar-Benchmark/MMStar"
+    sources:
+      - type: hf
+        repo: Lin-Chen/MMStar
+        revision: bc98d668301da7b14f648724866e57302778ab27
+        allow: ["README.md", "mmstar.parquet"]
+        files: 2
+        bytes: 41802936
+        checksums:
+          "README.md": {size: 4224, blob: c80033654d246116cb2631e7dc219c25bb7a8589}
+          "mmstar.parquet": {size: 41798712, sha256: 29afd74b0134cfab083a8909b5358577ab18fd41c1e612031577cfb3635531c2}
+  scienceqa:
+    group: image
+    license: "not declared on this mirror's card; the original ScienceQA terms apply (https://scienceqa.github.io)"
+    notes: "The lmms-lab mirror; only ScienceQA-IMG test (questions with an image) is evaluated."
+    sources:
+      - type: hf
+        repo: lmms-lab/ScienceQA
+        revision: 69dd4d6b67373d38f96a5badd5d24d0eb5bcdc50
+        allow: ["README.md", "ScienceQA-IMG/test-*.parquet"]
+        files: 2
+        bytes: 130146361
+        checksums:
+          "README.md": {size: 3060, blob: 724eabd4d2b08db2d01986053c2f87873aca9a8a}
+          "ScienceQA-IMG/test-00000-of-00001.parquet": {size: 130143301, sha256: 1f9729818b577d70325a0e59f488f6eeda74c827caddd56b75ccf3e36ed45064}
+  visulogic:
+    group: image
+    license: "apache-2.0 (dataset card)"
+    sources:
+      - type: hf
+        repo: VisuLogic/VisuLogic
+        revision: 3e483f8cca0bc766ecc5f70299f2b8a34b5035ca
+        allow: ["README.md", "data.jsonl", "images.zip"]
+        files: 3
+        bytes: 36013705
+        checksums:
+          "README.md": {size: 5379, blob: 9b02d6fdd28351da2fcfcadb6738cfbd0985cd77}
+          "data.jsonl": {size: 294456, blob: a3442b1be0519c7cfba7c22e7429bfe94769e20c}
+          "images.zip": {size: 35713870, sha256: 86157164e4ee61296ed923dca61c115f08ba0633ca7c973029dbec3e0edf555b}
+  videomme:
+    group: video
+    license: "not declared on the dataset card; Video-MME's terms of use apply (https://video-mme.github.io)"
+    notes: "All 20 video archives are needed (the short split is spread over them); about 101 GB."
+    sources:
+      - type: hf
+        repo: lmms-lab/Video-MME
+        revision: ead1408f75b618502df9a1d8e0950166bf0a2a0b
+        allow: ["README.md", "videomme/*.parquet", "subtitle.zip", "videos_chunked_*.zip"]
+        files: 23
+        bytes: 101002232811
+        checksums:
+          "README.md": {size: 677, blob: aac237fb77eb98ef6e75bdc3b87c4a17eb9cb502}
+          "subtitle.zip": {size: 7504462, sha256: a2ee50c5912d23301ddf2c5036c19c4ac4eb2116cd9874aeecd026c4eff45a34}
+          "videomme/test-00000-of-00001.parquet": {size: 405167, sha256: 7fffab8ed38ecc2f9f0eca4c44d8a11636f0ee96116ede83580c8b9ae0faf986}
+          "videos_chunked_01.zip": {size: 5179377199, sha256: 3076173e26febbecd3c44eba36b6c3da883f16467812a913f0953e98298b50f6}
+          "videos_chunked_02.zip": {size: 5326504615, sha256: db6b99129aaf6c0b049a47178718cec03e819e2cbfc3083b7ad1402f58d7c36e}
+          "videos_chunked_03.zip": {size: 4864542112, sha256: 6daab383dd797577b31eba72e90f05acc9956126a93840f7451ca01cb4d89641}
+          "videos_chunked_04.zip": {size: 5163884703, sha256: b9d8238c7e0641d117d94885172c75a0ad571e42ff08649db0d8240f0a969a24}
+          "videos_chunked_05.zip": {size: 5095830066, sha256: 3ecc6b55bdf4025f0eff75a22b8749bd416dd6659915b2bddf203c2b6fcba999}
+          "videos_chunked_06.zip": {size: 5274280690, sha256: 162507ba54f38c2c7f7e4cc9d6d963ef6b9f26579c64e36843f6491f043191dc}
+          "videos_chunked_07.zip": {size: 5217070182, sha256: ba40a267c0cc5dd322ebc1d7c87d064c62250c34d92faead5ce497adca2228e3}
+          "videos_chunked_08.zip": {size: 5275876595, sha256: 954c02a9e88d59b6d26f7d72e5c1a6599214105f48a28b442d9aac3aeca4b3f7}
+          "videos_chunked_09.zip": {size: 5093027546, sha256: 5f06a43ac518437ea0012aabacc8c959a3b103907f2dad71f31fb96ff712d3c0}
+          "videos_chunked_10.zip": {size: 5251346789, sha256: 4997d3a2eb94cc80f082af0847c79255f132d6137b99b040fa056bb737e4dd1a}
+          "videos_chunked_11.zip": {size: 5123466459, sha256: de0c93afc2eca50c38f9a0f9674fd763c82ce639a1cf26dc74a72c02e87834fe}
+          "videos_chunked_12.zip": {size: 5316829715, sha256: bc9c4a6072de70e0024e854470c8db26c12bfdfc1c3ba3f3053bb36b73363504}
+          "videos_chunked_13.zip": {size: 5295651815, sha256: b5a263c966384393a3d90dfe64bc960ccf4cc257c7a93ab02769b2039afa05e0}
+          "videos_chunked_14.zip": {size: 5291514653, sha256: dbf9c5be8cb20f14435171e2f232c1e16627d9d3a52ddaaca3805f3e11916f1e}
+          "videos_chunked_15.zip": {size: 5283263670, sha256: ecb2a6eebf2cdd6bef8c6ddb349e1acef48677be886dc3637a5e5a65e45e46aa}
+          "videos_chunked_16.zip": {size: 5105597041, sha256: 5c71bdf703c1081db373f9eb3dc568147117e555327e8c8b0b749b1d56d81c16}
+          "videos_chunked_17.zip": {size: 5277591301, sha256: 24ee556b6214127d541e660ca1ffe21e8feea0df8f3f9504f3cd028736ee1b10}
+          "videos_chunked_18.zip": {size: 5343301110, sha256: eac78a739fd26681bf4bac6a405215ed81b80e154b15203376e9de2b67077c81}
+          "videos_chunked_19.zip": {size: 4973938854, sha256: 16f9a49b7edb100e10390e48371ca9bc58c88235191361e176455a41feacdb68}
+          "videos_chunked_20.zip": {size: 2241427390, sha256: 45ffc49a8600b856aa02ea05b35da970c250a5790f7d7da123e5795ff0e27171}
+  tomato:
+    group: video
+    license: "cc-by-sa-4.0 (dataset card)"
+    notes: "Questions from Hugging Face; videos.zip from the authors' Google Drive link in the TOMATO README (needs the gdown package)."
+    sources:
+      - type: hf
+        repo: yale-nlp/TOMATO
+        revision: aa4827bbd64ce5a93588b09e5c6da6eb58dd09c9
+        allow: ["README.md", "data/*.parquet"]
+        files: 7
+        bytes: 83984
+        checksums:
+          "README.md": {size: 12729, blob: e13c5f7a15d80d9ba0fb2ee7745524f887e69bc6}
+          "data/count-00000-of-00001-b1a5fcd07825dea8.parquet": {size: 11979, sha256: d834d55093942560d13a3ee24fdb8d6753c44f96ec7d138cd8b018bdb52787ee}
+          "data/direction-00000-of-00001-6ad53d19ff32f95f.parquet": {size: 14988, sha256: 1d7163d2e54c8168aaa78741e6f93efd1b10d48ef0a0622c05a7070f628bb3a1}
+          "data/rotation-00000-of-00001-08423ae1066428bd.parquet": {size: 13871, sha256: 0138892985e9d4ffb2c23dba9e5a2f550ff7eaad7a582f0a9a00d6c32e1baa0e}
+          "data/shape_trend-00000-of-00001-0d46b5472272272a.parquet": {size: 10607, sha256: 631bb6e33304f2d3710b50cc1281fbe02b6edb264e09b20156d70b8d3cacc9c2}
+          "data/velocity_frequency-00000-of-00001-d77a9ec4957bf2b4.parquet": {size: 11820, sha256: 45d4e3e2dd7bfe812baac381f256b9731ff80af13e1b049fb2720321dc576458}
+          "data/visual_cues-00000-of-00001-d4585588d5b20c3d.parquet": {size: 7990, sha256: e5d5abe2055b4ef01443512e4d0d90489a8795b55c92dde88d65841ad5786c5b}
+      - type: gdrive
+        id: 1-dNt9bZcp6C3RXuGoAO3EBgWkAHg8NWR
+        to: videos.zip
+        size: 12085415770
+        sha256: 8e84b45ab3147badeb633ab00e9e971fd0db1f7d36b10674c519a990977128cb
+  timeblind:
+    group: video
+    license: "not declared on the dataset card; see https://github.com/Baiqi-Li/TimeBlind"
+    notes: "tags.json (question tags, metadata only) comes from the TimeBlind GitHub repository at the commit whose official scorer is pinned in manifests/upstream.yaml."
+    sources:
+      - type: hf
+        repo: BaiqiL/TimeBlind
+        revision: bafceda3a2bd0e5128c390ec25fdc54e470a743d
+        allow: ["README.md", "data.jsonl", "videos/*"]
+        files: 1202
+        bytes: 3977291782
+        folders:
+          "videos/": {files: 1200, bytes: 3976730244}
+        checksums:
+          "README.md": {size: 2992, blob: 70f67db41bb8edeb803def4732b37476b822edd2}
+          "data.jsonl": {size: 558546, blob: 5f51be24bdeee24d96c2265a86e1d3fb6914aa23}
+      - type: github
+        repo: Baiqi-Li/TimeBlind
+        commit: 03129551918c0830f3ee727485eb9cfb437e21e5
+        files:
+          tags.json: {size: 46131, sha256: 5257e1a82621976f9277f05d0ce77f8684f5821a4a83b63704fca21eefa68cfe}
+  videoreasonbench:
+    group: video
+    license: "not declared on the dataset card; see https://github.com/llyx97/video_reason_bench"
+    notes: "The official question files (questions/*.json) come with `streamreplace fetch-upstream videoreasonbench`; the judge's state checkers use the states stored in this release."
+    sources:
+      - type: hf
+        repo: lyx97/reasoning_videos
+        revision: ebab429914370bc5fd83f9bf6e21a57d707fc90e
+        allow: ["README.md", "*/test-*.parquet", "videos.zip"]
+        files: 8
+        bytes: 4049698122
+        checksums:
+          "README.md": {size: 5733, blob: 753837c81cfad58d77f5ba36cf56af336f44a82e}
+          "card/test-00000-of-00001.parquet": {size: 37394, sha256: 02d97136c9738698d6023f99bb2c163d6348fb12babde042a795e5a42cc38de2}
+          "chip/test-00000-of-00001.parquet": {size: 32273, sha256: 221c90f906576e01f8a0b6082ff8f2d519f5486ab57f65c358066ce1736d7c3c}
+          "cup/test-00000-of-00001.parquet": {size: 31640, sha256: fee981714c25956d18ed9c42a3938edb236cbce0ce6dc7b4ceca6ea2bd158f22}
+          "file_sys/test-00000-of-00001.parquet": {size: 69467, sha256: e66f8138da237ae4467d0069c278be22b6e7c7b3c7cd8994be1a7332f1706100}
+          "grid/test-00000-of-00001.parquet": {size: 40796, sha256: 94aed699d260689d1584bc8052e04e4cbd1809b9b38a4765d2a619cfab80fb17}
+          "hrd/test-00000-of-00001.parquet": {size: 35333, sha256: 0c51f07bac351f8624c1655bd6af31da324661eb21bbdf35ab4279c01a388d1c}
+          "videos.zip": {size: 4049445486, sha256: 6878d9a397cb0516788eaa3b8e1d9fc51fb1d35a150e12f99ce32496ec456f9e}
+  harmbench:
+    group: safety
+    license: "MIT (repository LICENSE at the commit)"
+    notes: "The repository's data/ folder: behaviour CSVs and images, the copyright classifier hashes and the classifier validation sets (judge self-test)."
+    sources:
+      - type: github
+        repo: centerforaisafety/HarmBench
+        commit: 8e1604d1171fe8a48d8febecd22f600e462bdcdd
+        tree: data/
+        tree_files: 227
+        bytes: 367857895
+        tree_sha256: e090fe559ac5b846b61d7da19b96615c67c2c4e00d39446f577b55e7572f4aeb
+  video_safetybench:
+    group: safety
+    license: "cc-by-nc-sa-4.0 (dataset card); gated"
+    notes: "Contains harmful requests; evaluation use only."
+    terms: "Video-SafetyBench is gated on Hugging Face: open https://huggingface.co/datasets/BAAI/Video-SafetyBench, accept its conditions (access is granted automatically), then make the account's token available (HF_TOKEN, or `huggingface-cli login`)."
+    sources:
+      - type: hf
+        repo: BAAI/Video-SafetyBench
+        revision: b04daeb5f6c185df47e2aacb4d30b87912c51114
+        allow: ["README.md", "benign_data.json", "harmful_data.json", "video.tar.gz"]
+        files: 4
+        bytes: 13203311935
+        checksums:
+          "README.md": {size: 3460, blob: 9719ab94f502964d55f214f673fbe16b319e1b9d}
+          "benign_data.json": {size: 515370, blob: 528675766318a93ec2c91413f493eed23089b16a}
+          "harmful_data.json": {size: 503052, blob: f408bb214f888aba37682a5cd7abc05d92a2b4ae}
+          "video.tar.gz": {size: 13202290053, sha256: 03af059187d49a0f73ca7abd01a5038e340754fe64058b34dcd77dc705bf0a73}
+  mcv_safetybench:
+    group: safety
+    license: "apache-2.0 (dataset card)"
+    notes: "Only the two video folders are needed; the questions, attack prompts and policy texts come with `streamreplace fetch-upstream mcv_safetybench`. Contains harmful requests."
+    sources:
+      - type: hf
+        repo: Choongwon/MCV_SafetyBench
+        revision: 2fc4678aeeddbe649b5b95e535e31c1b5bbf6f17
+        allow: ["README.md", "fi_video_only_data/*", "fi_video+T_data/*"]
+        files: 2921
+        bytes: 3227677618
+        folders:
+          "fi_video+T_data/": {files: 1460, bytes: 1527465570}
+          "fi_video_only_data/": {files: 1460, bytes: 1700212020}
+        checksums:
+          "README.md": {size: 28, blob: 154df8298fab5ecf322016157858e08cd1bccbe1}
+  vmdt_fairness:
+    group: trust
+    license: "not declared on the dataset card; see https://github.com/sunblaze-ucb/VMDT"
+    notes: "Only fairness/ (about 84 GB) is downloaded."
+    terms: "The VMDT fairness videos come from third-party face-video datasets with their own terms of use (see the VMDT README); use them for evaluation only."
+    sources:
+      - type: hf
+        repo: mmfm-trust/V2T
+        revision: 9ec89877deaa7fc7648c23ccb12e2875114e091c
+        allow: ["README.md", "fairness/*"]
+        files: 5023
+        bytes: 84055105326
+        folders:
+          "fairness/vid/decision_making/": {files: 2004, bytes: 5926422628}
+          "fairness/vid/overkill/": {files: 184, bytes: 637732522}
+          "fairness/vid/stereotype/": {files: 2824, bytes: 77355897648}
+        checksums:
+          "README.md": {size: 3992, blob: 5a36bf65c44dd1b9230c80f4d47693fa215526d6}
+          "fairness/annotation/CasualConversations.json": {size: 3351027, blob: 0634bf054b13af0a89f266db909aa5cd4c87f711}
+          "fairness/annotation/CasualConversations_mini.json": {size: 1028668, blob: 06eb20b9f57b3413a373642cbfbcb0fece6fb813}
+          "fairness/annotation/CasualConversations_transcriptions.json": {size: 128298975, sha256: cf4b8309a8e3c583e7b349de8daba19d1230a4feff7955ee35c1832a5a8a0ecf}
+          "fairness/annotation/DFDC_CasualConversations_correspondences.json": {size: 1503912, blob: ccbe2f85eb35f64aeae948efec3d0c1ec2c34e2f}
+          "fairness/annotation/age_anno_test.csv": {size: 68029, blob: 9c7cbae4f4e472ae07db77fe7e513400fd9cacd6}
+          "fairness/annotation/annotation_test.pkl": {size: 261721, sha256: 1d758f806581497ee17fdb1bc00c89d37b3321ffd588c3116fad4f8f479f3f4b}
+          "fairness/annotation/eth_gender_annotations_test.csv": {size: 72037, blob: a0cbc758c9c5b90433dc1df7c8d09fa9c030383b}
+          "fairness/decision_making-00000-of-00001.parquet": {size: 380581, sha256: 63f332be7ffebe46f4e6c11770767ed77a79a44f5e68f0377a59332aa8472448}
+          "fairness/overkill-00000-of-00001.parquet": {size: 17885, sha256: 8c37b211fea09f3d7d7674923e8eafbe866f76b77fde21a082285b557ff09cae}
+          "fairness/stereotype-00000-of-00001.parquet": {size: 65701, sha256: da2840112863af216158e3fd9f305d9142f1e4d629fa8d1604a16233fdc81c4f}
+  vmdt_privacy:
+    group: trust
+    license: "not declared on the dataset card; see https://github.com/sunblaze-ucb/VMDT"
+    notes: "Only privacy/ (about 4 GB) is downloaded."
+    sources:
+      - type: hf
+        repo: mmfm-trust/V2T
+        revision: 9ec89877deaa7fc7648c23ccb12e2875114e091c
+        allow: ["README.md", "privacy/*"]
+        files: 202
+        bytes: 3987383925
+        folders:
+          "privacy/vids/": {files: 200, bytes: 3987372847}
+        checksums:
+          "README.md": {size: 3992, blob: 5a36bf65c44dd1b9230c80f4d47693fa215526d6}
+          "privacy/privacy-00000-of-00001.parquet": {size: 7086, sha256: 83d28b185368f10c1af0b60229b5433525a1cdb334a559f70803b152da5facfc}
+  lingoqa:
+    group: finetune
+    license: "Wayve Dataset Licence Agreement for Non-Commercial Use (LICENCE in the LingoQA repository)"
+    notes: "Six files from the Google Drive folders linked in the LingoQA README (needs the gdown package); the image archives are unpacked next to themselves. About 66 GB; Action/Scenery are the training data."
+    terms: "LingoQA is licensed for personal, non-commercial use and may not be redistributed or sublicensed. Read the licence (LICENCE in https://github.com/wayveai/LingoQA) before downloading; pass --accept-terms lingoqa to confirm."
+    requires_acceptance: true
+    sources:
+      - type: gdrive
+        id: 1I8u6uYysQUstoVYZapyRQkXmOwr-AG3d
+        to: evaluation/val.parquet
+        size: 73927
+        sha256: 435461a8a8038ad8d2a8fe98388f40530978149e60e7beaaa41174088fe53caf
+      - type: gdrive
+        id: 1U5tBTZjw0rH9ID1JuuWsOmIp2HNvQvQo
+        to: evaluation/images.zip
+        size: 232101697
+        sha256: 343703b0194ba26eb20a6c5678f62963be037ac45ba742e5e095dd4a4b5aee5e
+        unzip: true
+      - type: gdrive
+        id: 12hpHv5qJK31caoT8AV2SsYyJfEfs1W_W
+        to: action/train.parquet
+        size: 21515131
+        sha256: b6dcc29b62fd7b6dfa46ca2ea312424e966a96b22fdc0db705498d29caefbdab
+      - type: gdrive
+        id: 1Iqps7_irlTcVAXPeujJKLaw9QRdY0U7o
+        to: action/images.zip
+        size: 57072793178
+        sha256: f172cfe4cbc4e72dade3a35bdc22bf742c8c87609f278a5587dfe186d8b386c1
+        unzip: true
+      - type: gdrive
+        id: 1mN55vQKyrgKops09u7Hx4N773Kz5rq9o
+        to: scenery/train.parquet
+        size: 12204937
+        sha256: 68fcc9acb6bd99bed0bbc641a57bab77b862fb3fb00055ee1874015511ccd8ee
+      - type: gdrive
+        id: 1Qv04SMKRMWW0sAGRTNCrXIDPbRaZWFrR
+        to: scenery/images.zip
+        size: 8273918069
+        sha256: fcd911868df3643d0d1a8529c8ca3b2393ddbc2a14806b23c34624bc0d9e6ee0
+        unzip: true
+  eyepcr:
+    group: finetune
+    license: "cc-by-4.0 (dataset card)"
+    notes: "videos_resized_slice.zip (12.7 GB) holds the clips."
+    sources:
+      - type: hf
+        repo: EvergreenTree/EyePCR
+        revision: 5a25c1e855940d98b67fd59d51b062fef9f8203e
+        allow: ["README.md", "LICENSE", "croissant.json", "train.json", "test.json", "test_cases.txt", "MCQ.zip", "OEQ.zip", "videos_resized_slice.zip"]
+        files: 9
+        bytes: 12838920450
+        checksums:
+          "LICENSE": {size: 19759, blob: 176bb6930255c9859428728b4b5bdeb2ee40ae21}
+          "MCQ.zip": {size: 6272340, sha256: b9b60d9fcb077213a334cf9c3d4e56b47d3ae6a1c40d21aa48d0da4f6772cb66}
+          "OEQ.zip": {size: 8269734, sha256: 74784634841b83b27f533dcd97db7111a10c88011c22d7951b48b37097434844}
+          "README.md": {size: 2794, blob: 8888637d459a5119fb0c1871d49b6d54e5208d83}
+          "croissant.json": {size: 5766, blob: e58ccfd7b6a84730a0c9e6988cb3e141af5934a9}
+          "test.json": {size: 6568347, blob: 53b09946d4736c4abe94b2360339f339f7e95e81}
+          "test_cases.txt": {size: 1539, blob: 1db64a15c4e4e1a79ead29043f3a8d5298177a84}
+          "train.json": {size: 86667156, sha256: cdb9ac1f841ce1b971c8aac8d719e687d603fdf6b1983b718cbe71db73c0cb77}
+          "videos_resized_slice.zip": {size: 12731113015, sha256: 2a0ead82c72b08b1e6fae4c5404fb8b219d5639bdd2666da89f43e5d154cba8c}
+  openuav_qa:
+    group: finetune
+    license: "apache-2.0 (dataset card)"
+    notes: "Annotations from Hugging Face. Frames are only on ModelScope, which offers no immutable revision for this dataset: the downloader records every trajectory's file list with sha256 (raw/modelscope_tree.jsonl) and checks each frame against it. Optional benchmark of the fine-tuning study."
+    sources:
+      - type: hf
+        repo: choucsan/OpenUAV-QA
+        revision: 121d55c345602f0636bc73f4a94076281ecf353b
+        allow: ["README.md", "TravelUAV_train.jsonl", "TravelUAV_test.jsonl"]
+        files: 3
+        bytes: 25379529
+        checksums:
+          "README.md": {size: 16033, blob: 346b0b2f45f98db62abfc884789f6e65e5ac69d2}
+          "TravelUAV_test.jsonl": {size: 6355067, blob: bff10ab637335920ffadc4c7698fc8c12042b312}
+          "TravelUAV_train.jsonl": {size: 19008429, sha256: 424207399ac02f494f06b1b2bd86fea3c3c1e1b575484616bd3c5ee621f88b0c}
+      - type: modelscope
+        repo: choucisan/OpenUAV-QA
+        root: TravelUAV_dataset
+        pinned: false
+        frames: selected     # only the frames of selected trajectories: --frames-for OUTPUTS
+  advbench:
+    group: calibration
+    license: "MIT (repository LICENSE)"
+    notes: "Harmful requests for the plugin's calibration (`plugin calibrate --advbench FILE`). Contains harmful text."
+    sources:
+      - type: github
+        repo: llm-attacks/llm-attacks
+        commit: a62d1307e38b3a076e614b20781c785fd860d813
+        files:
+          data/advbench/harmful_behaviors.csv: {size: 82125, sha256: 6cd1a5c63c07610d7eb67307772ee5606017ee950b5770ab288a2c487489d3e1}
+        to: harmful_behaviors.csv
+  alpaca:
+    group: calibration
+    license: "CC BY-NC 4.0 (the repository's current DATA_LICENSE and README; at the pinned commit DATA_LICENSE held the ODC-By text)"
+    notes: "Harmless instructions for the plugin's calibration (`plugin calibrate --alpaca FILE`). The file is unchanged since this commit."
+    sources:
+      - type: github
+        repo: tatsu-lab/stanford_alpaca
+        commit: f13496211289def0ff88ae673389ae14a818b4b3
+        files:
+          alpaca_data.json: {size: 22773992, sha256: 2eddafc6b977608d778aaab8dfc7e50e547b3af9826dfb9e909d9fc362e4a419}

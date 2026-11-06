@@ -1,0 +1,85 @@
+dataset,split,child,transition,verdict
+video_safetybench,harmful,mmduet_7b,P->C,response-form change
+video_safetybench,harmful,mmduet_7b,C->S,response-form change
+video_safetybench,harmful,mmduet_7b,P->S,response-form change
+video_safetybench,harmful,thinkstream_3b,P->C,response-form change
+video_safetybench,harmful,thinkstream_3b,C->S,response-form change
+video_safetybench,harmful,thinkstream_3b,P->S,response-form change
+video_safetybench,harmful,mmduet2_3b,P->C,response-form change
+video_safetybench,harmful,mmduet2_3b,C->S,response-form change
+video_safetybench,harmful,mmduet2_3b,P->S,response-form change
+video_safetybench,harmful,aura_8b,P->C,less safe
+video_safetybench,harmful,aura_8b,C->S,response-form change
+video_safetybench,harmful,aura_8b,P->S,response-form change
+video_safetybench,harmful,livestar_8b,P->C,response-form change
+video_safetybench,harmful,livestar_8b,C->S,response-form change
+video_safetybench,harmful,livestar_8b,P->S,response-form change
+video_safetybench,harmful,moss_vl_rt,P->C,less safe
+video_safetybench,harmful,moss_vl_rt,C->S,safer
+video_safetybench,harmful,moss_vl_rt,P->S,less safe
+video_safetybench,benign,mmduet_7b,P->C,response-form change
+video_safetybench,benign,mmduet_7b,C->S,response-form change
+video_safetybench,benign,mmduet_7b,P->S,response-form change
+video_safetybench,benign,thinkstream_3b,P->C,response-form change
+video_safetybench,benign,thinkstream_3b,C->S,response-form change
+video_safetybench,benign,thinkstream_3b,P->S,response-form change
+video_safetybench,benign,mmduet2_3b,P->C,response-form change
+video_safetybench,benign,mmduet2_3b,C->S,response-form change
+video_safetybench,benign,mmduet2_3b,P->S,response-form change
+video_safetybench,benign,aura_8b,P->C,response-form change
+video_safetybench,benign,aura_8b,C->S,response-form change
+video_safetybench,benign,aura_8b,P->S,response-form change
+video_safetybench,benign,livestar_8b,P->C,response-form change
+video_safetybench,benign,livestar_8b,C->S,no material change
+video_safetybench,benign,livestar_8b,P->S,response-form change
+video_safetybench,benign,moss_vl_rt,P->C,less safe
+video_safetybench,benign,moss_vl_rt,C->S,less safe
+video_safetybench,benign,moss_vl_rt,P->S,less safe
+mcv_safetybench,explicit,mmduet_7b,P->C,response-form change
+mcv_safetybench,explicit,mmduet_7b,C->S,response-form change
+mcv_safetybench,explicit,mmduet_7b,P->S,response-form change
+mcv_safetybench,explicit,thinkstream_3b,P->C,response-form change
+mcv_safetybench,explicit,thinkstream_3b,C->S,response-form change
+mcv_safetybench,explicit,thinkstream_3b,P->S,response-form change
+mcv_safetybench,explicit,mmduet2_3b,P->C,response-form change
+mcv_safetybench,explicit,mmduet2_3b,C->S,response-form change
+mcv_safetybench,explicit,mmduet2_3b,P->S,response-form change
+mcv_safetybench,explicit,aura_8b,P->C,less safe
+mcv_safetybench,explicit,aura_8b,C->S,response-form change
+mcv_safetybench,explicit,aura_8b,P->S,less safe
+mcv_safetybench,explicit,livestar_8b,P->C,response-form change
+mcv_safetybench,explicit,livestar_8b,C->S,response-form change
+mcv_safetybench,explicit,livestar_8b,P->S,response-form change
+mcv_safetybench,explicit,moss_vl_rt,P->C,safer
+mcv_safetybench,explicit,moss_vl_rt,C->S,less safe
+mcv_safetybench,explicit,moss_vl_rt,P->S,safer
+mcv_safetybench,implicit,mmduet_7b,P->C,response-form change
+mcv_safetybench,implicit,mmduet_7b,C->S,response-form change
+mcv_safetybench,implicit,mmduet_7b,P->S,response-form change
+mcv_safetybench,implicit,thinkstream_3b,P->C,response-form change
+mcv_safetybench,implicit,thinkstream_3b,C->S,response-form change
+mcv_safetybench,implicit,thinkstream_3b,P->S,response-form change
+mcv_safetybench,implicit,mmduet2_3b,P->C,response-form change
+mcv_safetybench,implicit,mmduet2_3b,C->S,response-form change
+mcv_safetybench,implicit,mmduet2_3b,P->S,response-form change
+mcv_safetybench,implicit,aura_8b,P->C,response-form change
+mcv_safetybench,implicit,aura_8b,C->S,no material change
+mcv_safetybench,implicit,aura_8b,P->S,response-form change
+mcv_safetybench,implicit,livestar_8b,P->C,response-form change
+mcv_safetybench,implicit,livestar_8b,C->S,no material change
+mcv_safetybench,implicit,livestar_8b,P->S,response-form change
+mcv_safetybench,implicit,moss_vl_rt,P->C,response-form change
+mcv_safetybench,implicit,moss_vl_rt,C->S,less safe
+mcv_safetybench,implicit,moss_vl_rt,P->S,less safe
+harmbench,text,mmduet_7b,P->C,less safe
+harmbench,text,thinkstream_3b,P->C,response-form change
+harmbench,text,mmduet2_3b,P->C,less safe
+harmbench,text,aura_8b,P->C,no material change
+harmbench,text,livestar_8b,P->C,less safe
+harmbench,text,moss_vl_rt,P->C,less safe
+harmbench,multimodal,mmduet_7b,P->C,no material change
+harmbench,multimodal,thinkstream_3b,P->C,no material change
+harmbench,multimodal,mmduet2_3b,P->C,less safe
+harmbench,multimodal,aura_8b,P->C,less safe
+harmbench,multimodal,livestar_8b,P->C,less safe
+harmbench,multimodal,moss_vl_rt,P->C,response-form change

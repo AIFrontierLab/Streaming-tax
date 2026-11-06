@@ -1,0 +1,97 @@
+# The 11 models of the paper. Fields:
+#   role        parent (offline only) | child (offline and native stream)
+#   checkpoint  Hugging Face repo pinned to the revision every reported number was generated with ("repo@revision");
+#               `streamreplace download models` fetches it to <checkpoints>/<org>/<name>
+#   base        MMDuet only: the base model its LoRA is applied to
+#   vision      LLaVA-OneVision and MMDuet: the SigLIP vision tower
+#   offline     adapter + Python env for P and C (conditions in the shared offline pipeline)
+#   stream      adapter + Python env for S (the child's native streaming interface)
+#   ffmpeg      the env needs the FFmpeg 6 shared libraries (torchcodec / qwen-vl-utils video decoding)
+#   decoding    repetition_penalty of offline greedy decoding. It equals each checkpoint's generation_config.json,
+#               which is what the original runs used; adapters check the two agree. LiveStar's adapter sets 1.05
+#               itself and MOSS's offline API passes 1.0, as in the original runs.
+#   settings    optional extra settings layer merged after the pair's video protocol (none of the paper models has one)
+#   options     optional adapter options; every option is part of the run identity. Two are read by the runtime:
+#                 lora: DIR            a fine-tuned model: the LoRA adapter folder (absolute, or relative to the
+#                                      outputs folder) holding adapter_model.safetensors. The run identity holds the
+#                                      sha256 of that file instead of the path, and the worker calls
+#                                      adapter.load_lora(<absolute DIR>) right after loading the base checkpoint.
+#                 deterministic: true  the worker sets CUBLAS_WORKSPACE_CONFIG=:4096:8 and
+#                                      FLASH_ATTENTION_DETERMINISTIC=1 and switches on torch's deterministic algorithms
+#                                      (used for the fine-tuned models of the generalization experiment).
+#               Fine-tuned models are declared in an extra config file (streamreplace --config FILE), not here.
+# The video protocol of each model comes from its pair (pairs.yaml).
+models:
+  # p1: LLaVA-OneVision-7B -> MMDuet (a LoRA on LLaVA-OneVision, kept unmerged offline)
+  llava_ov_7b:
+    role: parent
+    checkpoint: lmms-lab/llava-onevision-qwen2-7b-ov@0b07bf7565e244cf4f39982249eafe8cd799d6dd
+    vision: google/siglip-so400m-patch14-384@9fdffc58afc957d1a03a25b10dba0329ab15c2a3
+    offline: {adapter: llava_offline, env: llava}
+    decoding: {repetition_penalty: 1.05}
+  mmduet_7b:
+    role: child
+    checkpoint: wangyueqian/MMDuet@23669174afcaed24044225a6b89eae8427557cce
+    base: lmms-lab/llava-onevision-qwen2-7b-ov@0b07bf7565e244cf4f39982249eafe8cd799d6dd
+    vision: google/siglip-so400m-patch14-384@9fdffc58afc957d1a03a25b10dba0329ab15c2a3
+    offline: {adapter: llava_offline, env: llava}
+    stream: {adapter: mmduet_stream, env: llava}
+    decoding: {repetition_penalty: 1.05}
+
+  # p2: Qwen2.5-VL-3B -> ThinkStream-3B, MMDuet2 (the children's offline runs use the stock Qwen2.5-VL pipeline)
+  qwen25vl_3b:
+    role: parent
+    checkpoint: Qwen/Qwen2.5-VL-3B-Instruct@66285546d2b821cf421d4f5eb2576359d3770cd3
+    offline: {adapter: qwen_offline, env: modern, ffmpeg: true}
+    decoding: {repetition_penalty: 1.05}
+  thinkstream_3b:
+    role: child
+    checkpoint: CASIA-IVA-Lab/ThinkStream-3B@9bc0b5aabfb3b4529f9cb21197ad200d7737dd7e
+    offline: {adapter: qwen_offline, env: modern, ffmpeg: true}
+    stream: {adapter: thinkstream_stream, env: modern, ffmpeg: true}
+    decoding: {repetition_penalty: 1.05}
+  mmduet2_3b:
+    role: child
+    checkpoint: wangyueqian/MMDuet2@3224235ebb6256e2af7c196f2c265d6cf20c311a
+    offline: {adapter: qwen_offline, env: modern, ffmpeg: true}
+    stream: {adapter: mmduet2_stream, env: mmduet2, ffmpeg: true}
+    decoding: {repetition_penalty: 1.05}
+
+  # p3: Qwen3-VL-8B -> AURA (stream served by a local vLLM server)
+  qwen3vl_8b:
+    role: parent
+    checkpoint: Qwen/Qwen3-VL-8B-Instruct@0c351dd01ed87e9c1b53cbc748cba10e6187ff3b
+    offline: {adapter: qwen_offline, env: modern, ffmpeg: true}
+    decoding: {repetition_penalty: 1.0}
+  aura_8b:
+    role: child
+    checkpoint: aurateam/AURA@88ee550629fcb4d84428cdbfb346d07f01ea6e03
+    offline: {adapter: qwen_offline, env: modern, ffmpeg: true}
+    stream: {adapter: aura_stream, env: aura, ffmpeg: true}
+    decoding: {repetition_penalty: 1.0}
+
+  # p4: LiveStar-InternVideo-8B -> LiveStar-8B
+  livestar_iv_8b:
+    role: parent
+    checkpoint: yzy666/LiveStar_InternVideo_8B@902503c3395a5f79a8e6196ede522f1303b30218
+    offline: {adapter: internvl_offline, env: livestar}
+    decoding: {repetition_penalty: 1.05}
+  livestar_8b:
+    role: child
+    checkpoint: yzy666/LiveStar_8B@fe12f966639ace9562a6db8843dfa5733ccc0d24
+    offline: {adapter: internvl_offline, env: livestar}
+    stream: {adapter: livestar_stream, env: livestar}
+    decoding: {repetition_penalty: 1.05}
+
+  # p5: MOSS-VL-Instruct -> MOSS-VL-Realtime
+  moss_vl:
+    role: parent
+    checkpoint: OpenMOSS-Team/MOSS-VL-Instruct-0708@abd2185369e9bdb4ce16d8836ff1b24d1e218ea4
+    offline: {adapter: moss_offline, env: modern, ffmpeg: true}
+    decoding: {repetition_penalty: 1.0}
+  moss_vl_rt:
+    role: child
+    checkpoint: OpenMOSS-Team/MOSS-VL-Realtime@06b067617677661194cf837970fe3a10f1a0e56d
+    offline: {adapter: moss_offline, env: modern, ffmpeg: true}
+    stream: {adapter: mossrt_stream, env: modern, ffmpeg: true}
+    decoding: {repetition_penalty: 1.0}
