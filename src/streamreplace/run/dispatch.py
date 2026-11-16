@@ -100,11 +100,13 @@ class Inputs:
     def requests(self, job: Job) -> list[dict]:
         """What the worker turns into core.schema.Request objects, in prepared order."""
         bench, prompts = self.bench(job), self.prompts(job)
+        # video.drop (offline controls of the framing experiment): the request text without its frames
+        drop = job.mode == "offline" and bool((job.settings.get("video") or {}).get("drop"))
         out = []
         for sample in self.job_samples(job):
             view = bench.view(sample)
             item = {"id": sample.id, "prompt": prompts[sample.id], "images": list(sample.images),
-                    "video": sample.video, "kind": sample.kind, "question": view.question,
+                    "video": None if drop else sample.video, "kind": sample.kind, "question": view.question,
                     "choices": dict(view.choices), "metadata": view.metadata}
             if job.adapter == "mock":            # the test model scores itself; real models never see the answer
                 item["reference"] = sample.answer

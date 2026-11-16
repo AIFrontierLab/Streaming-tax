@@ -44,7 +44,9 @@ unanswered_on_fire: [videomme, tomato, timeblind, ovo_bench, streamingbench]
 # uniform sample of earlier chunks (plugin/recall.py). The other four children discard no frames natively.
 recall:
   aura_8b: {stream: {window: full, budget: 30, recent: 10}}   # B = 30 one-second segments (aura_stream_hf)
-  thinkstream_3b: {stream: {reservoir: 10}}                   # B = its native 20-chunk KV window
+  thinkstream_3b: {stream: {window: 20, reservoir: 10, max_len: 81920}}   # B = its native 20 video chunks; the larger
+                                                                          # static KV cache only gives the text of
+                                                                          # long streams room (as in the paper's runs)
 
 # Respond: settings deltas for arms with respond: true. MMDuet's response heads rarely fire, so its answer turn is
 # requested explicitly (rho <- 1, the forced-answer control S-dagger of Sec. 5.2); the other children always produce an

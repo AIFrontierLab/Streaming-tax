@@ -433,7 +433,8 @@ def test_recipe_and_frozen_lists():
     assert config.arm("sfix_prs").prs and config.arm("record").gate == "record" and not config.arm("inert").respond
     assert config.arm("prs") == ArmRecipe("prs", "native", False, "shadow", True)
     # Recall acts on the two children whose memory evicts; Respond requests MMDuet's answer turn
-    assert config.settings_delta("thinkstream_3b", "sfix") == {"stream": {"reservoir": 10}}
+    assert config.settings_delta("thinkstream_3b", "sfix") == {"stream": {"window": 20, "reservoir": 10,
+                                                                           "max_len": 81920}}
     assert config.settings_delta("aura_8b", "sfix") == {"stream": {"window": "full", "budget": 30, "recent": 10}}
     assert config.settings_delta("mmduet_7b", "sfix") == {"stream": {"force_answer": True}}
     assert config.settings_delta("thinkstream_3b", "inert") == {} and config.settings_delta("mmduet_7b", "prs") == {}

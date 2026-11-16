@@ -98,7 +98,7 @@ def test_plugin_arms_of_the_shipped_config(shipped):
     assert aura.adapter == "aura_stream_hf" and aura.payload["model"]["adapter"] == "aura_stream_hf"
     assert aura.settings["stream"] == {"fps": 1, "window": "full", "budget": 30, "recent": 10}
     thinkstream = jobs["videomme/thinkstream_3b@sfix.stream"]
-    assert thinkstream.settings["stream"] == {"fps": 1, "reservoir": 10}
+    assert thinkstream.settings["stream"] == {"fps": 1, "window": 20, "reservoir": 10, "max_len": 81920}
     assert jobs["videomme/mmduet2_3b@sfix.stream"].settings["stream"] == {"fps": 1}
     assert all(j.payload["model"]["plugin"]["recipe"]["name"] == "sfix" for j in jobs.values())
     assert all(j.plugin == {"child": j.arm.model, "variant": "sfix", "section": config.section("plugin")}

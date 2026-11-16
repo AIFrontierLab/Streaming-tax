@@ -20,6 +20,8 @@ Inputs (build_inputs() builds them on the CPU):
 - the message: images or the video, then the prompt; the benchmark's system prompt (TOMATO) as a system turn,
   otherwise the template's default (Qwen2.5: "You are a helpful assistant."; Qwen3: none).
 - `video.as_images` (a fine-tuning control, never used for P/C/S): the sampled frames as separate images.
+- `video.last_seconds: N` (the window controls C_W and P_W of Sec. 5.1, never used for P/C/S; qwen-vl-utils sampler
+  only): the same sampler on the last N seconds of the video only, i.e. what a streaming window of N seconds keeps.
 
 Decoding: greedy (models/decoding.py) with the model's repetition_penalty from configs/models.yaml, checked against
 the checkpoint's generation_config.json (1.05 for the p2 models, 1.0 for the p3 models; the original runs inherited
@@ -126,6 +128,9 @@ class QwenOffline(BaseAdapter):
         ele = {"video": path, **{k: video[k] for k in keys if k in video}}
         if "fps" not in ele:
             ele["nframes"] = video["nframes"]
+        if video.get("last_seconds"):     # window control (C_W, P_W): only the last N seconds, as a stream window
+            from torchcodec.decoders import VideoDecoder
+            ele["video_start"] = max(0.0, VideoDecoder(path).metadata.duration_seconds - float(video["last_seconds"]))
         (frames, metadata), sample_fps = fetch_video(ele, image_patch_size=self.factor // 2,
                                                      return_video_sample_fps=True, return_video_metadata=True)
         if metadata.get("video_backend") != "torchcodec":
@@ -165,6 +170,11 @@ class QwenOffline(BaseAdapter):
             info.update(frame_indices=frame_digest({"indices": metadata["frames_indices"]}), frames=int(video.shape[0]),
                         frame_size=[int(video.shape[3]), int(video.shape[2])], sample_fps=round(sample_fps, 4),
                         duration=round(metadata["total_num_frames"] / metadata["fps"], 2), sampler="qwen_vl_utils")
+            if s["video"].get("last_seconds"):    # total_num_frames covers only the window; duration = whole video
+                from torchcodec.decoders import VideoDecoder
+                info.update(window_start=round(min(metadata["frames_indices"]) / metadata["fps"], 2),
+                            window_seconds=info["duration"],
+                            duration=round(VideoDecoder(req.video).metadata.duration_seconds, 2))
         elif req.video:
             import numpy as np
             frames, meta = offline_frames(req.video, s["video"])

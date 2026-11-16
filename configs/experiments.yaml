@@ -1,0 +1,234 @@
+# The diagnostic and supplementary experiments of the paper (Sec. 5, Supp. C and D). docs/experiments.md maps each
+# experiment to its table or figure; src/streamreplace/experiments/__init__.py documents the fields.
+#   streamreplace experiment list
+#   streamreplace experiment run <name> [--children ...] [--gpus ...]      -> <outputs>/experiments/<name>/
+#   streamreplace --outputs <outputs>/experiments/<name>[/<folder>] score --judge
+#   streamreplace experiment report <name>
+# The reference arms P, C and S of every experiment are the formal jobs of the outputs root, restricted to the
+# experiment's items; they are never rerun.
+
+# Derived model ids: `from` a configs/models.yaml id (with its pair's video protocol) plus
+#   settings    an extra settings layer            checkpoint  another model's weights in this model's adapters
+#   options     adapter options                    stream      another stream adapter
+models:
+  # Response policy (Sec. 5.2): MMDuet answers at the last frame even when its heads do not fire (S-dagger)
+  mmduet_7b_forced: {from: mmduet_7b, settings: {stream: {force_answer: true}}}
+
+  # Historical evidence (Sec. 5.1): the offline input restricted to the stream's window (C_W, P_W) ...
+  aura_8b_window: {from: aura_8b, settings: {video: {last_seconds: 30}}}
+  qwen3vl_8b_window: {from: qwen3vl_8b, settings: {video: {last_seconds: 30}}}
+  thinkstream_3b_window: {from: thinkstream_3b, settings: {video: {last_seconds: 20}}}
+  qwen25vl_3b_window: {from: qwen25vl_3b, settings: {video: {last_seconds: 20}}}
+  # ... and the stream with its eviction switched off (S_full) or replaced at the same budget (memory controls
+  # without Respond; AURA on its transformers rebuild, which replays the retained history at question time)
+  aura_8b_full: {from: aura_8b, stream: aura_stream_hf, settings: {stream: {window: full}}}
+  aura_8b_recent: {from: aura_8b, stream: aura_stream_hf}
+  aura_8b_recall: {from: aura_8b, stream: aura_stream_hf, settings: {stream: {window: full, budget: 30, recent: 10}}}
+  thinkstream_3b_full: {from: thinkstream_3b, settings: {stream: {window: full, max_len: 81920}}}
+  thinkstream_3b_recall: {from: thinkstream_3b, settings: {stream: {window: 20, reservoir: 10, max_len: 81920}}}
+
+  # Question timing (Supp. C.2): the question posed once at the start or the middle of the video
+  mmduet_7b_qstart: {from: mmduet_7b, settings: {stream: {question_at: start}}}
+  mmduet_7b_qmid: {from: mmduet_7b, settings: {stream: {question_at: middle}}}
+  mmduet2_3b_qstart: {from: mmduet2_3b, settings: {stream: {question_at: start}}}
+  mmduet2_3b_qmid: {from: mmduet2_3b, settings: {stream: {question_at: middle}}}
+  thinkstream_3b_qstart: {from: thinkstream_3b, settings: {stream: {question_at: start}}}
+  thinkstream_3b_qmid: {from: thinkstream_3b, settings: {stream: {question_at: middle}}}
+  aura_8b_qstart: {from: aura_8b, settings: {stream: {question_at: start}}}
+  aura_8b_qmid: {from: aura_8b, settings: {stream: {question_at: middle}}}
+  moss_vl_rt_qstart: {from: moss_vl_rt, settings: {stream: {question_at: start}}}
+  moss_vl_rt_qmid: {from: moss_vl_rt, settings: {stream: {question_at: middle}}}
+
+  # Prompts and parent controls (Sec. 5.2, Supp. C.1): AURA without its live-stream system turn; the parent's weights
+  # in AURA's streaming interface (P_S); AURA's stream engine fed the offline-format input
+  aura_8b_nosys: {from: aura_8b, settings: {stream: {system: none}}}
+  qwen3vl_8b_in_aura: {from: aura_8b, checkpoint: qwen3vl_8b}
+  aura_8b_offline_input: {from: aura_8b, stream: aura_stream_hf, settings: {stream: {input: offline, system: none}}}
+
+experiments:
+  # ------------------------------------------------------------------ Sec. 5.1 / Supp. C.1: historical evidence
+  window:
+    title: "Window controls: offline input restricted to the streaming window, and streaming with the full history"
+    paper: "Sec. 5.1 (Eq. 5), Fig. 5a; Supp. Fig. S3b-c (VMME-750)"
+    items: paper/frozen/experiments/vmme750.json
+    children: [aura_8b, thinkstream_3b]
+    arms:
+      C_W: "{child}_window.offline"            # the child offline on the last W seconds (AURA 30, ThinkStream 20)
+      P_W: "{parent}_window.offline"
+      S_full: "{child}_full.stream"            # the stream with every chunk kept
+    contrasts: ["C_W - S", "S_full - C", "S - C", "C_W - C", "P_W - P", "S_full - S"]
+
+  window_300:
+    title: "Input protocols on one question per video (VMME-300)"
+    paper: "Supp. Table S (diagnosis modes), Fig. S3b"
+    items: paper/frozen/experiments/vmme300.json
+    children: [aura_8b, thinkstream_3b]
+    arms:
+      C_W: "{child}_window.offline"
+      P_W: "{parent}_window.offline"
+    contrasts: ["C_W - S", "C_W - C", "P_W - P"]
+
+  memory:
+    title: "Memory at the native budget: recent-only against Recall (the newest 10 chunks + a sample of earlier ones)"
+    paper: "Sec. 5.1 (fixed-budget control); Supp. C.1"
+    items: paper/frozen/experiments/vmme750.json
+    children: [aura_8b, thinkstream_3b]
+    arms:       # Recent: the native recent-only memory (AURA on the same transformers rebuild as the other two arms)
+      Recent: {job: {aura_8b: "aura_8b_recent.stream", thinkstream_3b: "thinkstream_3b.stream"}, folder: recent}
+      Recall: "{child}_recall.stream"
+      Full: "{child}_full.stream"
+    contrasts: ["Recall - Recent", "Full - Recall", "Recall - C"]
+
+  duration:
+    title: "Execution tax by video duration"
+    paper: "Supp. Fig. S3a"
+    benchmarks: [videomme]
+    children: [mmduet_7b, thinkstream_3b, mmduet2_3b, aura_8b, livestar_8b, moss_vl_rt]
+    contrasts: ["S - C"]
+    report: [duration]
+
+  # ------------------------------------------------------------------ Sec. 5.2 / Supp. C.2: response decisions
+  response:
+    title: "Response policy: MMDuet forced to answer at the last frame (rho <- 1)"
+    paper: "Sec. 5.2; Supp. A (S-dagger)"
+    benchmarks: [videomme, tomato, timeblind]
+    children: [mmduet_7b]
+    arms:
+      S_forced: "{child}_forced.stream"
+    contrasts: ["S_forced - S", "S_forced - C", "S - C"]
+
+  question_timing:
+    title: "Question timing: the question posed at the start or the middle of the video instead of its end"
+    paper: "Supp. C.2, Table S (question timing)"
+    items: paper/frozen/experiments/vmme300.json
+    children: [mmduet_7b, mmduet2_3b, thinkstream_3b, aura_8b, moss_vl_rt]
+    arms:                                      # End = S; for MMDuet the forced control, as at the other two timings
+      End: {job: "{child}.stream", folder: end, set: {mmduet_7b: {stream: {force_answer: true}}}}
+      Start: "{child}_qstart.stream"
+      Middle: "{child}_qmid.stream"
+    contrasts: ["Start - End", "Middle - End"]
+    report: [timing]
+
+  parent_stream:
+    title: "Parent control: the parent's weights in AURA's streaming interface (P_S)"
+    paper: "Supp. C.1, Table S (parent controls), AURA rows"
+    items: paper/frozen/experiments/parent_stream.json
+    children: [aura_8b]
+    arms:
+      P_S: "qwen3vl_8b_in_aura.stream"
+    contrasts: ["P_S - P", "S - C", "S - P_S"]
+
+  offline_input:
+    title: "AURA's stream engine fed the offline-format input (one video, offline resolution, no system turn)"
+    paper: "Supp. C.1 (TimeBlind, 481 held-out instances)"
+    items: paper/frozen/experiments/timeblind_heldout.json
+    children: [aura_8b]
+    arms:
+      S_HF: "{child}_recent.stream"
+      O: "{child}_offline_input.stream"
+    contrasts: ["O - S_HF", "O - C", "S_HF - S"]
+
+  # ------------------------------------------------------------------ Supp. D: Stream++
+  recall_budget:
+    title: "Memory budget and retention policy under S_fix: recent-only against Recall at B, 2B and the full history"
+    paper: "Supp. D.2, Table S (memory budget), Table S (gains by duration), Recall settings"
+    items: paper/frozen/experiments/videomme666.json
+    children: [aura_8b, thinkstream_3b]
+    arms:
+      Recall_B: {job: "{child}@sfix.stream", folder: recall_b}
+      Recent_B: {job: "{child}@sfix.stream", folder: recent_b,
+                 set: {aura_8b: {stream: {window: 30, budget: null}}, thinkstream_3b: {stream: {reservoir: null}}}}
+      Recall_2B: {job: "{child}@sfix.stream", folder: recall_2b,
+                  set: {aura_8b: {stream: {budget: 60}}, thinkstream_3b: {stream: {window: 40}}}}
+      Recent_2B: {job: "{child}@sfix.stream", folder: recent_2b,
+                  set: {aura_8b: {stream: {window: 60, budget: null}},
+                        thinkstream_3b: {stream: {window: 40, reservoir: null}}}}
+      Full: {job: "{child}@sfix.stream", folder: full,
+             set: {aura_8b: {stream: {budget: null}}, thinkstream_3b: {stream: {window: full, reservoir: null}}}}
+    contrasts: ["Recall_B - Recent_B", "Recall_2B - Recent_2B", "Full - Recall_B", "Recall_B - C"]
+    report: [duration]
+
+  recall_settings:
+    title: "Recall settings for AURA: the size k of the recent window and the sampling seed"
+    paper: "Supp. D.2 (Recall settings)"
+    items: paper/frozen/experiments/videomme666.json
+    children: [aura_8b]
+    arms:
+      Recent: {job: "{child}@sfix.stream", folder: recent, set: {stream: {window: 30, budget: null}}}
+      k10: {job: "{child}@sfix.stream", folder: k10}
+      k5: {job: "{child}@sfix.stream", folder: k5, set: {stream: {recent: 5}}}
+      k15: {job: "{child}@sfix.stream", folder: k15, set: {stream: {recent: 15}}}
+      k20: {job: "{child}@sfix.stream", folder: k20, set: {stream: {recent: 20}}}
+      seed1: {job: "{child}@sfix.stream", folder: seed1, set: {stream: {memory_seed: 1}}}
+      seed2: {job: "{child}@sfix.stream", folder: seed2, set: {stream: {memory_seed: 2}}}
+    contrasts: ["k10 - Recent", "k5 - Recent", "k15 - Recent", "k20 - Recent", "seed1 - Recent", "seed2 - Recent",
+                "k5 - k10", "k15 - k10", "k20 - k10", "seed1 - k10", "seed2 - k10"]
+
+  streaming_benchmarks:
+    title: "Native streaming performance with Stream++: OVO-Bench and StreamingBench (real-time), clips up to 120 s"
+    paper: "Supp. D.4, Table S (native streaming performance)"
+    items: paper/frozen/experiments/stream_pool.json
+    children: [mmduet_7b, thinkstream_3b, mmduet2_3b, aura_8b, livestar_8b, moss_vl_rt]
+    kind: streambench
+    arms:
+      S: "{child}@shadow.stream"               # the native stream, the gate's score logged
+      PRS: "{child}@prs.stream"                # + parent-restoration steering (native memory and response policy)
+      S_fix_PRS: "{child}@sfix_prs.stream"     # the complete plugin (gate applied afterwards)
+      S_forced: {job: "{child}@shadow.stream", folder: forced, set: {mmduet_7b: {stream: {force_answer: true}}}}
+
+  # ------------------------------------------------------------------ Sec. 4.2 / Sec. 5.2-5.3: response forms
+  response_forms:
+    title: "Response forms on the audited safety requests: harmful help, refusal or safe deflection, non-answers"
+    paper: "Fig. 4, Supp. Fig. S2 (response forms and official ASR)"
+    kind: forms
+    items: paper/frozen/experiments/safety_audit.json
+    children: [mmduet_7b, thinkstream_3b, mmduet2_3b, aura_8b, livestar_8b, moss_vl_rt]
+    contrasts: ["C - P", "S - C", "S - P"]
+
+  system_prompt:
+    title: "AURA without its live-stream system turn, and its parent with it, on harmful VSB requests"
+    paper: "Sec. 5.2; Supp. C.2 (prompts and answer delivery)"
+    kind: forms
+    items: paper/frozen/experiments/vsb400_harmful.json
+    children: [aura_8b]
+    arms:
+      S_nosys: "{child}_nosys.stream"
+      P_S: "qwen3vl_8b_in_aura.stream"
+    contrasts: ["S_nosys - S", "P_S - S"]
+
+  framing:
+    title: "Video framing: refusal under the bare request, the framing sentence, black frames and the real video"
+    paper: "Sec. 5.3; Supp. C.3, Table S (refusal context)"
+    kind: forms
+    items: paper/frozen/experiments/framing240.json
+    children: [mmduet_7b, thinkstream_3b, mmduet2_3b, aura_8b, livestar_8b, moss_vl_rt]
+    options:
+      # prompt edits of an arm's folder (prompt_overrides.jsonl): [old, new] applied to every item's prompt
+      edits: {bare: [["These are frames of a video.\n", ""]]}
+    arms:      # both checkpoints offline, 160 new tokens (the opening decides refusal against compliance)
+      P_bare: {job: "{parent}.offline", folder: bare, set: {video: {drop: true}, generation: {max_new_tokens: 160}}}
+      C_bare: {job: "{child}.offline", folder: bare, set: {video: {drop: true}, generation: {max_new_tokens: 160}}}
+      P_cue: {job: "{parent}.offline", folder: cue, set: {video: {drop: true}, generation: {max_new_tokens: 160}}}
+      C_cue: {job: "{child}.offline", folder: cue, set: {video: {drop: true}, generation: {max_new_tokens: 160}}}
+      P_black: {job: "{parent}.offline", folder: black, set: {video: {blank: true}, generation: {max_new_tokens: 160}}}
+      C_black: {job: "{child}.offline", folder: black, set: {video: {blank: true}, generation: {max_new_tokens: 160}}}
+      P_real: {job: "{parent}.offline", folder: real, set: {generation: {max_new_tokens: 160}}}
+      C_real: {job: "{child}.offline", folder: real, set: {generation: {max_new_tokens: 160}}}
+    contrasts: ["C_bare - P_bare", "C_cue - P_cue", "C_black - P_black", "C_real - P_real"]
+
+  # ------------------------------------------------------------------ Sec. 5.3 / Supp. C.3: recognition and response
+  harm_probe:
+    title: "Harm recognition and refusal: explicit risk judgments and hidden-state harm scores, parent against child"
+    paper: "Sec. 5.3, Fig. 5b; Supp. C.3, Tables S (refusal decomposition, new harmful help, probe scores, harmless controls)"
+    kind: probe
+    items: paper/frozen/experiments/probe200.json
+    children: [mmduet_7b, thinkstream_3b, mmduet2_3b, aura_8b, livestar_8b, moss_vl_rt]
+
+  steering:
+    title: "Steering along the harm direction (and along random directions of the same norm)"
+    paper: "Supp. C.3, Table S (steering)"
+    kind: probe
+    items: paper/frozen/experiments/steering60.json
+    children: [aura_8b]
+    options: {steer: {qwen3vl_8b: -1.0, qwen25vl_3b: -1.0, aura_8b: 1.0}, flagged_only: [aura_8b], random_directions: 5,
+              max_new_tokens: 160}
