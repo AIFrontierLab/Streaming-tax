@@ -195,13 +195,13 @@ this release.
 | Tables | `tables --check`: the 935 printed cells of Table 2, the MCV table and the eight absolute-score, robustness and fine-tuning tables |
 | Stream++ | thresholds recomputed from their three quantiles; the 54 recovery cells (430 of 432 contrasts identical to the paper's snapshot, see below) and the means of Fig. 6 (Video-MME +12.5, VSB harmful +7.7, fairness +4.0, privacy +5.6) |
 | Recall | the segments and chunks each row of the paper's Stream++ runs recorded as kept equal the ones this code's rule keeps: AURA 20,280 rows (3,562 over budget), ThinkStream 3,804 rows with a recorded retention (3,726 over budget) |
-| Experiments | `response` (0.8 / 66.0 / 65.6), `response_forms` (every share and ASR of Fig. 4), `harmless_requests` (answered offline -> streaming: 16 -> 1, 18 -> 5, 12 -> 4, 30 -> 20, 15 -> 9, 28 -> 34), `recall_budget`, `recall_settings`, the duration split, `streaming_benchmarks`, and the harm scores of `harm_probe` (AURA pair: the probe-score and harmless-control rows) |
-| Generalization | robustness item lists and edit files byte-identical (paraphrases: given the paper's cache); fine-tuning test subsets, training orders and selection files byte-identical; both reports equal the paper's tables |
+| Experiments | `response` (0.8 / 66.0 / 65.6), `response_forms` (every share and ASR of Fig. 4), `harmless_requests` (answered offline -> streaming: 16 -> 1, 18 -> 5, 12 -> 4, 30 -> 20, 15 -> 9, 28 -> 34), `question_timing` (every cell of the table), `window` (C_W and P_W on VMME-750 and their contrasts with S, C and P; the S_full arm was not checked), `recall_budget`, `recall_settings`, the duration split, `streaming_benchmarks`, and the harm scores of `harm_probe` (AURA pair: the probe-score and harmless-control rows) |
+| Generalization | robustness item lists and edit files byte-identical (paraphrases: given the paper's cache); fine-tuning test subsets, training orders and selection files byte-identical; the planned fine-tuning evaluations (268 jobs, the three-seed replication of every checkpoint included) are the paper's; both reports and the seed report equal the paper's tables |
 | Third-party code | `fetch-upstream` reproduces the third-party files of the paper's runs byte for byte |
 
-The stream adapters' new options (question timing, the reservoir eviction of Recall inside ThinkStream's KV engine,
-AURA's offline-format input) and the experiments' generation paths are ports of the code that produced the paper's
-rows; in this layout they were exercised by unit tests on stand-in models only.
+The control settings of the stream adapters (question timing, the reservoir eviction of Recall inside ThinkStream's
+KV engine, AURA's offline-format input) and the experiments' generation paths are ports of the code that produced
+the paper's rows. In this layout they were exercised on stand-in models only (the unit tests), not on GPUs.
 
 ## Known differences from the published paper
 
@@ -215,13 +215,13 @@ rows; in this layout they were exercised by unit tests on stand-in models only.
 - **Two gate-only cells of Stream++** (MMDuet2 on TOMATO, MOSS-VL-Realtime on VMDT fairness) follow the final
   threshold rule here; the paper's snapshot holds their values under an earlier one. The complete plugin's cells
   are identical.
-- **Bootstrap intervals of the streaming-benchmark table** come from the analysis engine here (10,000 draws) and
-  differ from the paper's in the last digit of some bounds (at most 0.2 points).
+- **Bootstrap intervals of three analyses** (the streaming-benchmark table, the long-minus-short contrast of the
+  accuracy-by-duration table, and AURA's window control on VMME-750) come from the analysis engine here (10,000
+  draws) and differ from the paper's in the last digit of some bounds (at most 0.2 points). The point estimates are
+  identical.
 - **Sec. 5.1's fixed-budget numbers on VMME-750** were produced with an earlier implementation of the same memory
   rule (other hash seeds for the sample); `experiment run memory` reruns the control with Stream++'s Recall. The
   same contrast on the 666 evaluation questions (`recall_budget`) is reproduced exactly.
-- **Equivalence count.** The supplement says 21 of the 42 main image contrasts stay within ±3 points; that is the
-  count on the formal rows (`stats --no-overlay`). With the generation-cap reruns merged, as in the figure, it is 19.
 - **Captions** are regenerated from the data.
 - **Paraphrases** regenerate exactly only with the paper's paraphrase cache, which contains benchmark-derived text
   and is not shipped; another model or serving stack produces other paraphrases (and other skipped units).
@@ -241,7 +241,8 @@ These analyses of the supplement are not scripted here; the paper states their n
 - B.2: the neutral scoring prompt on narration replies, and the harmless requests on 96 benign clips;
 - C.1: parent controls other than AURA's (the parent's weights inside MMDuet's and MMDuet2's streams, ThinkStream's
   input proxies, MOSS-VL-Realtime), the 49-token-per-frame control on TimeBlind, AURA's parent on the VMDT rows,
-  and the concept-readability probes;
+  the interval of the interaction column of the parent-control table (its point estimate is the difference of the
+  two contrasts `parent_stream` reports), and the concept-readability probes;
 - C.2: LiveStar's criterion shift on MME and its language-model swap, MMDuet2's compact prompt and its
   system-prompt removal on VMDT;
 - C.3: the visual-content recognition checks (matching against mismatched video, MCV scene swap);

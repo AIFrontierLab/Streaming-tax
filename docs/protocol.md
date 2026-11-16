@@ -121,7 +121,8 @@ The penalty is equal within each pair; adapters check the configured value again
 config. A reply that uses the whole budget is recorded with `finish = "length"`. On MathVista, MMMU and MMStar the
 paper re-generated, for pairs p2 to p5, every item on which either pair member hit the cap again at 8,192 tokens and
 merged those rows into both offline arms of the contrast (see "Generation-cap reruns" in
-[statistics.md](statistics.md)); absolute-score tables keep the original rows.
+[statistics.md](statistics.md)); absolute-score tables keep the original rows, except for the one group that shares
+a merge (the Qwen2.5-VL pair on MathVista).
 
 ## The native stream (S)
 

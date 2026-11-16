@@ -4,11 +4,13 @@ The formal offline runs cap generation at the benchmark's max_new_tokens (2,048 
 MMStar). A reply cut there may lose its final answer, and when a parent and its child are cut on different items the
 C-P contrast is biased. For the pairs and benchmarks of configs/analysis.yaml (overlays.truncation_rerun) the paper
 therefore generated those items again at 8,192 tokens, for every member of the pair, and the contrasts read the rerun
-rows on them (analysis/arms.py; `streamreplace stats`). The absolute-score tables keep the formal rows.
+rows on them (analysis/arms.py; `streamreplace stats`). The absolute-score tables keep the formal rows, except for
+a group that shares one merge.
 
   select   per pair and benchmark, the ids on which ANY member's formal offline row hit the cap:
            <root>/<pair>/subset.json (the rerun folder's items) and <root>/capped.json (per member: its cap and its
-           own capped ids; the contrast of a parent and a child reruns the union of THEIR two lists). A row hit the cap
+           own capped ids; the contrast of a parent and a child takes the rerun rows on the union of THEIR two lists,
+           or on every member's ids where the pair shares one merge: analysis/arms.rerun_ids). A row hit the cap
            if its finish is "length". A row with no recorded stop reason (finish missing or "unknown") is counted
            with the model's own tokenizer, in the model's environment on CPU, and counts as capped at >= cap - 8
            tokens (decode -> encode is not exact).
@@ -231,8 +233,11 @@ def member_stats(policy, model: str, info: dict, formal: dict, rerun: dict, ids:
             "same_text": [sum(rerun[i].get("raw") == formal[i].get("raw") for i in others), len(others)]}
 
 
-def report(config, outputs: str | Path, root: str | Path, catalog=None, capped_file: str | Path | None = None) -> Path:
-    """Writes <root>/TRUNC.md and <root>/trunc.json (see the module docstring); returns the TRUNC.md path."""
+def report(config, outputs: str | Path, root: str | Path, catalog=None, capped_file: str | Path | None = None,
+           shared: dict | None = None) -> Path:
+    """Writes <root>/TRUNC.md and <root>/trunc.json (see the module docstring); returns the TRUNC.md path. shared:
+    pair -> datasets merged once for the whole group (overlays.truncation_rerun.shared; analysis/arms.rerun_ids)."""
+    from ..analysis.arms import rerun_ids
     from ..analysis.records import Catalog, joined_rows
     from ..core.identity import read_meta
     from ..core.io import atomic_text, write_json
@@ -244,7 +249,8 @@ def report(config, outputs: str | Path, root: str | Path, catalog=None, capped_f
              "Rows that hit the formal generation cap (finish = length, or a re-tokenised reply of >= cap − "
              f"{margin} tokens where no finish was recorded) are generated again at the rerun cap for every member of "
              "the pair (docs/statistics.md, generation-cap reruns). **Merged** = the rerun rows of both members on "
-             "every id either of them capped, formal rows elsewhere; scoring = rule parse + the judge fallback, as the "
+             "every id either of them capped (any member of the pair, where the pair shares one merge), formal rows "
+             "elsewhere; scoring = rule parse + the judge fallback, as the "
              "formal scorer. Δ = child − parent in pp (+ = child better, − = child worse), paired cluster bootstrap "
              f"95% CI; TOST ✓ = the 90% CI lies inside ±{TOST_PP:g} pp; McNemar exact. Errored or missing rows count "
              "wrong.", ""]
@@ -272,7 +278,7 @@ def report(config, outputs: str | Path, root: str | Path, catalog=None, capped_f
             lines += ["| child | ids | parent formal → merged | child formal → merged | Δ formal | Δ merged [95% CI] "
                       "| TOST ±3 | McNemar p |", "|---|---|---|---|---|---|---|---|"]
             for child in members[1:]:
-                ids = sorted(set(per_model[members[0]]["ids"]) | set(per_model[child]["ids"]))
+                ids = sorted(rerun_ids(per_model, members[0], child, shared=dataset in (shared or {}).get(pair, ())))
                 result = compare(dataset, bench, policy, samples, (members[0], child), formal, rerun, ids)
                 entry["pairs"][child] = result
                 f, m = result["formal"], result["merged"]

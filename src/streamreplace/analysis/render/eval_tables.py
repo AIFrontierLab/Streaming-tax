@@ -1,7 +1,8 @@
 """Absolute-score tables of the supplement.
 
 From metrics.json (`streamreplace report`; formal rows, no rerun overlay): eval_image, eval_video, eval_safety,
-eval_vmdt. Values are the benchmarks' own metrics, rounded to 2 decimals by the benchmark and printed with 1 decimal
+eval_vmdt. The one exception: a group that shares one generation-cap merge (ThinkStream, MMDuet2 and their parent on
+MathVista) shows its merged scores, taken from the contrasts (`shared_scores`). Values are the benchmarks' own metrics, rounded to 2 decimals by the benchmark and printed with 1 decimal
 (|x| < 0.05 as 0.0), so e.g. AURA's streaming VSB benign ASR 24.65 prints as 75.3 after 100 - x. A video entry with
 fewer completed rows than expected (generation errors) gets a double dagger. A stream score that is not reported (a
 child that answers none of a set's requests: the `unreported` list of contrasts.json) prints as a dash.
@@ -53,12 +54,16 @@ CAPTIONS = {
 
 
 class Metrics:
-    """Lookup over metrics.json rows."""
+    """Lookup over metrics.json rows; `merged` = offline scores that replace them ((model, dataset, metric) ->
+    value: the groups that share one generation-cap merge, `shared_scores`)."""
 
-    def __init__(self, rows: list[dict]):
+    def __init__(self, rows: list[dict], merged: dict | None = None):
         self.rows = {(r["dataset"], r["model"], r["mode"]): r for r in rows}
+        self.merged = merged or {}
 
     def value(self, model: str, mode: str, dataset: str, name: str):
+        if mode == "offline" and (model, dataset, name) in self.merged:
+            return self.merged[(model, dataset, name)]
         r = self.rows.get((dataset, model, mode))
         return None if r is None else r["metrics"].get(name)
 
@@ -117,10 +122,23 @@ def _video_caption(incomplete: list[tuple[str, str, dict]]) -> str:
             + ("; this entry has" if len(notes) == 1 else "; these entries have") + " incomplete coverage.")
 
 
-def build(metrics_rows: list[dict], profile, unreported: list[dict] | None = None) -> dict:
+def shared_scores(contrast_rows: list[dict], profile) -> dict:
+    """(model, dataset, metric) -> the arm value of every group that shares one generation-cap merge
+    (overlays.truncation_rerun.shared), from the C-P contrast rows computed with the overlay: `a` is the parent's
+    merged score, `b` the child's."""
+    shared = ((profile.overlays or {}).get("truncation_rerun") or {}).get("shared") or {}
+    out = {}
+    for r in contrast_rows:
+        if r["gap"] == "C-P" and r["dataset"] in shared.get(profile.pair_of(r["child"]), ()):
+            out[(profile.parents[r["child"]], r["dataset"], r["metric"])] = r["a"]
+            out[(r["child"], r["dataset"], r["metric"])] = r["b"]
+    return out
+
+
+def build(metrics_rows: list[dict], profile, unreported: list[dict] | None = None, merged: dict | None = None) -> dict:
     """name -> (LaTeX text, csv rows, csv fields) of the four absolute-score tables. unreported: the `unreported`
-    list of contrasts.json; those stream scores print as a dash."""
-    data, models = Metrics(metrics_rows), _models(profile)
+    list of contrasts.json; those stream scores print as a dash. merged: `shared_scores` of the contrasts."""
+    data, models = Metrics(metrics_rows, merged), _models(profile)
     children = [m for m in models if m["role"] == "C"]
     blank = unreported_cells(unreported)
     zero = profile.display.get("zero_below", 0.05)

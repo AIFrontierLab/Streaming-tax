@@ -742,7 +742,7 @@
    "b_job": "thinkstream_3b.offline",
    "n": 1000,
    "coverage_a": 95.4,
-   "coverage_b": 96.8,
+   "coverage_b": 96.7,
    "a": 59.1,
    "b": 57.8,
    "delta": -1.3000000000000043,
@@ -780,7 +780,7 @@
    "ni2": false,
    "ni3": false,
    "ni5": true,
-   "coverage_gap": 1.3999999999999915,
+   "coverage_gap": 1.2999999999999972,
    "reading": "inconclusive",
    "verdict": "replaceable",
    "flags": [],
@@ -799,32 +799,32 @@
    "b_job": "mmduet2_3b.offline",
    "n": 1000,
    "coverage_a": 95.4,
-   "coverage_b": 94.6,
-   "a": 58.9,
-   "b": 59.4,
-   "delta": 0.5,
+   "coverage_b": 94.1,
+   "a": 59.1,
+   "b": 59.7,
+   "delta": 0.6000000000000014,
    "clusters": 1000,
    "items": 1000.0,
    "ci95": [
-    -2.0,
-    3.0
+    -1.8999999999999986,
+    3.1000000000000014
    ],
    "ci90": [
-    -1.6000000000000014,
-    2.6000000000000014
+    -1.5,
+    2.700000000000003
    ],
-   "p": 0.757026167183961,
+   "p": 0.6980840547607374,
    "test": "mcnemar",
-   "a_only": 81,
+   "a_only": 80,
    "b_only": 86,
-   "delta_pp": 0.5,
+   "delta_pp": 0.6000000000000014,
    "ci95_pp": [
-    -2.0,
-    3.0
+    -1.8999999999999986,
+    3.1000000000000014
    ],
    "ci90_pp": [
-    -1.6000000000000014,
-    2.6000000000000014
+    -1.5,
+    2.700000000000003
    ],
    "p_holm": 1.0,
    "holm_family": "image-headline",
@@ -834,10 +834,10 @@
    "holm_broad_m": 42,
    "tost3": true,
    "tost2": false,
-   "ni2": false,
+   "ni2": true,
    "ni3": true,
    "ni5": true,
-   "coverage_gap": -0.8000000000000114,
+   "coverage_gap": -1.3000000000000114,
    "reading": "equivalent ±3",
    "verdict": "replaceable",
    "flags": [],

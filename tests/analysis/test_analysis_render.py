@@ -120,6 +120,24 @@ def test_eval_tables_absolute_scores_and_incomplete_coverage():
     assert len(csv_rows) == len(profile.models) and "mathvista/acc" in fields
 
 
+def test_a_group_with_a_shared_rerun_merge_shows_its_merged_scores():
+    profile = load_profile()                                    # overlays.truncation_rerun.shared: {p2: [mathvista]}
+    formal = [metrics_row("mathvista", m, "offline", v) for m, v in (("qwen25vl_3b", 58.9), ("thinkstream_3b", 56.8),
+                                                                     ("mmduet2_3b", 59.4), ("qwen3vl_8b", 74.4))]
+    contrasts = [{**cp_row("thinkstream_3b", -1.3), "a": 59.1, "b": 57.8}, {**cp_row("mmduet2_3b", 0.6), "a": 59.1, "b": 59.7},
+                 {**cp_row("aura_8b", -8.5), "a": 75.0, "b": 66.5},                # not a shared group: formal score kept
+                 {**cp_row("thinkstream_3b", -0.3, dataset="mmmu"), "a": 46.0, "b": 45.7}]
+    merged = eval_tables.shared_scores(contrasts, profile)
+    assert merged == {("qwen25vl_3b", "mathvista", "acc"): 59.1, ("thinkstream_3b", "mathvista", "acc"): 57.8,
+                      ("mmduet2_3b", "mathvista", "acc"): 59.7}
+    column = 4                                                  # Model, Mode, DynaMath avg, DynaMath worst, MathVista
+    cells = {r[0]: r[column] for r in latex.tex_cells(eval_tables.build(formal, profile, merged=merged)["eval_image"][0])}
+    assert (cells["Qwen2.5-VL-3B"], cells["ThinkStream-3B"], cells["MMDuet2-3B"]) == ("59.1", "57.8", "59.7")
+    assert cells["Qwen3-VL-8B"] == "74.4"
+    plain = {r[0]: r[column] for r in latex.tex_cells(eval_tables.build(formal, profile)["eval_image"][0])}
+    assert (plain["Qwen2.5-VL-3B"], plain["ThinkStream-3B"], plain["MMDuet2-3B"]) == ("58.9", "56.8", "59.4")
+
+
 def test_robustness_tables_from_the_robustness_report():
     profile = load_profile()
     family = lambda v, n=300: {"n": n, "delta_rob_pp": v, "delta_rob_ci95": [v - 2, v + 2]}  # noqa: E731

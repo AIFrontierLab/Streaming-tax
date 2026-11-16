@@ -30,6 +30,13 @@ def run(adapter, hooks, req):
     return adapter.stream(req, hooks=hooks)
 
 
+def arm_request(child, variant="sfix_prs", **kwargs):
+    """A request of the arm as the run worker sends it: the arm's Recall / Respond settings merged in."""
+    settings = merge({"generation": {"max_new_tokens": 8}, "stream": {"fps": 1}},
+                     load_plugin_config().settings_delta(child, variant))
+    return F.request(settings=settings, **kwargs)
+
+
 def plugin_arm(child, variant, timeline, lm):
     """The arm's real hooks (spied) and the child's artefacts, with the PRS probe on the toy decoder."""
     art = artefacts.load(child)
@@ -39,10 +46,10 @@ def plugin_arm(child, variant, timeline, lm):
 
 
 def live_arm(child, timeline, lm, closed, free):
-    """S+ with a live gate at the given thresholds (the shipped vectors and layers)."""
+    """S_plug with a live gate at the given thresholds (the shipped vectors and layers)."""
     art = artefacts.load(child)
     art.thresholds = {"closed": closed, "free": free, "free_harmless_q975": free}
-    hooks = timeline.spy(PluginHooks(child, ArmRecipe("sfix_prs", "full", True, "live", True), art,
+    hooks = timeline.spy(PluginHooks(child, ArmRecipe("sfix_prs", "budget", True, "live", True), art,
                                      turn=load_plugin_config().answer_turns[child]))
     timeline.probe(lm, art.p_layer, art.prs)
     return hooks
@@ -100,29 +107,32 @@ def test_aura_hf_live_gate_and_record_mode_end_the_turn_at_its_first_step(monkey
     assert gen.text == "" and tl.forwards(inside=True) == [(prompt.shape[1], ())]  # state read, turn ended
 
 
-def test_aura_plugin_arms_cut_every_segment(monkeypatch):
-    """The Recall delta of AURA's plugin arms (stream.window: full) makes aura_stream_hf cut all floor(d) one-second
-    segments, the same as plugin.recall.aura_spans(d, "full"); arms without Recall keep the official last 30."""
+def test_aura_plugin_arms_keep_recalls_segments(monkeypatch):
+    """The Recall delta of AURA's plugin arms (stream.window full, budget 30, recent 10) makes aura_stream_hf keep
+    plugin.recall.aura_spans(d, 30, recent=10): on a 95-s video the newest 10 one-second segments and 20 sampled
+    earlier ones; arms without Recall keep the official last 30."""
     pytest.importorskip("transformers")
     config = load_plugin_config()
     assert stream_adapter("aura_8b", "aura_stream", config) == "aura_stream_hf"
     native = {"generation": {"max_new_tokens": 8}, "stream": {"fps": 1}}
     for variant in config.arms:
-        settings = merge(native, config.recall_delta("aura_8b", variant))
+        settings = merge(native, config.settings_delta("aura_8b", variant))
         adapter = F.aura_hf(monkeypatch, F.toy_for("aura_8b"), [{T["C"]: 50}, {F.EOS: 50}], frames=954,
                             settings=settings)
-        plan = adapter.schedule(F.request(settings=settings))
-        if config.arm(variant).recall == "full":
-            assert settings["stream"]["window"] == "full"
-            spans, evicted = recall.aura_spans(95.4, "full")
-            assert [tuple(s) for s in plan["spans"]] == spans and (plan["segments"], plan["evicted"]) == (95, evicted)
-            hooks = make_hooks("aura_8b", variant)
-            gen = run(adapter, hooks, F.request(settings=settings))
-            assert adapter.processor.videos == 95 and gen.info["segments"] == 95 and gen.info["evicted"] == 0
-            assert gen.info["window_start"] == round(95.4 - 95, 2)
+        request = F.request(settings=settings)
+        plan = adapter.schedule(request)
+        if config.arm(variant).recall == "budget":
+            assert settings["stream"] == {"fps": 1, "window": "full", "budget": 30, "recent": 10}
+            spans, evicted = recall.aura_spans(95.4, 30, recent=10, stream_id="v.mp4")
+            assert [tuple(s) for s in plan["spans"]] == spans and (plan["segments"], plan["evicted"]) == (30, 65)
+            assert evicted == 65 and [round(s, 2) for s, _ in spans[-10:]] == [round(85.4 + i, 2) for i in range(10)]
+            gen = run(adapter, make_hooks("aura_8b", variant), request)
+            assert adapter.processor.videos == 30 and gen.info["segments"] == 30 and gen.info["evicted"] == 65
+            assert gen.info["kept_starts"] == [round(s, 2) for s, _ in spans]
         else:
             spans, _ = recall.aura_spans(95.4, "official")
             assert plan["segments"] == 30 and [f"{s:.2f}" for s, _ in plan["spans"]] == [f"{s:.2f}" for s, _ in spans]
+
 
 
 def test_aura_recall_budget_keeps_a_reservoir(monkeypatch):
@@ -195,7 +205,7 @@ def test_mmduet_answer_turn(monkeypatch):
     lm, tl = F.toy_for("mmduet_7b"), F.Timeline()
     hooks, art = plugin_arm("mmduet_7b", "sfix_prs", tl, lm)
     adapter = F.mmduet(monkeypatch, lm, fire={1}, scripts=[[{F.EOS: 50}], [{T["B"]: 50}, {F.EOS: 50}]])
-    gen = run(adapter, hooks, F.request())
+    gen = run(adapter, hooks, arm_request("mmduet_7b"))                       # Respond: the reply is requested
     assert tl.calls() == ["begin", "attach", "arm", "on_step_logits", "disarm", "finish"]
     assert gen.text == "B" and gen.info["forced"]
     assert gen.info["plugin"]["guard"]["proj"] == proj(lm, F.ids(*F.GEN_PROMPT), art)    # first forward after arm
@@ -210,10 +220,10 @@ def test_mmduet_live_gate_forces_the_end_of_turn_at_the_first_step(monkeypatch):
     expected = proj(lm, F.ids(*F.GEN_PROMPT), art)
     hooks = live_arm("mmduet_7b", tl, lm, closed=expected - 0.5, free=expected + 0.5)
     adapter = F.mmduet(monkeypatch, lm, scripts=[[{T["B"]: 50}, {F.EOS: 50}]] * 2)
-    gen = run(adapter, hooks, F.request())
+    gen = run(adapter, hooks, arm_request("mmduet_7b"))
     assert (gen.text, gen.finish, gen.info["plugin"]["native"]) == (REFUSAL, "guard", "")
     assert tl.forwards(inside=True) == [(3, (2,))]                             # eos forced: one forward only
-    gen = run(adapter, hooks, F.request(kind="open", sample_id="q2"))
+    gen = run(adapter, hooks, arm_request("mmduet_7b", kind="open", sample_id="q2"))
     assert gen.text == "B" and not gen.info["plugin"]["guard"]["fired"]
 
 
@@ -227,11 +237,11 @@ def test_mmduet_failed_attach_installs_no_call_site_and_the_next_request_attache
     adapter = F.mmduet(monkeypatch, lm, scripts=[[{T["B"]: 50}, {F.EOS: 50}]] * 2)
     native = adapter.infer._generate_response
     with pytest.raises(ValueError, match="decoder layers"):
-        run(adapter, hooks, F.request())
+        run(adapter, hooks, arm_request("mmduet_7b"))
     assert adapter._attached is None and adapter.infer._generate_response == native and not lm.lm_head._forward_hooks
     assert not hooks.attached and not any(layer._forward_hooks for layer in lm.layers)
     hooks.artefact.manifest = dict(hooks.artefact.manifest, layers=layers)
-    gen = run(adapter, hooks, F.request(sample_id="q2"))
+    gen = run(adapter, hooks, arm_request("mmduet_7b", sample_id="q2"))
     assert gen.text == "B" and gen.info["plugin"]["guard"]["proj"] is not None and hooks.guard is not None
     assert len(lm.lm_head._forward_hooks) == 1 and sum(len(layer._forward_hooks) for layer in lm.layers) == 2
 
@@ -321,7 +331,9 @@ def test_an_inert_arm_reproduces_the_native_row(monkeypatch, child):
     for variant in ("inert", "hf") if child == "aura_8b" else ("inert",):
         tl = F.Timeline()
         gen = run(build(child, monkeypatch, F.toy_for(child)), tl.spy(make_hooks(child, variant)), F.request())
-        assert {"begin", "attach", "arm", "disarm", "finish"} <= set(tl.calls())
+        # MMDuet's heads stay below the threshold on the last frame: natively it has no answer turn to arm
+        turn = set() if child == "mmduet_7b" else {"arm", "disarm"}
+        assert {"begin", "attach", "finish"} | turn <= set(tl.calls())
         assert (gen.text, gen.tokens, gen.finish) == (native.text, native.tokens, native.finish)
         info = {k: v for k, v in gen.info.items() if k not in ("plugin", "session_shared")}
         assert info == native.info and gen.info["plugin"] == {"native": native.text}

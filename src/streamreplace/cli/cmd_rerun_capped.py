@@ -49,7 +49,8 @@ def register(subparsers) -> None:
     r.add_argument("--launcher", choices=("local", "print"), default="local")
     t = actions.add_parser("report", help="write <root>/TRUNC.md and trunc.json")
     t.add_argument("--root", metavar="DIR", help="rerun folder (default <outputs>/rerun_capped)")
-    t.add_argument("--capped", metavar="FILE", help="the selection (default <root>/capped.json)")
+    t.add_argument("--capped", metavar="FILE", help="the selection (default <root>/capped.json, else the paper's "
+                                                    "frozen list of configs/analysis.yaml)")
     parser.set_defaults(func=handler)
 
 
@@ -62,7 +63,9 @@ def _spec(ctx, args) -> dict:
             "datasets": (ctx.config.expand_benchmarks(args.benchmarks) if getattr(args, "benchmarks", None)
                          else list(spec.get("datasets", []))),
             "cap": getattr(args, "cap", None) or int(spec.get("cap", 8192)),
-            "margin": getattr(args, "margin", None) or int(spec.get("margin", 8))}
+            "margin": getattr(args, "margin", None) or int(spec.get("margin", 8)),
+            "shared": dict(spec.get("shared") or {}),
+            "frozen": profile.path(spec["ids"]) if spec.get("ids") else None}
 
 
 def handler(args) -> int:
@@ -103,6 +106,8 @@ def handler(args) -> int:
         folders = sorted({str(job.outputs) for job in jobs})
         print("next: " + "; ".join(f"streamreplace --outputs {f} score" for f in folders))
         return 2 if incomplete else 0
-    target = rerun_capped.report(ctx.config, ctx.paths.outputs, spec["root"], capped_file=args.capped)
+    capped = args.capped or (None if (spec["root"] / rerun_capped.CAPPED_FILE).is_file() else spec["frozen"])
+    target = rerun_capped.report(ctx.config, ctx.paths.outputs, spec["root"], capped_file=capped,
+                                 shared=spec["shared"])
     print(f"wrote {target} and {target.with_name('trunc.json')}")
     return 0

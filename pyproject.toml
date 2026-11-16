@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "streamreplace"
 version = "0.1.0"
-description = "How close are streaming video-LLMs to replacing their offline parents? P/C/S evaluation, statistics, a streaming plugin and generalization experiments."
+description = "Streaming Tax: can streaming VLMs replace their offline parents? P/C/S evaluation, statistics, diagnostic experiments, the Stream++ plugin and generalization experiments."
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]

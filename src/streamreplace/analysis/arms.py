@@ -10,8 +10,9 @@ Overlays (applied with `Job.with_overlays`):
 `Arms` resolves the arms of every contrast. With the truncation-rerun overlay (configs/analysis.yaml
 overlays.truncation_rerun) the two OFFLINE arms of a parent-child pair on a rerun dataset are merged: on the ids that
 either the parent's or the child's formal row capped, both arms take their rerun row (the rerun at 8,192 tokens
-ran both models on those ids), everywhere else the formal row. The parent arm is therefore specific to each child
-(ThinkStream and MMDuet2 share a parent but not their capped ids)."""
+ran every member of the pair on the pair's ids), everywhere else the formal row. A pair with two children listed
+under `shared` for a dataset uses one merge for the whole group instead (`rerun_ids`): the ids ANY member capped,
+so both children are compared with the same parent arm (ThinkStream and MMDuet2 on MathVista)."""
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
@@ -61,6 +62,14 @@ class Restrict:
 
 # ---------- generation-cap reruns ----------
 
+def rerun_ids(per_model: dict, parent: str, child: str, shared: bool = False) -> frozenset:
+    """The ids whose rerun rows replace the formal rows in the contrast of `parent` and `child`: the ids either of
+    them capped or, with one shared merge for the pair's whole group, the ids any member capped. per_model: model ->
+    {"ids": [...]} of one pair and dataset (capped.json)."""
+    members = list(per_model) if shared else [parent, child]
+    return frozenset(i for model in members for i in per_model.get(model, {}).get("ids", []))
+
+
 @dataclass
 class TruncationRerun:
     """Capped ids per pair, dataset and model and the folder holding the rerun jobs
@@ -70,6 +79,7 @@ class TruncationRerun:
     pairs: list
     datasets: list
     ids_file: Path | None = None
+    shared: dict | None = None     # pair -> datasets with one merge for the whole group (see rerun_ids)
 
     @classmethod
     def from_profile(cls, profile, outputs: Path, ids_path: str | Path | None = None,
@@ -88,14 +98,14 @@ class TruncationRerun:
             ids_file = profile.path(spec["ids"])
         data = json.loads(ids_file.read_text(encoding="utf-8"))
         return cls(capped=data.get("pairs", data), root=root, pairs=list(spec["pairs"]),
-                   datasets=list(spec["datasets"]), ids_file=ids_file)
+                   datasets=list(spec["datasets"]), ids_file=ids_file, shared=dict(spec.get("shared") or {}))
 
     def ids(self, pair: str, dataset: str, parent: str, child: str) -> frozenset:
-        """The rule of the paper: an id is rerun for (parent, child) when either member capped it."""
+        """The rerun ids of the contrast of (parent, child) on a dataset (`rerun_ids`); none outside the overlay."""
         if pair not in self.pairs or dataset not in self.datasets:
             return frozenset()
-        per_model = self.capped.get(pair, {}).get(dataset, {})
-        return frozenset(per_model.get(parent, {}).get("ids", [])) | frozenset(per_model.get(child, {}).get("ids", []))
+        return rerun_ids(self.capped.get(pair, {}).get(dataset, {}), parent, child,
+                         shared=dataset in (self.shared or {}).get(pair, ()))
 
 
 class Arms:

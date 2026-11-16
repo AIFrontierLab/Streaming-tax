@@ -170,9 +170,12 @@ def tables(outputs: str | Path, profile: Profile, out: str | Path | None = None,
 
     children, names = profile.children, {c: profile.name_of(c) for c in profile.models}
     unreported: list[dict] = []
+    merged: dict = {}
     if contrasts.is_file():
         document = json.loads(contrasts.read_text(encoding="utf-8"))
         rows, unreported = document["rows"], document.get("unreported") or []
+        if document.get("overlay"):                    # the merged scores of the groups that share one merge
+            merged = eval_tables.shared_scores(rows, profile)
         table = table_gaps.build(rows, children, robustness, finetune, profile.display.get("finetune_ids"))
         gap_names = {c: profile.name_of(c, "gap_table_names") for c in children}
         write("gaps.tex", table_gaps.latex(table, gap_names))
@@ -192,7 +195,7 @@ def tables(outputs: str | Path, profile: Profile, out: str | Path | None = None,
         skipped["gaps, figure data"] = f"{contrasts} not found (streamreplace stats)"
     if metrics.is_file():
         rows = json.loads(metrics.read_text(encoding="utf-8"))["jobs"]
-        for name, (text, table_rows, fields) in eval_tables.build(rows, profile, unreported).items():
+        for name, (text, table_rows, fields) in eval_tables.build(rows, profile, unreported, merged).items():
             write(f"{name}.tex", text)
             write(f"{name}.csv", to_csv(table_rows, fields))
     else:

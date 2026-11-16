@@ -22,7 +22,8 @@ from . import context
 
 DESCRIPTION = ("Evaluate streaming video-LLMs against the offline parents they were initialised from: P (parent, "
                "offline), C (child, same offline pipeline) and S (child, native stream, question at the end), with "
-               "S - P = (C - P) + (S - C); the streaming plugin; generalization experiments.")
+               "S - P = (C - P) + (S - C); the diagnostic experiments; the Stream++ plugin; generalization "
+               "experiments.")
 
 
 def command_modules() -> list[str]:

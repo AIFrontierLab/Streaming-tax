@@ -104,7 +104,8 @@ run / assemble / report` ([plugin.md](plugin.md)).
 ## What was checked
 
 The reports were run on the paper's own rows and labels (which are not distributed) and compared with the paper:
-`response`, `response_forms`, `harmless_requests`, `recall_budget`, `recall_settings`, `streaming_benchmarks` and
-the harm scores of `harm_probe` reproduce the published numbers ([reproducing-the-paper.md](reproducing-the-paper.md) gives the
-details and the two places where bootstrap intervals differ in the last digit). The generation paths of the
+`response`, `response_forms`, `harmless_requests`, `question_timing`, the window arms of `window`, `recall_budget`,
+`recall_settings`, `streaming_benchmarks` and the harm scores of `harm_probe` reproduce the published numbers
+([reproducing-the-paper.md](reproducing-the-paper.md) gives the details and the places where bootstrap intervals
+differ in the last digit). The generation paths of the
 controls are ports of the code the paper's runs used; they were not rerun on GPUs for this release.

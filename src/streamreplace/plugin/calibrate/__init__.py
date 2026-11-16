@@ -5,7 +5,9 @@ Stages (`streamreplace plugin calibrate CHILD --parent PARENT --stage ...`):
               videos (inputs.py); refusal direction and its layer by fold-1 AUC; parent-restoration vector, its layer
               and strength by KL(parent || steered child) (directions.py)        -> <work>/<child>/directions.npz
   freeze      rhat at r_layer and alpha * p at p_layer, with sha256 (freeze.py) -> plugin_artefacts/<child>/
-  record      native stream with Recall + Respond, gate in record mode, on the 301 threshold items -> tau_closed
-  harmless    the S_fix arm (gate in shadow) on the 100 harmless fit requests (harmless.py)          -> tau_free
+  record      native stream with Recall + Respond, gate in record mode, on the 301 threshold items
+              -> dev_closed_q975 (and closed_pool_q975 with --stream-pilot: pooled with the streaming pilot)
+  harmless    the S_fix arm (gate in shadow) on the 100 harmless fit requests (harmless.py) -> free_harmless_q975
+              The two thresholds follow from the three quantiles (thresholds.rule).
 The shipped artefacts of the paper's six children are frozen: a rebuild is not bit-identical (GPU kernels, the
 float16 state cache), so paper numbers always use plugin_artefacts/ as shipped."""

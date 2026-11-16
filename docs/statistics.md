@@ -231,9 +231,13 @@ and MMStar the paper therefore generated every capped item again at 8,192 tokens
 - a row is capped when its `finish` is "length"; rows without a recorded stop reason are re-tokenised with the
   model's own tokenizer and count as capped at ≥ cap − 8 tokens;
 - for the contrast of a parent and a child, the ids that either of the two capped are taken from the rerun rows in
-  **both** offline arms, the formal rows everywhere else (so the parent arm is specific to each child);
-- the overlay applies to the contrasts and the gap figures; the absolute-score tables keep the formal rows (e.g.
-  AURA's MathVista P / C there give −7.8, the image gap figure shows −8.5).
+  **both** offline arms, the formal rows everywhere else;
+- ThinkStream and MMDuet2 share a parent. On MathVista, where they capped different items, the whole group uses
+  **one** merge (`shared: {p2: [mathvista]}` in the overlay): all three models take their rerun rows on the 80 ids
+  any of them capped, so both children are compared with the same parent arm (59.1);
+- the overlay applies to the contrasts and the gap figures. The absolute-score tables keep the formal rows (e.g.
+  AURA's MathVista P / C there give −7.8, the image gap figure shows −8.5), except for the group with a shared merge,
+  whose three MathVista scores are the merged ones.
 
 ```bash
 streamreplace rerun-capped select              # capped ids -> <outputs>/rerun_capped/<pair>/subset.json, capped.json
@@ -243,8 +247,8 @@ streamreplace rerun-capped report              # TRUNC.md / trunc.json: formal v
 streamreplace stats                            # contrasts with the reruns merged (the default)
 ```
 
-The paper's selection is `paper/frozen/rerun_capped/capped.json` (MathVista: ThinkStream pair 79 ids, MMDuet2 8,
-AURA 113, MOSS-VL-Realtime 18; MMMU: AURA 176, the others at most 1; MMStar: AURA 73). `stats` uses the rerun
+The paper's selection is `paper/frozen/rerun_capped/capped.json` (MathVista: the Qwen2.5-VL group 80 ids, AURA 113,
+MOSS-VL-Realtime 18; MMMU: AURA 176, the others at most 1; MMStar: AURA 73). `stats` and `rerun-capped report` use the rerun
 folder's own capped.json when it exists, else this file. DynaMath was not rerun.
 
 ## 10. Rounding and display

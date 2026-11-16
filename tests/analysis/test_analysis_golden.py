@@ -50,6 +50,23 @@ def test_rerun_overlay_changes_only_the_rerun_benchmarks():
     assert round(formal[aura]["delta_pp"], 1) == -7.8 and round(merged[aura]["delta_pp"], 1) == -8.5
 
 
+def test_the_qwen25_group_shares_one_mathvista_merge():
+    """ThinkStream and MMDuet2 are compared with the same merged parent arm on MathVista (the 80 ids any of the three
+    models capped), and the absolute-score table shows the three merged scores."""
+    merged, formal = rows("contrasts.json"), rows("contrasts_no_overlay.json")
+    think, duet = (merged[("mathvista", "acc", c, "C-P")] for c in ("thinkstream_3b", "mmduet2_3b"))
+    assert think["a"] == duet["a"] == pytest.approx(59.1) and (think["b"], duet["b"]) == pytest.approx((57.8, 59.7))
+    assert (think["a_only"], think["b_only"], duet["a_only"], duet["b_only"]) == (133, 120, 80, 86)
+    assert formal[("mathvista", "acc", "mmduet2_3b", "C-P")]["a"] == pytest.approx(58.9)
+    mmmu = [merged[("mmmu", "acc", c, "C-P")]["a"] for c in ("thinkstream_3b", "mmduet2_3b")]
+    assert mmmu[0] == pytest.approx(mmmu[1], abs=0.2)             # elsewhere each contrast merges its own ids
+    table = json.loads((EXPECTED / "tables.json").read_text(encoding="utf-8"))["tables"]["eval_image"]
+    scores = {row[0]: row[4] for row in table}                    # Model, Mode, DynaMath avg, worst, MathVista
+    assert (scores["Qwen2.5-VL-3B"], scores["ThinkStream-3B"], scores["MMDuet2-3B"]) == ("59.1", "57.8", "59.7")
+    summary = json.loads((EXPECTED / "contrasts.json").read_text(encoding="utf-8"))["summary"]
+    assert (summary["image_tost3"], summary["image_holm_decline"]) == (19, 9)
+
+
 def test_unreported_contrasts_are_the_silent_stream_cells():
     """A stream arm that answers none of a set's requests has no ASR or privacy score there, and MMDuet's one rated
     fairness reply leaves three fairness scores undefined: those S-C and S-P contrasts are not reported, which gives

@@ -46,8 +46,9 @@ full query; temperature 0). The extraction is read again by the rules as `Final 
 
 - `acc` (headline): accuracy over all 1,000 questions; errored generations count as wrong. `task/*` breakdowns.
 - Paired statistics resample items.
-- The paper's gap tables replace the rows that stopped at the 2,048-token cap with 8,192-token reruns of both pair
-  members (docs/statistics.md); the absolute-score table uses the formal rows.
+- The paper's gap figures replace the rows that stopped at the 2,048-token cap with 8,192-token reruns of both pair
+  members (docs/statistics.md); the absolute-score table uses the formal rows, except for Qwen2.5-VL-3B, ThinkStream
+  and MMDuet2, which share one merge on the 80 items any of the three capped and are shown with it.
 
 ## Deviations from the official protocol
 

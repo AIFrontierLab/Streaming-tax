@@ -99,14 +99,18 @@ duration_split:
 
 overlays:
   # Generation-cap reruns. The formal offline runs capped generation at 2,048 tokens (512 for MMStar). For each pair
-  # below and each dataset, every id on which the parent's or the child's formal offline row stopped at the cap was
-  # generated again at 8,192 tokens by both models; those rerun rows replace the formal rows of BOTH offline arms on
-  # exactly those ids (so the parent arm is specific to each child). Default for `stats` (switch off with
-  # --no-overlay); the absolute-score tables always use the formal rows. `streamreplace rerun-capped` selects the ids,
-  # runs the reruns and reports them; its <rows>/capped.json, when present, replaces the paper's frozen list `ids`.
+  # below and each dataset, every id on which a member's formal offline row stopped at the cap was generated again at
+  # 8,192 tokens by every member; in the contrast of a parent and a child the rerun rows replace the formal rows of
+  # BOTH offline arms on the ids either of the two capped. Default for `stats` (switch off with --no-overlay).
+  # `streamreplace rerun-capped` selects the ids, runs the reruns and reports them; its <rows>/capped.json, when
+  # present, replaces the paper's frozen list `ids`.
   truncation_rerun:
     pairs: [p2, p3, p4, p5]
     datasets: [mathvista, mmmu, mmstar]
+    # One merge for a whole group: on MathVista the two children of p2 are compared with the same parent arm, all
+    # three models taking their rerun rows on the 80 ids any of them capped. The absolute-score table shows these
+    # merged scores for the group; every other absolute score is on the formal rows.
+    shared: {p2: [mathvista]}
     ids: paper/frozen/rerun_capped/capped.json  # per pair, dataset and model: the capped ids of the formal rows
     rows: rerun_capped                     # <outputs>/rerun_capped/<pair>/<dataset>/<model>.offline.jsonl (+ scores)
     cap: 8192

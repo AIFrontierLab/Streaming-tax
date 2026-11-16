@@ -92,3 +92,17 @@ def test_report_lists_pending_reruns(tmp_path):
                                                                            "kid": {"cap": 64, "ids": []}}}}}))
     text = R.report(FakeConfig(), formal, root, catalog()).read_text()
     assert "pending: par 0/1, kid 0/1" in text
+
+
+def test_rerun_ids_of_a_contrast_and_of_a_shared_group():
+    from streamreplace.analysis.arms import TruncationRerun, rerun_ids
+    per_model = {"par": {"ids": ["1", "2"]}, "kid": {"ids": ["2", "3"]}, "kid2": {"ids": ["9"]}}
+    assert rerun_ids(per_model, "par", "kid") == {"1", "2", "3"}             # the ids either of the two capped
+    assert rerun_ids(per_model, "par", "kid2") == {"1", "2", "9"}
+    assert rerun_ids(per_model, "par", "kid", shared=True) == {"1", "2", "3", "9"}      # one merge for the group
+    assert rerun_ids(per_model, "par", "kid2", shared=True) == rerun_ids(per_model, "par", "kid", shared=True)
+    rerun = TruncationRerun({"p": {"img": per_model, "txt": per_model}}, root=None, pairs=["p"], datasets=["img", "txt"],
+                            shared={"p": ["img"]})
+    assert rerun.ids("p", "img", "par", "kid") == {"1", "2", "3", "9"}
+    assert rerun.ids("p", "txt", "par", "kid") == {"1", "2", "3"}            # not shared on this dataset
+    assert rerun.ids("q", "img", "par", "kid") == frozenset() == rerun.ids("p", "other", "par", "kid")

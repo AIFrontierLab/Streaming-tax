@@ -240,9 +240,15 @@ fetches both files at the commits the shipped artefacts were built from (llm-att
 streamreplace plugin calibrate CHILD --parent PARENT --stage directions --advbench FILE --alpaca FILE   # GPU
 streamreplace plugin calibrate CHILD --stage freeze                                                    # artefacts
 streamreplace --outputs CAL plugin run --children CHILD --arms record --items threshold --gpus 0       # GPU
-streamreplace --outputs CAL plugin calibrate CHILD --stage record                                      # tau_closed
-streamreplace --outputs CAL plugin calibrate CHILD --stage harmless --clips CLIPS                     # GPU; tau_free
+streamreplace --outputs CAL plugin calibrate CHILD --stage record                                      # dev_closed_q975
+streamreplace --outputs CAL plugin calibrate CHILD --stage harmless --clips CLIPS                     # GPU; free_harmless_q975
+# optional, the streaming pilot behind the closed-format threshold (needs OVO-Bench and StreamingBench prepared):
+streamreplace --outputs PILOT plugin run --children CHILD --arms sfix_prs --items stream_pilot --gpus 0
+streamreplace --outputs CAL plugin calibrate CHILD --stage record --stream-pilot PILOT                 # closed_pool_q975
 ```
+
+Each stage writes the quantile it measured into the child's manifest, and the thresholds follow from the rule of
+"Thresholds" as soon as the first two are known.
 
 The two GPU stages load models: `plugin calibrate` relaunches them automatically in the model environment's
 interpreter, the way `run` starts its workers, on one GPU slot (`--gpus N`, default the first of `run.gpus`).
@@ -259,14 +265,14 @@ stream environment. That environment must be built first (`streamreplace env bui
   mean KL(parent || steered child) over the 248 fold-1 inputs among 7 layers at 20-80% depth x alpha in {0.5, 1.0, 1.5}.
 - **freeze** writes `rhat[r_layer]` and `alpha * p[p_layer]` with sha256; existing artefacts are never replaced
   without `--force`.
-- **record** reads the record arm's projections on the 301 threshold items; **harmless** cuts the clips from your
-  Video-MME copy if needed, runs the S_fix arm on the 100 fit requests (Video-SafetyBench's stream settings, 160 new
-  tokens) and writes `tau_free`.
+- **record** reads the record arm's projections on the 301 threshold items (with `--stream-pilot`, pooled with the
+  complete plugin's projections on the streaming pilot); **harmless** cuts the clips from your Video-MME copy if
+  needed and runs the S_fix arm on the 100 fit requests (Video-SafetyBench's stream settings, 160 new tokens).
 
 **Cost** (one 48 GB-class GPU): directions about 1.2-1.7 h (1,488 one-token captures, then 22 x 248 steered forwards
 for the KL grid); the record run on 301 items 0.5-3.5 h depending on the stream's speed (LiveStar runs at about real
 time); the harmless stage 100 requests of 160 tokens. At inference the plugin costs one dot product and one vector
-addition per step of the answer turn; Recall raises memory (ThinkStream's longer KV window, AURA's longer prompt).
+addition per step of the answer turn; Recall keeps the native memory budget.
 With PRS on, ThinkStream's answer chunk decodes eagerly instead of by CUDA-graph replay, because forward hooks do not
 run inside a replayed graph.
 

@@ -184,7 +184,7 @@ def test_hooks_lm_head_paths():
     req = Request("x", "", "q", kind="mcq", choices={"A": "a", "B": "b"})
     # MMDuet: first step only; the live gate turns the step into the end of turn
     lm = LM()
-    hooks = PluginHooks("mmduet_7b", ArmRecipe("sfix_prs", "full", True, "live", True), artefact(),
+    hooks = PluginHooks("mmduet_7b", ArmRecipe("sfix_prs", "budget", True, "live", True), artefact(),
                         turn=TURNS["mmduet_7b"])
     hooks.attach(lm.layers, Tok())
     hooks.begin(req)
@@ -199,7 +199,7 @@ def test_hooks_lm_head_paths():
     gen = hooks.finish(req, Generation("", 1, "eos", {}))
     assert gen.text == REFUSAL and gen.finish == "guard" and gen.info["plugin"]["guard"]["fired"]
     # MOSS-VL-Realtime: bans on the opening steps until the argmax is not <|response|>; readout logits = that step's
-    moss = PluginHooks("moss_vl_rt", ArmRecipe("sfix", "full", True, "shadow", False), artefact(5, 2),
+    moss = PluginHooks("moss_vl_rt", ArmRecipe("sfix", "budget", True, "shadow", False), artefact(5, 2),
                        turn=TURNS["moss_vl_rt"])
     moss.attach(LM().layers, Tok())
     moss.begin(req)
@@ -226,7 +226,7 @@ def test_live_gate_takes_the_answer_format_when_attach_follows_begin():
     tok = Tok()
     for kind, fires in (("mcq", True), ("open", False)):
         lm = LM()
-        hooks = PluginHooks("livestar_8b", ArmRecipe("sfix_prs", "full", True, "live", True),
+        hooks = PluginHooks("livestar_8b", ArmRecipe("sfix_prs", "budget", True, "live", True),
                             artefact(closed=2.5, free=3.5), turn=TURNS["livestar_8b"])
         req = Request("x", "", "q", kind=kind, choices={"A": "a", "B": "b"} if kind == "mcq" else {})
         hooks.begin(req)
@@ -247,7 +247,7 @@ def test_begin_disarms_a_guard_left_armed_by_the_previous_request(gate):
     req = Request("x", "", "q", kind="mcq", choices={"A": "a", "B": "b"})
     lm, h = LM(), torch.zeros(1, 3, D)
     native = lm(h)
-    hooks = PluginHooks("livestar_8b", ArmRecipe(gate, "full", True, gate, gate != "record"), artefact(),
+    hooks = PluginHooks("livestar_8b", ArmRecipe(gate, "budget", True, gate, gate != "record"), artefact(),
                         turn=TURNS["livestar_8b"])
     hooks.begin(req)
     hooks.attach(lm.layers, Tok())
@@ -266,19 +266,20 @@ def test_begin_disarms_a_guard_left_armed_by_the_previous_request(gate):
 
 def test_hooks_settings_identity_and_attach_once():
     lm = LM(36)
-    hooks = PluginHooks("thinkstream_3b", ArmRecipe("sfix_prs", "full", True, "shadow", True), artefact(20, 14, 36),
-                        recall={"stream": {"window": "full", "max_len": 81920}}, turn=TURNS["thinkstream_3b"])
+    hooks = PluginHooks("thinkstream_3b", ArmRecipe("sfix_prs", "budget", True, "shadow", True), artefact(20, 14, 36),
+                        delta={"stream": {"window": 20, "reservoir": 10, "max_len": 81920}}, turn=TURNS["thinkstream_3b"])
     merged = hooks.settings({"stream": {"fps": 1, "window": 20}, "generation": {"max_new_tokens": 512}})
-    assert merged == {"stream": {"fps": 1, "window": "full", "max_len": 81920}, "generation": {"max_new_tokens": 512}}
+    assert merged == {"stream": {"fps": 1, "window": 20, "reservoir": 10, "max_len": 81920},
+                      "generation": {"max_new_tokens": 512}}
     hooks.attach(lm, Tok())                                              # a model: its decoder list is found
     guard = hooks.guard
     hooks.attach(lm.layers, Tok())
     assert hooks.guard is guard and len(guard.handles) == 2
     ident = hooks.identity()
-    assert ident["artefacts"]["r_layer"] == 20 and ident["recipe"]["prs"] and ident["recall"]["stream"]["max_len"]
+    assert ident["artefacts"]["r_layer"] == 20 and ident["recipe"]["prs"] and ident["settings"]["stream"]["reservoir"]
     assert ident["answer_turn"] == {"silence": None, "logits": "deadline"}
     with pytest.raises(ValueError, match="decoder layers"):
-        PluginHooks("x", ArmRecipe("sfix", "full", True, "shadow"), artefact(n=30),
+        PluginHooks("x", ArmRecipe("sfix", "budget", True, "shadow"), artefact(n=30),
                     turn=AnswerTurn(None, "processor")).attach(LM(8).layers, Tok())
 
 
@@ -290,7 +291,7 @@ def test_a_failed_attach_keeps_nothing_and_the_next_attach_succeeds():
     """An attach() that raises (here: a checkpoint of another depth than the artefacts') registers nothing and leaves
     the hooks unattached, so the adapter's next stream() attaches again; meanwhile finish() refuses the row."""
     req = Request("x", "", "q", kind="mcq", choices={"A": "a", "B": "b"})
-    hooks = PluginHooks("thinkstream_3b", ArmRecipe("sfix_prs", "full", True, "shadow", True), artefact(20, 14, 36),
+    hooks = PluginHooks("thinkstream_3b", ArmRecipe("sfix_prs", "budget", True, "shadow", True), artefact(20, 14, 36),
                         turn=TURNS["thinkstream_3b"])
     hooks.begin(req)
     wrong = LM(28)
@@ -318,7 +319,7 @@ def test_logits_calls_must_match_the_declared_path():
     vocab = len(Tok.VOCAB)
 
     def armed(turn):
-        hooks = PluginHooks("toy", ArmRecipe("sfix", "full", True, "shadow"), artefact(), turn=turn)
+        hooks = PluginHooks("toy", ArmRecipe("sfix", "budget", True, "shadow"), artefact(), turn=turn)
         hooks.attach(LM().layers, Tok())
         hooks.begin(req)
         hooks.arm()
