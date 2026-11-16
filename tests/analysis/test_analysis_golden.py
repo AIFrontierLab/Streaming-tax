@@ -30,7 +30,7 @@ def rows(name: str) -> dict:
 @pytest.mark.parametrize("name", ["contrasts.json", "contrasts_no_overlay.json"])
 def test_shipped_contrasts_hold_the_documented_values(name):
     table = rows(name)
-    assert len(table) == 354
+    assert len(table) == 334          # 354 metric x child x gap cells, 20 of them not reported (see below)
     for key, (delta, ci, p) in GOLDEN.items():
         r = table[key]
         assert round(r["delta_pp"], 4) == pytest.approx(delta, abs=1e-4)
@@ -50,18 +50,40 @@ def test_rerun_overlay_changes_only_the_rerun_benchmarks():
     assert round(formal[aura]["delta_pp"], 1) == -7.8 and round(merged[aura]["delta_pp"], 1) == -8.5
 
 
+def test_unreported_contrasts_are_the_silent_stream_cells():
+    """A stream arm that answers none of a set's requests has no ASR or privacy score there, and MMDuet's one rated
+    fairness reply leaves three fairness scores undefined: those S-C and S-P contrasts are not reported, which gives
+    the Holm families of the paper (safety 51 / 21, VMDT 89 / 41)."""
+    data = json.loads((EXPECTED / "contrasts.json").read_text(encoding="utf-8"))
+    cells = Counter((u["dataset"], u["metric"], u["child"]) for u in data["unreported"])
+    assert set(cells.values()) == {2} and {u["gap"] for u in data["unreported"]} == {"S-C", "S-P"}
+    assert sorted(cells) == sorted(
+        [("mcv_safetybench", "asr_explicit", "mmduet2_3b"), ("mcv_safetybench", "asr_implicit", "mmduet2_3b"),
+         ("mcv_safetybench", "asr_implicit", "mmduet_7b")]
+        + [("vmdt_fairness", m, "mmduet_7b") for m in ("fairness", "stereotype", "decision")]
+        + [("vmdt_privacy", m, "mmduet_7b") for m in ("privacy", "state", "city", "zipcode")])
+    families = Counter(r["holm_broad_family"] for r in data["rows"])
+    assert [families[k] for k in ("safety/parent", "safety/S-C", "vmdt/parent", "vmdt/S-C")] == [51, 21, 89, 41]
+    native = rows("contrasts.json")[("videomme", "acc", "mmduet_7b", "S-C")]          # MMDuet's native stream
+    assert round(native["b"], 1) == 0.8 and round(native["delta_pp"], 1) == -64.8
+
+
 def test_plugin_recovery_golden_file():
-    """paper/expected/plugin_recovery.json: the recovery cells of the three threshold variants, the paper figure's
-    cells and the thresholds. The figure is the 'higher' variant as plugin.report.figure_data reads it, and the
-    thresholds of that variant are the shipped artefacts' (plugin_artefacts/<child>/manifest.json)."""
-    from streamreplace.plugin.report import figure_data
+    """paper/expected/plugin_recovery.json: Stream++'s recovery cells on the paper's 10,140 evaluation rows per
+    child (6 children x 9 metrics), the figure cells as plugin.report.figure_data reads them, the per-metric means of
+    Fig. 6 and the thresholds, which are the shipped artefacts' (plugin_artefacts/<child>/manifest.json)."""
+    from streamreplace.plugin.report import figure_data, means
     data = json.loads((EXPECTED / "plugin_recovery.json").read_text(encoding="utf-8"))
-    assert Counter(c["variant"] for c in data["cells"]) == {"higher": 45, "rule": 45, "old": 45}
-    assert len({(c["child"], c["dataset"], c["metric"]) for c in data["cells"]}) == 45
-    assert figure_data({"cells": data["cells"]}, "higher")["cells"] == data["figure"]
-    for child, variants in data["thresholds"].items():
+    assert len({(c["child"], c["dataset"], c["metric"]) for c in data["cells"]}) == len(data["cells"]) == 54
+    assert figure_data({"cells": data["cells"], "means": data["means"]})["cells"] == data["figure"]
+    assert means(data["cells"]) == data["means"]
+    change = {(m["dataset"], m["metric"]): (len(m["children"]), round(m["change"], 1)) for m in data["means"]}
+    assert change[("videomme", "acc")] == (6, 12.5)                    # the paper's headline numbers (Sec. 6.2)
+    assert change[("video_safetybench", "asr_harmful")] == (6, 7.7)
+    assert change[("vmdt_fairness", "fairness")] == (5, 4.0) and change[("vmdt_privacy", "privacy")] == (5, 5.6)
+    for child, tau in data["thresholds"].items():
         manifest = json.loads((repo_root() / "plugin_artefacts" / child / "manifest.json").read_text(encoding="utf-8"))
-        assert variants["higher"] == {k: manifest["thresholds"][k] for k in ("closed", "free")}, child
+        assert tau == {k: manifest["thresholds"][k] for k in ("closed", "free")}, child
 
 
 def test_shipped_profile_matches_the_golden_rows():
@@ -96,7 +118,7 @@ def same(x, y) -> bool:
 @pytest.mark.requires_data
 @pytest.mark.parametrize("overlay,name", [(False, "contrasts_no_overlay.json"), (True, "contrasts.json")])
 def test_recomputed_contrasts_equal_the_paper(overlay, name):
-    """Minutes of CPU: the full 354-contrast computation on the paper's scored rows (and the reruns)."""
+    """Minutes of CPU: every contrast on the paper's scored rows (and the reruns)."""
     outputs = paper_outputs()
     if outputs is None:
         pytest.skip("the outputs folder does not hold the paper's 235 scored jobs")

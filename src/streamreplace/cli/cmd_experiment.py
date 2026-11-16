@@ -110,7 +110,12 @@ def _label(args) -> int:
     exp = experiments.load(ctx.config, ctx.paths, args.name)
     if exp.kind not in ("forms", "probe"):
         raise ValueError(f"experiment {exp.name} is of kind {exp.kind}: its arms are scored by `score`, not labelled")
-    pending = forms.label(exp, ctx.config, ctx.paths, args.formal or ctx.paths.outputs, args.judge_gpus or [0])
+    if (exp.spec.get("options") or {}).get("steer"):          # steering replies live outside the job files
+        from ..experiments import probe
+        requests = [r for *_, row, r in probe.steering_requests(exp, ctx.config) if (row["raw"] or "").strip()]
+        pending = forms.run_judge(requests, exp.root, ctx.paths, args.judge_gpus or [0])
+    else:
+        pending = forms.label(exp, ctx.config, ctx.paths, args.formal or ctx.paths.outputs, args.judge_gpus or [0])
     print(f"{exp.name}: {pending} replies sent to the response-form judge")
     return 0
 
@@ -131,7 +136,7 @@ def _report(args) -> int:
         text = forms.markdown(result, names)
     elif exp.kind == "probe":
         from ..experiments import probe
-        result = probe.report(exp, ctx.config, ctx.paths, args.children or None)
+        result = probe.report(exp, ctx.config, ctx.paths, args.children or None, formal)
         text = probe.markdown(result, names)
     else:
         from ..experiments.report import Report, markdown

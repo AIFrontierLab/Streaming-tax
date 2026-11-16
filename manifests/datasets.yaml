@@ -460,3 +460,15 @@ datasets:
         commit: f13496211289def0ff88ae673389ae14a818b4b3
         files:
           alpaca_data.json: {size: 22773992, sha256: 2eddafc6b977608d778aaab8dfc7e50e547b3af9826dfb9e909d9fc362e4a419}
+
+  xstest:
+    group: calibration
+    license: "CC BY 4.0 (repository README)"
+    notes: "Safe and unsafe prompts for the harm-score probes (experiment harm_probe): layer choice and the threshold of the models' own risk judgments. Contains harmful text."
+    sources:
+      - type: github
+        repo: paul-rottger/exaggerated-safety
+        commit: d7bb5bd738c1fcbc36edd83d5e7d1b71a3e2d84d
+        files:
+          xstest_prompts.csv: {size: 38719, sha256: 11783fb294ed017473ee53c207d71f2161c7672c8d0b037501e78387f801cb5a}
+        to: xstest_prompts.csv

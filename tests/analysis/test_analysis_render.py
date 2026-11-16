@@ -8,7 +8,7 @@ from streamreplace.analysis.specs import load_profile
 
 
 def test_gaps_summary_of_the_papers_rows_keeps_its_wording():
-    """GAPS.md's summary derives its counts from the rows; for the paper's 354 contrasts they read as before."""
+    """GAPS.md's summary derives its counts from the rows; for the paper's contrasts they give its Holm families."""
     import json
     from streamreplace.analysis.render.gaps_md import summary_lines
     from streamreplace.analysis.specs import repo_root
@@ -16,8 +16,8 @@ def test_gaps_summary_of_the_papers_rows_keeps_its_wording():
     lines = summary_lines(rows)
     for line, gap in zip(lines[2:5], ("C-P", "S-C", "S-P")):
         assert line.startswith(f"- Video {gap} (Video-MME, TOMATO, TimeBlind I_Acc x 6): ")
-    assert lines[-1].startswith("- Trust, broad families (safety parent 54, safety S-C 24, VMDT parent 96, VMDT S-C "
-                                "48): ")
+    assert lines[-1].startswith("- Trust, broad families (safety parent 51, safety S-C 21, VMDT parent 89, VMDT S-C "
+                                "41): ")
 
 
 def test_display_conventions():

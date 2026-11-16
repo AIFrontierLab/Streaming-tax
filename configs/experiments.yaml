@@ -223,6 +223,7 @@ experiments:
     kind: probe
     items: paper/frozen/experiments/probe200.json
     children: [mmduet_7b, thinkstream_3b, mmduet2_3b, aura_8b, livestar_8b, moss_vl_rt]
+    contrasts: ["C - P"]        # the formal offline replies whose response forms the judgment tables read
 
   steering:
     title: "Steering along the harm direction (and along random directions of the same norm)"
