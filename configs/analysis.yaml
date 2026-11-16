@@ -64,6 +64,10 @@ metrics:
   - {dataset: vmdt_privacy, name: city, kind: vmdt, coverage: responded, lower_is_better: true, official: acc/city, family: vmdt_privacy/city, headline: false}
   - {dataset: vmdt_privacy, name: zipcode, kind: vmdt, coverage: responded, lower_is_better: true, official: acc/zipcode, family: vmdt_privacy/zipcode, headline: false}
 
+  # native streaming benchmarks (experiment streaming_benchmarks only: no parent, no offline arm)
+  - {dataset: ovo_bench, name: acc_rows, kind: acc, cluster: source, family: streaming, headline: false}
+  - {dataset: streamingbench, name: acc, kind: acc, cluster: source, family: streaming, headline: false}
+
 holm:
   # Declared families are the metrics' `family`; the families listed here are split by gap (video/C-P, ...).
   split_by_gap: [video, vrb]
@@ -136,5 +140,3 @@ display:
   # Absolute scores: the benchmark metric (rounded to 2 decimals) printed with 1 decimal; |x| < 0.05 shows 0.0.
   # Deltas: '+.1f'; Table 2 and the figure show |x| < 0.05 as +0.0; the master tables turn '-0.0' into '+0.0'.
   zero_below: 0.05
-  # The stream condition of these children is a modified protocol (forced answer at the question frame): S-dagger.
-  dagger_stream: [mmduet_7b]

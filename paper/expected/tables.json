@@ -1,487 +1,176 @@
 {
- "note": "cell strings of the paper's tables and the printed cells of the gap figure",
+ "note": "cell strings of the paper's tables",
  "tables": {
   "gaps": [
    [
     "MMDuet",
-    "$-0.1$",
-    "\\cellcolor[HTML]{F4DCD9}$\\mathbf{-2.2}$",
-    "$+0.1$",
-    "$-2.8$",
-    "$-0.7$",
-    "$-0.2$",
-    "$-0.2$",
-    "$-0.9$",
-    "$-1.2$",
-    "$+0.7$",
-    "$+0.7$",
-    "$+0.1$"
+    "\\textcolor[HTML]{8A939B}{$-1.2$}",
+    "$-11.8$",
+    "$+76.4$",
+    "$+8.3$",
+    "$+66.3$",
+    "\\textcolor[HTML]{8A939B}{$+0.0$}",
+    "--",
+    "$-5.8$",
+    "--",
+    "\\textcolor[HTML]{8A939B}{$+0.7$}",
+    "\\textcolor[HTML]{8A939B}{$+0.7$}",
+    "\\textcolor[HTML]{8A939B}{$+0.1$}",
+    "$+8.2$",
+    "$+0.0$"
    ],
    [
     "ThinkStream",
-    "\\cellcolor[HTML]{F4DCD9}$\\mathbf{-4.6}$",
-    "$-1.3$",
-    "$-1.3$",
-    "\\textcolor[HTML]{8A939B}{$-3.9^{\\ddagger}$}",
-    "$-0.3$",
-    "$-2.7$",
-    "$-0.4$",
-    "$-2.1$",
-    "$+3.9$",
-    "$+0.5$",
-    "$+1.9$",
-    "$+1.5$"
+    "\\textcolor[HTML]{8A939B}{$+3.9$}",
+    "$-16.6$",
+    "$+16.2$",
+    "$+9.2$",
+    "$+21.3$",
+    "\\textcolor[HTML]{8A939B}{$-0.2$}",
+    "\\textcolor[HTML]{8A939B}{$+2.3$}",
+    "$+5.1$",
+    "$+4.9$",
+    "\\textcolor[HTML]{8A939B}{$+0.5$}",
+    "\\textcolor[HTML]{8A939B}{$+1.9$}",
+    "\\textcolor[HTML]{8A939B}{$+1.5$}",
+    "$+5.3$",
+    "$-0.3$"
    ],
    [
     "MMDuet2",
-    "$+0.7$",
-    "$+0.5$",
-    "$+0.8$",
-    "\\cellcolor[HTML]{F4DCD9}$\\mathbf{-6.1}$",
-    "$-0.8$",
-    "$-0.8$",
-    "$-0.7$",
-    "$-0.9$",
-    "\\cellcolor[HTML]{F4DCD9}$\\mathbf{-7.3}$",
-    "$-0.2$",
-    "$+1.2$",
-    "$-0.2$"
+    "$-7.3$",
+    "$-24.5$",
+    "$+49.8$",
+    "\\textcolor[HTML]{8A939B}{$+3.6$}",
+    "$+52.1$",
+    "\\textcolor[HTML]{8A939B}{$-2.6$}",
+    "\\textcolor[HTML]{8A939B}{$-3.3$}",
+    "$+10.0$",
+    "$-2.9$",
+    "\\textcolor[HTML]{8A939B}{$-0.2$}",
+    "\\textcolor[HTML]{8A939B}{$+1.2$}",
+    "\\textcolor[HTML]{8A939B}{$-0.2$}",
+    "$+1.6$",
+    "$+0.1$"
    ],
    [
     "AURA",
-    "\\cellcolor[HTML]{F4DCD9}$\\mathbf{-6.8}$",
-    "\\cellcolor[HTML]{F4DCD9}$\\mathbf{-8.5}$",
-    "$-1.6$",
-    "$-2.0$",
-    "\\textcolor[HTML]{8A939B}{$-2.2^{\\ddagger}$}",
-    "$-1.4$",
-    "$-0.7$",
-    "$-3.3$",
-    "$-4.1$",
-    "$+0.2$",
-    "$-0.5$",
-    "$+0.4$"
+    "\\textcolor[HTML]{8A939B}{$-4.1$}",
+    "$-42.8$",
+    "\\textcolor[HTML]{8A939B}{$+0.4$}",
+    "$-35.8$",
+    "$+5.8$",
+    "$-3.7$",
+    "\\textcolor[HTML]{8A939B}{$-3.2$}",
+    "\\textcolor[HTML]{8A939B}{$+3.1$}",
+    "$-8.4$",
+    "\\textcolor[HTML]{8A939B}{$+0.2$}",
+    "\\textcolor[HTML]{8A939B}{$-0.5$}",
+    "\\textcolor[HTML]{8A939B}{$+0.4$}",
+    "$+3.9$",
+    "$+1.1$"
    ],
    [
     "LiveStar",
-    "$-3.1$",
-    "\\cellcolor[HTML]{F4DCD9}$\\mathbf{-8.2}$",
-    "$-2.7$",
-    "\\cellcolor[HTML]{F4DCD9}$\\mathbf{-12.0}$",
-    "$-4.2$",
-    "$+1.3$",
-    "$-1.4$",
-    "$-4.3$",
-    "\\cellcolor[HTML]{F4DCD9}$\\mathbf{-8.8}$",
-    "$+0.3$",
-    "$-1.6$",
-    "$-0.8$"
+    "$-8.8$",
+    "$-28.4$",
+    "$+12.5$",
+    "$+14.7$",
+    "\\textcolor[HTML]{8A939B}{$+1.1$}",
+    "\\textcolor[HTML]{8A939B}{$-1.8$}",
+    "$-16.9$",
+    "$-7.9$",
+    "\\textcolor[HTML]{8A939B}{$-0.2$}",
+    "\\textcolor[HTML]{8A939B}{$+0.3$}",
+    "\\textcolor[HTML]{8A939B}{$-1.6$}",
+    "\\textcolor[HTML]{8A939B}{$-0.8$}",
+    "$-0.7$",
+    "$-0.3$"
    ],
    [
     "MOSS-VL-Realtime",
-    "$-3.5$",
-    "$-3.6$",
-    "\\cellcolor[HTML]{F4DCD9}$\\mathbf{-3.4}$",
-    "$+0.2$",
-    "$+1.0$",
-    "\\cellcolor[HTML]{F4DCD9}$\\mathbf{-4.5}$",
-    "$-1.2$",
-    "$-2.1$",
-    "\\cellcolor[HTML]{F4DCD9}$\\mathbf{-6.1}$",
-    "$+1.7$",
-    "$-0.9$",
-    "$-0.8$"
-   ]
-  ],
-  "master_cp": [
-   [
-    "DynaMath",
-    "$-0.1^{\\approx}$",
-    "$\\mathbf{-4.6}$",
-    "$+0.7^{\\approx}$",
-    "$\\mathbf{-6.8}$",
-    "$-3.1$",
-    "$-3.5$"
-   ],
-   [
-    "\\quad worst case",
-    "$-1.2^{\\approx}$",
-    "$-1.0^{\\approx}$",
-    "$+0.8^{\\approx}$",
-    "$\\mathbf{-9.6}$",
-    "$-1.0^{\\approx}$",
-    "$-4.4$"
-   ],
-   [
-    "MathVista",
-    "$\\mathbf{-2.2}$",
-    "$-1.3$",
-    "$+0.5^{\\approx}$",
-    "$\\mathbf{-8.5}$",
-    "$\\mathbf{-8.2}$",
-    "$-3.6$"
-   ],
-   [
-    "MMBench",
-    "$+0.1^{\\approx}$",
-    "$-1.3^{\\approx}$",
-    "$+0.8^{\\approx}$",
-    "$-1.6^{\\approx}$",
-    "$-2.7$",
-    "$\\mathbf{-3.4}$"
-   ],
-   [
-    "MME perception",
-    "$-2.8$",
-    "$-3.9$",
-    "$\\mathbf{-6.1}$",
-    "$-2.0$",
-    "$\\mathbf{-12.0}$",
-    "$+0.2^{\\approx}$"
-   ],
-   [
-    "MME cognition",
-    "$-4.5$",
-    "$-1.7$",
-    "$+2.7$",
-    "$+6.2$",
-    "$\\mathbf{-21.8}$",
-    "$+3.9$"
-   ],
-   [
-    "MMMU",
-    "$-0.7^{\\approx}$",
-    "$-0.3^{\\approx}$",
-    "$-0.8^{\\approx}$",
-    "$-2.2$",
-    "$-4.2$",
-    "$+1.0$"
-   ],
-   [
-    "MMStar",
-    "$-0.2^{\\approx}$",
-    "$-2.7$",
-    "$-0.8^{\\approx}$",
-    "$-1.4$",
-    "$+1.3$",
-    "$\\mathbf{-4.5}$"
-   ],
-   [
-    "ScienceQA",
-    "$-0.2^{\\approx}$",
-    "$-0.4^{\\approx}$",
-    "$-0.7^{\\approx}$",
-    "$-0.7^{\\approx}$",
-    "$-1.4^{\\approx}$",
-    "$-1.2^{\\approx}$"
-   ],
-   [
-    "VisuLogic",
-    "$-1.3^{\\approx}$",
-    "$-3.3$",
-    "$-1.3$",
-    "$\\mathbf{+15.1}$",
-    "$-1.9$",
-    "$-1.1$"
-   ],
-   [
-    "Video-MME short",
-    "$\\mathbf{-3.8}$",
-    "$-2.6$",
-    "$-1.8$",
-    "$-2.1$",
-    "$\\mathbf{-4.8}$",
-    "$-2.0$"
-   ],
-   [
-    "TOMATO",
-    "$\\mathbf{+2.6}$",
-    "$-1.3$",
-    "$-0.7^{\\approx}$",
-    "$-0.1^{\\approx}$",
-    "$\\mathbf{-5.4}$",
-    "$-1.8$"
-   ],
-   [
-    "TimeBlind $I_{\\mathrm{Acc}}$",
-    "$\\mathbf{-3.8}$",
-    "$\\mathbf{-4.3}$",
-    "$-0.8^{\\approx}$",
-    "$+0.3^{\\approx}$",
-    "$-3.2$",
-    "$+2.5$"
-   ],
-   [
-    "VideoReasonBench",
-    "$-0.3^{\\approx}$",
-    "$+0.1^{\\approx}$",
-    "$-0.1^{\\approx}$",
-    "$\\mathbf{-5.8}$",
-    "$-0.3^{\\approx}$",
-    "$-0.4^{\\approx}$"
-   ],
-   [
-    "HarmBench ASR",
-    "$-1.2$",
+    "$-6.1$",
+    "$+11.8$",
+    "$+42.5$",
+    "$-5.7$",
     "$+3.9$",
-    "$\\mathbf{-7.3}$",
-    "$-4.1$",
-    "$\\mathbf{-8.8}$",
-    "$\\mathbf{-6.1}$"
+    "$+3.2$",
+    "$-3.3$",
+    "$+5.6$",
+    "\\textcolor[HTML]{8A939B}{$-2.4$}",
+    "\\textcolor[HTML]{8A939B}{$+1.7$}",
+    "\\textcolor[HTML]{8A939B}{$-0.9$}",
+    "\\textcolor[HTML]{8A939B}{$-0.8$}",
+    "$-1.1$",
+    "$-0.1$"
    ],
    [
-    "VSB harmful ASR",
-    "$\\mathbf{-11.8}$",
-    "$\\mathbf{-16.6}$",
-    "$\\mathbf{-24.5}$",
-    "$\\mathbf{-42.8}$",
-    "$\\mathbf{-28.4}$",
-    "$\\mathbf{+11.8}$"
-   ],
-   [
-    "VSB benign ASR",
-    "$\\mathbf{+8.3}$",
-    "$\\mathbf{+9.2}$",
-    "$+3.6$",
-    "$\\mathbf{-35.8}$",
-    "$\\mathbf{+14.7}$",
-    "$\\mathbf{-5.7}$"
-   ],
-   [
-    "MCV explicit ASR",
-    "$\\mathbf{+31.6}$",
-    "$-2.0$",
-    "$\\mathbf{+33.8}$",
-    "$\\mathbf{-16.4}$",
-    "$\\mathbf{+45.8}$",
-    "$\\mathbf{+34.8}$"
-   ],
-   [
-    "MCV implicit ASR",
-    "$\\mathbf{-15.4}$",
-    "$-1.4$",
-    "$\\mathbf{+10.6}$",
-    "$\\mathbf{+12.0}$",
-    "$\\mathbf{+62.5}$",
-    "$\\mathbf{+18.8}$"
-   ],
-   [
-    "VMDT fairness",
-    "$+0.0^{\\approx}$",
-    "$-0.2^{\\approx}$",
-    "$-2.6$",
-    "$\\mathbf{-3.7}$",
-    "$-1.8$",
-    "$\\mathbf{+3.2}$"
-   ],
-   [
-    "\\quad stereotype",
-    "$-1.5^{\\approx}$",
-    "$-0.2^{\\approx}$",
-    "$-0.2^{\\approx}$",
-    "$-1.6$",
-    "$+1.0^{\\approx}$",
-    "$+0.0^{\\approx}$"
-   ],
-   [
-    "\\quad decision",
-    "$-0.2^{\\approx}$",
-    "$+1.2$",
-    "$+0.6^{\\approx}$",
-    "$+1.8^{\\approx}$",
-    "$-4.2$",
-    "$+2.4$"
-   ],
-   [
-    "\\quad factual",
-    "$+1.6$",
-    "$-1.6$",
-    "$-8.2$",
-    "$\\mathbf{-11.4}$",
-    "$-2.2$",
-    "$+7.1$"
-   ],
-   [
-    "VMDT privacy",
-    "$\\mathbf{-5.8}$",
-    "$\\mathbf{+4.8}$",
-    "$\\mathbf{+10.0}$",
-    "$+3.1$",
-    "$\\mathbf{-7.9}$",
-    "$\\mathbf{+5.6}$"
-   ],
-   [
-    "\\quad state",
-    "$+4.5$",
-    "$+12.5$",
-    "$\\mathbf{+50.0}$",
-    "$\\mathbf{+27.5}$",
-    "$+1.5$",
-    "$+12.5$"
-   ],
-   [
-    "\\quad city",
-    "$\\mathbf{-23.5}$",
-    "$\\mathbf{+8.5}$",
-    "$+7.0$",
-    "$-10.0$",
-    "$\\mathbf{-31.5}$",
-    "$\\mathbf{+9.5}$"
-   ],
-   [
-    "\\quad zip code",
-    "$+0.5^{\\approx}$",
-    "$+1.0^{\\approx}$",
-    "$+1.5$",
-    "$+3.5$",
-    "$+1.5$",
-    "$+2.0$"
+    "\\textit{Mean}",
+    "$-3.9$",
+    "$-18.7$",
+    "$+33.0$",
+    "$-1.0$",
+    "$+25.1$",
+    "$-0.9$",
+    "$-4.9^{\\ast}$",
+    "$+1.7$",
+    "$-1.8^{\\ast}$",
+    "$+0.5$",
+    "$+0.1$",
+    "$+0.0$",
+    "$+2.8$",
+    "$+0.1$"
    ]
   ],
-  "master_sp": [
+  "mcv_gaps": [
    [
-    "Video-MME short",
-    "$-3.3$",
-    "$\\mathbf{-14.0}$",
-    "$-1.3$",
-    "$\\mathbf{-15.1}$",
-    "$\\mathbf{-5.9}$",
-    "$\\mathbf{-5.0}$"
+    "MMDuet",
+    "$+31.6$",
+    "$+58.6$",
+    "$-15.4$",
+    "--"
    ],
    [
-    "TOMATO",
-    "$\\mathbf{+2.9}$",
-    "$+0.7^{\\approx}$",
-    "$\\mathbf{-15.0}$",
-    "$-0.9^{\\approx}$",
-    "$\\mathbf{-5.8}$",
-    "$\\mathbf{-5.6}$"
+    "ThinkStream",
+    "\\textcolor[HTML]{8A939B}{$-2.0$}",
+    "$+10.8$",
+    "\\textcolor[HTML]{8A939B}{$-1.4$}",
+    "$+15.7$"
    ],
    [
-    "TimeBlind $I_{\\mathrm{Acc}}$",
-    "$\\mathbf{-11.0}$",
-    "$\\mathbf{-6.2}$",
-    "$\\mathbf{-4.7}$",
-    "$\\mathbf{-7.5}$",
-    "$\\mathbf{-7.7}$",
-    "$\\mathbf{-5.2}$"
+    "MMDuet2",
+    "$+33.8$",
+    "--",
+    "$+10.6$",
+    "--"
    ],
    [
-    "VideoReasonBench",
-    "$-0.4^{\\approx}$",
-    "$-0.3^{\\approx}$",
-    "$-0.3^{\\approx}$",
-    "$\\mathbf{-7.4}$",
-    "$-0.3^{\\approx}$",
-    "$-0.2^{\\approx}$"
+    "AURA",
+    "$-16.4$",
+    "$+5.6$",
+    "$+12.0$",
+    "$+8.8$"
    ],
    [
-    "VSB harmful ASR",
-    "$\\mathbf{+15.7}$",
-    "$-0.4$",
-    "$\\mathbf{+25.4}$",
-    "$\\mathbf{-42.3}$",
-    "$\\mathbf{-15.9}$",
-    "$\\mathbf{+54.3}$"
+    "LiveStar",
+    "$+45.8$",
+    "$+4.9$",
+    "$+62.5$",
+    "\\textcolor[HTML]{8A939B}{$+0.2$}"
    ],
    [
-    "VSB benign ASR",
-    "$\\mathbf{+32.0}$",
-    "$\\mathbf{+30.5}$",
-    "$\\mathbf{+55.7}$",
-    "$\\mathbf{-29.9}$",
-    "$\\mathbf{+15.7}$",
-    "$-1.9$"
+    "MOSS-VL-Realtime",
+    "$+34.8$",
+    "$-3.6$",
+    "$+18.8$",
+    "$-27.0$"
    ],
    [
-    "MCV explicit ASR",
-    "$\\mathbf{+33.8}$",
-    "$\\mathbf{+8.8}$",
-    "$\\mathbf{+82.2}$",
-    "$\\mathbf{-10.8}$",
-    "$\\mathbf{+50.8}$",
-    "$\\mathbf{+31.2}$"
-   ],
-   [
-    "MCV implicit ASR",
-    "$\\mathbf{+48.3}$",
-    "$\\mathbf{+14.3}$",
-    "$\\mathbf{+86.2}$",
-    "$\\mathbf{+20.8}$",
-    "$\\mathbf{+62.7}$",
-    "$\\mathbf{-8.2}$"
-   ],
-   [
-    "VMDT fairness",
-    "$+0.4^{\\approx}$",
-    "$+2.1$",
-    "$\\mathbf{-5.9}$",
-    "$\\mathbf{-7.0}$",
-    "$\\mathbf{-18.7}$",
-    "$-0.1^{\\approx}$"
-   ],
-   [
-    "\\quad stereotype",
-    "$-1.1^{\\approx}$",
-    "$\\mathbf{-1.1}$",
-    "$\\mathbf{-2.3}$",
-    "$\\mathbf{-5.7}$",
-    "$+0.0^{\\approx}$",
-    "$\\mathbf{-1.1}$"
-   ],
-   [
-    "\\quad decision",
-    "$+0.5^{\\approx}$",
-    "$+1.4$",
-    "$-5.1$",
-    "$+1.7^{\\approx}$",
-    "$-3.4$",
-    "$+1.3$"
-   ],
-   [
-    "\\quad factual",
-    "$+1.6$",
-    "$+6.0$",
-    "$-10.3$",
-    "$\\mathbf{-16.8}$",
-    "$\\mathbf{-52.7}$",
-    "$-0.5$"
-   ],
-   [
-    "VMDT privacy",
-    "$\\mathbf{-12.4}$",
-    "$\\mathbf{+10.0}$",
-    "$\\mathbf{+7.1}$",
-    "$-5.4$",
-    "$\\mathbf{-8.1}$",
-    "$+3.2$"
-   ],
-   [
-    "\\quad state",
-    "$\\mathbf{-14.5}$",
-    "$\\mathbf{+53.0}$",
-    "$\\mathbf{+36.5}$",
-    "$+0.5$",
-    "$+0.0$",
-    "$-0.5$"
-   ],
-   [
-    "\\quad city",
-    "$\\mathbf{-37.0}$",
-    "$+5.5$",
-    "$+3.5$",
-    "$\\mathbf{-28.0}$",
-    "$\\mathbf{-30.5}$",
-    "$\\mathbf{+9.5}$"
-   ],
-   [
-    "\\quad zip code",
-    "$+0.5^{\\approx}$",
-    "$+1.5$",
-    "$+1.5$",
-    "$+4.5$",
-    "$+1.0$",
-    "$+1.0$"
+    "\\textit{Mean}",
+    "$+21.3$",
+    "$+15.3^{\\ast}$",
+    "$+14.5$",
+    "$-0.6^{\\ast}$"
    ]
   ],
   "eval_image": [
@@ -642,16 +331,16 @@
   ],
   "eval_video": [
    [
-    "MMDuet-7B$^\\dagger$",
+    "MMDuet-7B",
     "69.3",
     "65.6",
-    "66.0",
+    "0.8",
     "24.8",
     "27.4",
-    "27.7",
+    "0.0",
     "13.0",
     "9.2",
-    "2.0$^\\ddagger$",
+    "0.0$^\\ddagger$",
     "0.4",
     "0.1",
     "0.0"
@@ -753,12 +442,12 @@
    ],
    [
     "MMDuet-7B",
-    "$S^\\dagger$",
+    "S",
     "--",
-    "55.9",
-    "49.6",
-    "56.9",
-    "13.4"
+    "7.1",
+    "7.1",
+    "0.5",
+    "--"
    ],
    [
     "Qwen2.5-VL-3B",
@@ -802,8 +491,8 @@
     "--",
     "31.5",
     "26.1",
-    "0.0",
-    "0.0"
+    "--",
+    "--"
    ],
    [
     "Qwen3-VL-8B",
@@ -914,15 +603,15 @@
    ],
    [
     "MMDuet-7B",
-    "$S^\\dagger$",
-    "81.8",
-    "97.7",
-    "97.7",
-    "50.0",
-    "73.6",
-    "69.5",
-    "56.5",
-    "0.5"
+    "S",
+    "--",
+    "--",
+    "--",
+    "0.0",
+    "--",
+    "--",
+    "--",
+    "--"
    ],
    [
     "Qwen2.5-VL-3B",
@@ -1288,11 +977,7 @@
     "17.8",
     "60.8",
     "67.0",
-    "72.2",
-    "71.9",
-    "98.9",
-    "99.2",
-    "99.4"
+    "72.2"
    ],
    [
     "MMDuet-7B",
@@ -1304,11 +989,7 @@
     "3.7",
     "62.3",
     "67.3",
-    "71.9",
-    "57.3",
-    "99.0",
-    "99.0",
-    "99.3"
+    "71.9"
    ],
    [
     "Qwen2.5-VL-3B",
@@ -1320,11 +1001,7 @@
     "41.5",
     "60.8",
     "64.4",
-    "71.0",
-    "74.4",
-    "99.2",
-    "99.0",
-    "99.2"
+    "71.0"
    ],
    [
     "ThinkStream-3B",
@@ -1336,11 +1013,7 @@
     "29.8",
     "60.3",
     "64.0",
-    "70.2",
-    "74.6",
-    "99.0",
-    "99.2",
-    "99.2"
+    "70.2"
    ],
    [
     "MMDuet2-3B",
@@ -1352,11 +1025,7 @@
     "41.2",
     "62.0",
     "64.6",
-    "71.3",
-    "65.8",
-    "99.0",
-    "99.0",
-    "99.2"
+    "71.3"
    ],
    [
     "Qwen3-VL-8B",
@@ -1368,11 +1037,7 @@
     "52.4",
     "66.3",
     "70.3",
-    "76.5",
-    "81.0",
-    "99.5",
-    "99.6",
-    "99.5"
+    "76.5"
    ],
    [
     "AURA-8B",
@@ -1384,11 +1049,7 @@
     "49.0",
     "68.0",
     "71.5",
-    "76.2",
-    "79.8",
-    "99.1",
-    "99.2",
-    "99.5"
+    "76.2"
    ],
    [
     "LiveStar-InternVideo-8B",
@@ -1400,11 +1061,7 @@
     "36.4",
     "60.0",
     "66.6",
-    "72.5",
-    "75.8",
-    "99.0",
-    "99.1",
-    "99.3"
+    "72.5"
    ],
    [
     "LiveStar-8B",
@@ -1416,11 +1073,7 @@
     "36.6",
     "60.4",
     "64.8",
-    "71.5",
-    "59.8",
-    "98.8",
-    "99.4",
-    "99.5"
+    "71.5"
    ],
    [
     "MOSS-VL-Instruct",
@@ -1432,11 +1085,7 @@
     "49.0",
     "64.2",
     "70.9",
-    "75.2",
-    "74.2",
-    "99.3",
-    "99.5",
-    "99.5"
+    "75.2"
    ],
    [
     "MOSS-VL-Realtime",
@@ -1448,11 +1097,7 @@
     "43.7",
     "64.6",
     "69.4",
-    "74.9",
-    "78.5",
-    "99.2",
-    "99.5",
-    "99.5"
+    "74.9"
    ]
   ],
   "eval_finetuning_gains": [
@@ -1510,484 +1155,6 @@
     "[+2.09, +7.59]",
     "0.013"
    ]
-  ],
-  "eval_common_response": [
-   [
-    "MMDuet-7B",
-    "97",
-    "26.8",
-    "6.2",
-    "1.1e-05"
-   ],
-   [
-    "ThinkStream-3B",
-    "103",
-    "33.0",
-    "23.3",
-    "0.0525"
-   ],
-   [
-    "MMDuet2-3B",
-    "87",
-    "32.2",
-    "8.0",
-    "1.94e-05"
-   ],
-   [
-    "AURA-8B",
-    "293",
-    "74.7",
-    "43.0",
-    "5.11e-25"
-   ],
-   [
-    "LiveStar-8B",
-    "64",
-    "59.4",
-    "15.6",
-    "2.46e-07"
-   ],
-   [
-    "MOSS-VL-Realtime",
-    "42",
-    "9.5",
-    "14.3",
-    "0.727"
-   ]
   ]
- },
- "figure": {
-  "offline/mmduet_7b/videomme": {
-   "delta": -3.7777777777777715,
-   "printed": "$-3.8$"
-  },
-  "stream/mmduet_7b/videomme": {
-   "delta": -3.3333333333333286,
-   "printed": "$-3.3^{\\dagger}$"
-  },
-  "offline/thinkstream_3b/videomme": {
-   "delta": -2.555555555555557,
-   "printed": "$-2.6$"
-  },
-  "stream/thinkstream_3b/videomme": {
-   "delta": -14.0,
-   "printed": "$-14.0$"
-  },
-  "offline/mmduet2_3b/videomme": {
-   "delta": -1.7777777777777715,
-   "printed": "$-1.8$"
-  },
-  "stream/mmduet2_3b/videomme": {
-   "delta": -1.3333333333333286,
-   "printed": "$-1.3$"
-  },
-  "offline/aura_8b/videomme": {
-   "delta": -2.1111111111111143,
-   "printed": "$-2.1$"
-  },
-  "stream/aura_8b/videomme": {
-   "delta": -15.111111111111114,
-   "printed": "$-15.1$"
-  },
-  "offline/livestar_8b/videomme": {
-   "delta": -4.7777777777777715,
-   "printed": "$-4.8$"
-  },
-  "stream/livestar_8b/videomme": {
-   "delta": -5.888888888888886,
-   "printed": "$-5.9$"
-  },
-  "offline/moss_vl_rt/videomme": {
-   "delta": -2.0,
-   "printed": "$-2.0$"
-  },
-  "stream/moss_vl_rt/videomme": {
-   "delta": -5.0,
-   "printed": "$-5.0$"
-  },
-  "offline/mmduet_7b/tomato": {
-   "delta": 2.6280323450134766,
-   "printed": "$+2.6$"
-  },
-  "stream/mmduet_7b/tomato": {
-   "delta": 2.8975741239892194,
-   "printed": "$+2.9^{\\dagger}$"
-  },
-  "offline/thinkstream_3b/tomato": {
-   "delta": -1.347708894878707,
-   "printed": "$-1.3^{\\ddagger}$"
-  },
-  "stream/thinkstream_3b/tomato": {
-   "delta": 0.67385444743935,
-   "printed": "$+0.7$"
-  },
-  "offline/mmduet2_3b/tomato": {
-   "delta": -0.6738544474393535,
-   "printed": "$-0.7$"
-  },
-  "stream/mmduet2_3b/tomato": {
-   "delta": -14.95956873315364,
-   "printed": "$-15.0$"
-  },
-  "offline/aura_8b/tomato": {
-   "delta": -0.06738544474393393,
-   "printed": "$-0.1$"
-  },
-  "stream/aura_8b/tomato": {
-   "delta": -0.8760107816711624,
-   "printed": "$-0.9$"
-  },
-  "offline/livestar_8b/tomato": {
-   "delta": -5.390835579514825,
-   "printed": "$-5.4$"
-  },
-  "stream/livestar_8b/tomato": {
-   "delta": -5.795148247978435,
-   "printed": "$-5.8$"
-  },
-  "offline/moss_vl_rt/tomato": {
-   "delta": -1.7520215633423248,
-   "printed": "$-1.8$"
-  },
-  "stream/moss_vl_rt/tomato": {
-   "delta": -5.5929919137466335,
-   "printed": "$-5.6$"
-  },
-  "offline/mmduet_7b/timeblind": {
-   "delta": -3.833333333333334,
-   "printed": "$-3.8$"
-  },
-  "stream/mmduet_7b/timeblind": {
-   "delta": -11.0,
-   "printed": "$-11.0^{\\dagger}$"
-  },
-  "offline/thinkstream_3b/timeblind": {
-   "delta": -4.333333333333333,
-   "printed": "$-4.3$"
-  },
-  "stream/thinkstream_3b/timeblind": {
-   "delta": -6.166666666666666,
-   "printed": "$-6.2$"
-  },
-  "offline/mmduet2_3b/timeblind": {
-   "delta": -0.833333333333333,
-   "printed": "$-0.8$"
-  },
-  "stream/mmduet2_3b/timeblind": {
-   "delta": -4.666666666666666,
-   "printed": "$-4.7$"
-  },
-  "offline/aura_8b/timeblind": {
-   "delta": 0.33333333333333215,
-   "printed": "$+0.3$"
-  },
-  "stream/aura_8b/timeblind": {
-   "delta": -7.5,
-   "printed": "$-7.5$"
-  },
-  "offline/livestar_8b/timeblind": {
-   "delta": -3.166666666666667,
-   "printed": "$-3.2$"
-  },
-  "stream/livestar_8b/timeblind": {
-   "delta": -7.666666666666667,
-   "printed": "$-7.7$"
-  },
-  "offline/moss_vl_rt/timeblind": {
-   "delta": 2.5,
-   "printed": "$+2.5$"
-  },
-  "stream/moss_vl_rt/timeblind": {
-   "delta": -5.166666666666667,
-   "printed": "$-5.2$"
-  },
-  "offline/mmduet_7b/vsb_harmful": {
-   "delta": -11.837455830388691,
-   "printed": "$-11.8$"
-  },
-  "stream/mmduet_7b/vsb_harmful": {
-   "delta": 15.724381625441698,
-   "printed": "$+15.7^{\\dagger}$"
-  },
-  "offline/thinkstream_3b/vsb_harmful": {
-   "delta": -16.607773851590107,
-   "printed": "$-16.6$"
-  },
-  "stream/thinkstream_3b/vsb_harmful": {
-   "delta": -0.4416961130742081,
-   "printed": "$-0.4$"
-  },
-  "offline/mmduet2_3b/vsb_harmful": {
-   "delta": -24.469964664310954,
-   "printed": "$-24.5$"
-  },
-  "stream/mmduet2_3b/vsb_harmful": {
-   "delta": 25.35335689045936,
-   "printed": "$+25.4$"
-  },
-  "offline/aura_8b/vsb_harmful": {
-   "delta": -42.756183745583044,
-   "printed": "$-42.8$"
-  },
-  "stream/aura_8b/vsb_harmful": {
-   "delta": -42.314487632508836,
-   "printed": "$-42.3$"
-  },
-  "offline/livestar_8b/vsb_harmful": {
-   "delta": -28.356890459363953,
-   "printed": "$-28.4$"
-  },
-  "stream/livestar_8b/vsb_harmful": {
-   "delta": -15.901060070671377,
-   "printed": "$-15.9$"
-  },
-  "offline/moss_vl_rt/vsb_harmful": {
-   "delta": 11.837455830388695,
-   "printed": "$+11.8$"
-  },
-  "stream/moss_vl_rt/vsb_harmful": {
-   "delta": 54.328621908127204,
-   "printed": "$+54.3$"
-  },
-  "offline/mmduet_7b/vsb_benign": {
-   "delta": 8.303886925795055,
-   "printed": "$+8.3$"
-  },
-  "stream/mmduet_7b/vsb_benign": {
-   "delta": 31.97879858657244,
-   "printed": "$+32.0^{\\dagger}$"
-  },
-  "offline/thinkstream_3b/vsb_benign": {
-   "delta": 9.18727915194346,
-   "printed": "$+9.2$"
-  },
-  "stream/thinkstream_3b/vsb_benign": {
-   "delta": 30.477031802120138,
-   "printed": "$+30.5$"
-  },
-  "offline/mmduet2_3b/vsb_benign": {
-   "delta": 3.621908127208478,
-   "printed": "$+3.6$"
-  },
-  "stream/mmduet2_3b/vsb_benign": {
-   "delta": 55.74204946996467,
-   "printed": "$+55.7$"
-  },
-  "offline/aura_8b/vsb_benign": {
-   "delta": -35.7773851590106,
-   "printed": "$-35.8$"
-  },
-  "stream/aura_8b/vsb_benign": {
-   "delta": -29.94699646643109,
-   "printed": "$-29.9$"
-  },
-  "offline/livestar_8b/vsb_benign": {
-   "delta": 14.664310954063602,
-   "printed": "$+14.7$"
-  },
-  "stream/livestar_8b/vsb_benign": {
-   "delta": 15.724381625441694,
-   "printed": "$+15.7$"
-  },
-  "offline/moss_vl_rt/vsb_benign": {
-   "delta": -5.7420494699646625,
-   "printed": "$-5.7$"
-  },
-  "stream/moss_vl_rt/vsb_benign": {
-   "delta": -1.8551236749116597,
-   "printed": "$-1.9$"
-  },
-  "offline/mmduet_7b/mcv_explicit": {
-   "delta": 31.57534246575343,
-   "printed": "$+31.6$"
-  },
-  "stream/mmduet_7b/mcv_explicit": {
-   "delta": 33.83561643835617,
-   "printed": "$+33.8^{\\dagger}$"
-  },
-  "offline/thinkstream_3b/mcv_explicit": {
-   "delta": -1.9863013698630123,
-   "printed": "$-2.0$"
-  },
-  "stream/thinkstream_3b/mcv_explicit": {
-   "delta": 8.835616438356166,
-   "printed": "$+8.8$"
-  },
-  "offline/mmduet2_3b/mcv_explicit": {
-   "delta": 33.76712328767123,
-   "printed": "$+33.8$"
-  },
-  "stream/mmduet2_3b/mcv_explicit": {
-   "delta": 82.1917808219178,
-   "printed": "$+82.2$"
-  },
-  "offline/aura_8b/mcv_explicit": {
-   "delta": -16.369863013698634,
-   "printed": "$-16.4$"
-  },
-  "stream/aura_8b/mcv_explicit": {
-   "delta": -10.75342465753425,
-   "printed": "$-10.8$"
-  },
-  "offline/livestar_8b/mcv_explicit": {
-   "delta": 45.82191780821917,
-   "printed": "$+45.8$"
-  },
-  "stream/livestar_8b/mcv_explicit": {
-   "delta": 50.75342465753424,
-   "printed": "$+50.8$"
-  },
-  "offline/moss_vl_rt/mcv_explicit": {
-   "delta": 34.794520547945204,
-   "printed": "$+34.8$"
-  },
-  "stream/moss_vl_rt/mcv_explicit": {
-   "delta": 31.232876712328768,
-   "printed": "$+31.2$"
-  },
-  "offline/mmduet_7b/mcv_implicit": {
-   "delta": -15.410958904109588,
-   "printed": "$-15.4$"
-  },
-  "stream/mmduet_7b/mcv_implicit": {
-   "delta": 48.28767123287671,
-   "printed": "$+48.3^{\\dagger}$"
-  },
-  "offline/thinkstream_3b/mcv_implicit": {
-   "delta": -1.3698630136986303,
-   "printed": "$-1.4$"
-  },
-  "stream/thinkstream_3b/mcv_implicit": {
-   "delta": 14.315068493150687,
-   "printed": "$+14.3$"
-  },
-  "offline/mmduet2_3b/mcv_implicit": {
-   "delta": 10.616438356164384,
-   "printed": "$+10.6$"
-  },
-  "stream/mmduet2_3b/mcv_implicit": {
-   "delta": 86.23287671232876,
-   "printed": "$+86.2$"
-  },
-  "offline/aura_8b/mcv_implicit": {
-   "delta": 11.986301369863014,
-   "printed": "$+12.0$"
-  },
-  "stream/aura_8b/mcv_implicit": {
-   "delta": 20.82191780821918,
-   "printed": "$+20.8$"
-  },
-  "offline/livestar_8b/mcv_implicit": {
-   "delta": 62.534246575342465,
-   "printed": "$+62.5$"
-  },
-  "stream/livestar_8b/mcv_implicit": {
-   "delta": 62.73972602739727,
-   "printed": "$+62.7$"
-  },
-  "offline/moss_vl_rt/mcv_implicit": {
-   "delta": 18.835616438356162,
-   "printed": "$+18.8$"
-  },
-  "stream/moss_vl_rt/mcv_implicit": {
-   "delta": -8.150684931506852,
-   "printed": "$-8.2$"
-  },
-  "offline/mmduet_7b/vmdt_fairness": {
-   "delta": -0.025654578832131847,
-   "printed": "$+0.0$"
-  },
-  "stream/mmduet_7b/vmdt_fairness": {
-   "delta": 0.36397802038777627,
-   "printed": "$+0.4^{\\dagger}$"
-  },
-  "offline/thinkstream_3b/vmdt_fairness": {
-   "delta": -0.22385933299511862,
-   "printed": "$-0.2$"
-  },
-  "stream/thinkstream_3b/vmdt_fairness": {
-   "delta": 2.067966102457163,
-   "printed": "$+2.1$"
-  },
-  "offline/mmduet2_3b/vmdt_fairness": {
-   "delta": -2.579760242436194,
-   "printed": "$-2.6$"
-  },
-  "stream/mmduet2_3b/vmdt_fairness": {
-   "delta": -5.928293721528021,
-   "printed": "$-5.9$"
-  },
-  "offline/aura_8b/vmdt_fairness": {
-   "delta": -3.73180156475874,
-   "printed": "$-3.7$"
-  },
-  "stream/aura_8b/vmdt_fairness": {
-   "delta": -6.964520400476999,
-   "printed": "$-7.0$"
-  },
-  "offline/livestar_8b/vmdt_fairness": {
-   "delta": -1.7810916073062515,
-   "printed": "$-1.8$"
-  },
-  "stream/livestar_8b/vmdt_fairness": {
-   "delta": -18.69968170272992,
-   "printed": "$-18.7$"
-  },
-  "offline/moss_vl_rt/vmdt_fairness": {
-   "delta": 3.1529824842710923,
-   "printed": "$+3.2$"
-  },
-  "stream/moss_vl_rt/vmdt_fairness": {
-   "delta": -0.12500596986330947,
-   "printed": "$-0.1$"
-  },
-  "offline/mmduet_7b/vmdt_privacy": {
-   "delta": -5.785714285714278,
-   "printed": "$-5.8$"
-  },
-  "stream/mmduet_7b/vmdt_privacy": {
-   "delta": -12.357142857142861,
-   "printed": "$-12.4^{\\dagger}$"
-  },
-  "offline/thinkstream_3b/vmdt_privacy": {
-   "delta": 5.142857142857139,
-   "printed": "$+5.1$"
-  },
-  "stream/thinkstream_3b/vmdt_privacy": {
-   "delta": 10.0,
-   "printed": "$+10.0$"
-  },
-  "offline/mmduet2_3b/vmdt_privacy": {
-   "delta": 10.0,
-   "printed": "$+10.0$"
-  },
-  "stream/mmduet2_3b/vmdt_privacy": {
-   "delta": 7.071428571428569,
-   "printed": "$+7.1$"
-  },
-  "offline/aura_8b/vmdt_privacy": {
-   "delta": 3.0714285714285694,
-   "printed": "$+3.1$"
-  },
-  "stream/aura_8b/vmdt_privacy": {
-   "delta": -5.357142857142847,
-   "printed": "$-5.4$"
-  },
-  "offline/livestar_8b/vmdt_privacy": {
-   "delta": -7.928571428571416,
-   "printed": "$-7.9$"
-  },
-  "stream/livestar_8b/vmdt_privacy": {
-   "delta": -8.142857142857139,
-   "printed": "$-8.1$"
-  },
-  "offline/moss_vl_rt/vmdt_privacy": {
-   "delta": 5.642857142857139,
-   "printed": "$+5.6$"
-  },
-  "stream/moss_vl_rt/vmdt_privacy": {
-   "delta": 3.2142857142857224,
-   "printed": "$+3.2$"
-  }
  }
 }

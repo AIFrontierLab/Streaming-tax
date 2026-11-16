@@ -539,3 +539,30 @@ upstream:
     files:
       "realtime_inference/README.md": 53a6df15d599a80aabeeaa379250f7cdf7a51f16
       "realtime_inference/run_online_inference.py": 74e2d34c35ed9e73285b3e0c489d4db24446b700
+  ovo_bench:
+    repo: https://github.com/JoeLeelyf/OVO-Bench
+    commit: c34093f9a072d93f9e1c6b923446dfba71f4528e
+    license: MIT
+    group: core
+    used_for: >-
+      OVO-Bench: annotations (data/ovo_bench_new.json), the official prompt templates and build_prompt
+      (constant.py, utils/OVOBench.py) and the official scorer (utils/OVOBenchScore.py).
+    files:
+      "LICENSE": 52e948371c188de45aeac970f8195f3a5fc4f0e5
+      "constant.py": b9a03ca03b7e94a93b6fc8173e5b20a9638dbfc1
+      "data/ovo_bench_new.json": 72a84caa67e077f381434bbc811fc96b445c51be
+      "utils/OVOBench.py": 958b5a60edf3af4b4bc709a312ef605faa85f2b3
+      "utils/OVOBenchScore.py": bc40620f343c27d7880c5831d4587b6c4c84c1ba
+  streamingbench:
+    repo: https://github.com/THUNLP-MT/StreamingBench
+    commit: 89299232c4cc1cc3721951173c5f107b48cf6877
+    license: MIT
+    group: core
+    used_for: >-
+      StreamingBench (Real-Time Visual Understanding): the questions (src/data/questions_real.json), the prompt
+      template (src/benchmark/StreamingBench.py) and the official counting rule (src/data/count.py, reference).
+    files:
+      "LICENSE": bbf62d46b914936d1a85078ab750810c640b452b
+      "src/benchmark/StreamingBench.py": f05a900b808886c4394c257a06db1589e6968e72
+      "src/data/count.py": 7fbfe89aa4a39bb59166fea03737bc14f3e033bc
+      "src/data/questions_real.json": 70cb533395680c89637910ae07d0d57022b2f525

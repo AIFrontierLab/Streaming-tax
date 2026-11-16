@@ -131,10 +131,10 @@ def test_resolve_checkpoint_checks_the_revision_on_the_hub(tmp_path, config, che
 
 def test_dataset_manifest_covers_every_benchmark_and_suite(config, datasets):
     assert set(config.benchmarks) <= set(datasets)
-    assert set(datasets) - set(config.benchmarks) == {"advbench", "alpaca"}            # plugin calibration inputs
+    assert set(datasets) - set(config.benchmarks) == {"advbench", "alpaca", "xstest"}  # calibration and probe texts
     for suite, members in config.suites.items():
         assert [d.name for d in download.select_datasets(datasets, [suite], config.suites)] == list(members)
-    assert [d.name for d in download.select_datasets(datasets, ["calibration"])] == ["advbench", "alpaca"]
+    assert [d.name for d in download.select_datasets(datasets, ["calibration"])] == ["advbench", "alpaca", "xstest"]
     assert len(download.select_datasets(datasets, None)) == len(datasets)
     with pytest.raises(ManifestError, match="unknown dataset"):
         download.select_datasets(datasets, ["imagenet"])

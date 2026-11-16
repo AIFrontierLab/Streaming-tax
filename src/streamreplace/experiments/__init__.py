@@ -12,6 +12,7 @@ resumed, scored and counted exactly like a P/C/S job (run/plan.py, scoring/, ana
                job     "<model>.<mode>" or "<child>@<plugin arm>.stream" (or a mapping child -> job)
                set     settings overrides of this arm (as --set), the same for every child or keyed by child
                folder  a sub-folder, needed when two arms run the same job with different settings
+               gate    true: a plugin arm read with the refusal gate applied to its logged scores (S_plug)
   contrasts  "B - A" pairs of arm labels: paired differences with the analysis engine of the main results
              (analysis/contrasts.py: cluster bootstrap over the benchmark's units, the same metric definitions)
 
@@ -24,7 +25,8 @@ Arms that are not one of the eleven paper models are *derived model ids* (the `m
 
 Three kinds of report (experiment `kind`):
   qa      report.py: benchmark-scored arms, paired contrasts (history, response policy, question timing, parent
-          controls, memory budgets, streaming benchmarks)
+          controls, memory budgets, streaming benchmarks). Options: `drop_errors` (contrasts on the rows neither arm
+          failed on, e.g. clips a native stream cannot run), report sections `duration`, `timing`, `ovo_total`
   forms   forms.py: replies labelled by the response-form judge, rates of refusal / help / non-answers
   probe   probe.py: hidden-state harm scores and steering (Sec. 5.3)"""
 from __future__ import annotations
@@ -44,7 +46,7 @@ REFERENCES = {"P": "{parent}.offline", "C": "{child}.offline", "S": "{child}.str
 MODEL_KEYS = {"from", "settings", "options", "checkpoint", "stream"}
 EXPERIMENT_KEYS = {"title", "paper", "kind", "items", "benchmarks", "children", "arms", "contrasts", "metrics",
                    "report", "options"}
-ARM_KEYS = {"job", "set", "folder"}
+ARM_KEYS = {"job", "set", "folder", "gate"}
 
 
 @dataclass(frozen=True)
@@ -55,6 +57,7 @@ class Arm:
     sets: dict
     folder: str = ""
     formal: bool = False
+    gate: bool = False              # read with the child's refusal gate applied post hoc (plugin/posthoc.py)
 
     def job_name(self, child: str, parent: str) -> str | None:
         """The arm's job for one child (None when a per-child mapping has no entry for it)."""
@@ -103,7 +106,8 @@ class Experiment:
             unknown = sorted(set(value) - ARM_KEYS)
             if unknown or "job" not in value:
                 raise ValueError(f"experiments.{self.name}.arms.{label}: needs `job`, allows {sorted(ARM_KEYS)}")
-            arms[label] = Arm(label, value["job"], dict(value.get("set") or {}), str(value.get("folder") or ""))
+            arms[label] = Arm(label, value["job"], dict(value.get("set") or {}), str(value.get("folder") or ""),
+                              gate=bool(value.get("gate")))
         return arms
 
     def folder(self, arm: Arm) -> Path:
@@ -233,6 +237,7 @@ def plan(exp: Experiment, config: Config, paths: Paths, children: Iterable[str] 
     full = with_models(config)
     items = exp.items()
     chosen = [a for a in exp.arms.values() if not a.formal and (not list(arms) or a.label in set(arms))]
+    chosen = list({(a.folder, str(a.job), json.dumps(a.sets, sort_keys=True)): a for a in chosen}.values())
     datasets = [b for b in exp.benchmarks() if not list(benchmarks) or b in set(benchmarks)]
     jobs, seen = [], set()
     edits = (exp.spec.get("options") or {}).get("edits") or {}

@@ -6,10 +6,14 @@ Per child and metric of the experiment's benchmarks:
   arms       label -> {job, n, value (the benchmark's own metric), coverage (%), silent (rows without a reply)}
   contrasts  "B - A" -> {n, a, b, delta, ci95, p} on the items both arms counted (delta in points, + = B better; ASR
              and leakage are oriented so that + = safer)
-An arm whose job is missing or incomplete on the items is listed under `problems` and left out. Optional sections
-(experiment `report`): `duration` (Video-MME contrasts by video duration: under 60 s, 60-90 s, 90-121 s, and the
-difference between the longest and the shortest group) and `timing` (question timing: when the first reply came and
-how first and last replies score).
+An arm whose job is missing or incomplete on the items is listed under `problems` and left out. An arm with
+`gate: true` is a Stream++ shadow arm read with the child's refusal gate applied to its logged scores: on the
+understanding sets a fired row is unanswered and wrong (configs/plugin.yaml unanswered_on_fire), and the arm reports
+the gate's activation rate. With the experiment option `drop_errors`, a contrast uses the rows neither arm failed on.
+Optional sections (experiment `report`): `duration` (Video-MME contrasts by video duration: under 60 s, 60-90 s,
+90-121 s, and the difference between the longest and the shortest group), `timing` (question timing: when the first
+reply came and how many replies followed) and `ovo_total` (OVO-Bench's official total average, the mean of the three
+modes' task-average accuracies, for each contrast with a bootstrap interval over source videos).
 
 Writes <outputs>/experiments/<name>/report.json and REPORT.md."""
 from __future__ import annotations
@@ -36,6 +40,8 @@ class Report:
         self.engine = Contrasts(profile, None, catalog)
         self.problems: list[str] = []
         self._jobs: dict = {}
+        self.fire: dict = {}                     # (arm label, dataset, child) -> % of rows the gate fired on
+        self.drop_errors = bool((exp.spec.get("options") or {}).get("drop_errors"))
 
     # ---------- arms ----------
 
@@ -68,9 +74,33 @@ class Report:
             elif job is None:
                 self.problems.append(f"{dataset}/{name}: no rows in {root}")
             self._jobs[key] = job
+        job = self._jobs[key]
+        return self.gated(label, dataset, child, job) if arm.gate and job is not None else job
+
+    def gated(self, label: str, dataset: str, child: str, job: Job) -> Job:
+        """The shadow arm with the child's refusal gate applied to its logged scores (plugin/posthoc.py)."""
+        from ..analysis.arms import ForceUnanswered
+        from ..plugin import artefacts, posthoc
+        from ..plugin.recipe import load_plugin_config
+        key = (label, dataset, child)
+        if key not in self._jobs:
+            if dataset not in load_plugin_config(section=self.config.section("plugin")).unanswered_on_fire:
+                raise ValueError(f"{dataset}: a gated arm of this benchmark needs the fixed-refusal job; use "
+                                 "`streamreplace plugin report`")
+            fired = posthoc.fired(job, self.catalog.samples(dataset), artefacts.load(child).tau())
+            self.fire[key] = 100 * len(fired) / max(1, len(job.rows))
+            self._jobs[key] = job.with_overlays(ForceUnanswered(frozenset(fired), label=f"gate-{len(fired)}"))
         return self._jobs[key]
 
+    def valid(self, a: Job, b: Job) -> list[str] | None:
+        """With drop_errors: the ids neither arm failed on (None otherwise: every common id counts)."""
+        if not self.drop_errors:
+            return None
+        return [i for i in a.rows if i in b.rows and not a.rows[i].error and not b.rows[i].error]
+
     def value(self, metric, job: Job) -> dict:
+        if self.drop_errors:                         # the arm's score on the rows it could run
+            job = restrict(job, [i for i, r in job.rows.items() if not r.error])
         ids = scope(metric, job, self.catalog)
         try:
             value = official_metrics(job, self.catalog).get(metric.official_key)
@@ -82,6 +112,9 @@ class Report:
                 "silent": sum(job.rows[i].silent for i in ids)}
 
     def contrast(self, metric, a: Job, b: Job, ids=None) -> dict:
+        valid = self.valid(a, b)
+        if valid is not None:
+            ids = valid if ids is None else [i for i in ids if i in set(valid)]
         if ids is not None:
             a, b = restrict(a, ids), restrict(b, ids)
         common = sorted(set(scope(metric, a, self.catalog)) & set(scope(metric, b, self.catalog)))
@@ -108,11 +141,17 @@ class Report:
                     jobs = {label: self.job(label, dataset, child) for label in used}
                     jobs = {label: job for label, job in jobs.items() if job is not None}
                     cell = {"child": child, "dataset": dataset, "metric": metric.name,
-                            "arms": {label: self.value(metric, job) for label, job in jobs.items()},
+                            "arms": {label: {**self.value(metric, job),
+                                             **({"fire": self.fire[(label, dataset, child)]}
+                                                if (label, dataset, child) in self.fire else {})}
+                                     for label, job in jobs.items()},
                             "contrasts": {f"{b} - {a}": self.contrast(metric, jobs[a], jobs[b])
                                           for a, b in self.exp.contrasts if a in jobs and b in jobs}}
                     if "duration" in extras and dataset == "videomme":
                         cell["duration"] = self.by_duration(metric, child, jobs)
+                    if "ovo_total" in extras and dataset == "ovo_bench":
+                        cell["ovo_total"] = {f"{b} - {a}": self.ovo_total(jobs[a], jobs[b])
+                                             for a, b in self.exp.contrasts if a in jobs and b in jobs}
                     if "timing" in extras:
                         cell["timing"] = {label: timing(job) for label, job in jobs.items()
                                           if any(r.info.get("question_at") for r in job.rows.values())}
@@ -166,6 +205,33 @@ class Report:
         diff = draws(g) - draws(s)
         return {"n": len(short) + len(long), "delta": float(point),
                 "ci95": [float(np.percentile(diff, 2.5)), float(np.percentile(diff, 97.5))]}
+
+    def ovo_total(self, a: Job, b: Job) -> dict:
+        """OVO-Bench's official total average of b minus a on their common rows, with a 95% interval from resampling
+        source videos (the official aggregation is recomputed in every draw)."""
+        bench, samples = self.catalog.bench("ovo_bench"), self.catalog.samples("ovo_bench")
+        ids = self.valid(a, b) or sorted(set(a.rows) & set(b.rows))
+        by: dict = {}
+        for i in ids:
+            by.setdefault(samples[i].metadata["source"], []).append(i)
+        videos = list(by)
+
+        def total(job: Job, chosen) -> float | None:
+            rows = [{"metadata": samples[i].metadata, "correct": job.rows[i].correct} for v in chosen for i in by[v]]
+            return bench.official(rows)["total"]
+
+        ta, tb = total(a, videos), total(b, videos)
+        if ta is None or tb is None:
+            return {"n": len(ids), "a": ta, "b": tb, "delta": None, "ci95": None}
+        rng = np.random.default_rng(self.profile.seed)
+        draws = []
+        for _ in range(min(self.profile.reps, 2000)):
+            chosen = [videos[k] for k in rng.integers(0, len(videos), len(videos))]
+            da, db = total(a, chosen), total(b, chosen)
+            if da is not None and db is not None:
+                draws.append(db - da)
+        return {"n": len(ids), "a": ta, "b": tb, "delta": tb - ta,
+                "ci95": [float(np.percentile(draws, 2.5)), float(np.percentile(draws, 97.5))]}
 
     def compute(self, children=None) -> dict:
         return {"experiment": self.exp.name, "title": self.exp.spec.get("title"), "paper": self.exp.spec.get("paper"),
@@ -224,6 +290,18 @@ def markdown(result: dict, names: dict | None = None) -> str:
                   "|---|---|---|---|---|"]
         lines += [f"| {names.get(c['child'], c['child'])} | {c['dataset']} {c['metric']} | {label} | {a['silent']} | "
                   f"{a['n']} |" for c, label, a in silent]
+    fired = [(c, label, a) for c in cells for label, a in c["arms"].items() if "fire" in a]
+    if fired:
+        lines += ["", "Refusal-gate activation (% of rows):", "", "| child | metric | arm | gate % |", "|---|---|---|---|"]
+        lines += [f"| {names.get(c['child'], c['child'])} | {c['dataset']} {c['metric']} | {label} | {a['fire']:.1f} |"
+                  for c, label, a in fired]
+    if any("ovo_total" in c for c in cells):
+        lines += ["", "## OVO-Bench official total average", "", "| child | contrast | n | a | b | Δ |",
+                  "|---|---|---|---|---|---|"]
+        for c in cells:
+            for name, t in c.get("ovo_total", {}).items():
+                lines.append(f"| {names.get(c['child'], c['child'])} | {name} | {t['n']} | {_num(t['a'])} | "
+                             f"{_num(t['b'])} | {_delta(t)} |")
     if any("duration" in c for c in cells):
         lines += ["", "## By video duration", "", "| child | contrast | duration | n | Δ |", "|---|---|---|---|---|"]
         for c in cells:

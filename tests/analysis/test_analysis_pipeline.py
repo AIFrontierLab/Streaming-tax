@@ -115,11 +115,9 @@ def test_tables_render_from_the_written_files(synthetic):
     pipeline.stats(root, prof, cat, overlay=False, out=root / "analysis")
     result = pipeline.tables(root, prof, paper=True)
     written = {name for name in result["files"]}
-    assert {"gaps.tex", "gaps.json", "gaps_figure.json", "master_cp.tex", "master_sp.tex", "eval_image.tex",
-            "eval_video.csv"} <= written
+    assert {"gaps.tex", "mcv_gaps.tex", "gaps.json", "gaps_figure.json", "eval_image.tex", "eval_video.csv"} <= written
     assert "eval_robustness, eval_instruction" in result["skipped"]
-    master = (root / "tables" / "master_cp.tex").read_text()
-    assert "tab:master-cp" in master
+    assert "tab:mcv-gaps" in (root / "tables" / "mcv_gaps.tex").read_text()
     gaps = json.loads((root / "tables" / "gaps.json").read_text())
     assert gaps["children"] == ["kid"]
 

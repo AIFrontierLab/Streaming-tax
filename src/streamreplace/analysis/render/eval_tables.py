@@ -3,7 +3,8 @@
 From metrics.json (`streamreplace report`; formal rows, no rerun overlay): eval_image, eval_video, eval_safety,
 eval_vmdt. Values are the benchmarks' own metrics, rounded to 2 decimals by the benchmark and printed with 1 decimal
 (|x| < 0.05 as 0.0), so e.g. AURA's streaming VSB benign ASR 24.65 prints as 75.3 after 100 - x. A video entry with
-fewer completed rows than expected (generation errors) gets a double dagger.
+fewer completed rows than expected (generation errors) gets a double dagger. A stream score that is not reported (a
+child that answers none of a set's requests: the `unreported` list of contrasts.json) prints as a dash.
 
 From the prompt-robustness results.json (`streamreplace robustness report`): eval_robustness (per child x benchmark:
 clean accuracies and dRob per perturbation family with its 95% interval) and eval_instruction (instruction-level
@@ -13,9 +14,6 @@ From the fine-tuning results.json (`streamreplace finetune report`, ft_tables/re
 paper's evaluation data): eval_finetuning (accuracy of every model zero-shot and after each training budget, per
 dataset) and eval_finetuning_gains (the primary endpoint: budget-averaged gain difference per child with its 95%
 interval and Holm p, as the fine-tuning report printed them).
-
-From the response-form audit table (paper/flags/common_response.csv; labels from an LLM audit of 400 VSB harmful
-items, shipped as numbers): eval_common_response.
 
 The four absolute-score tables come with a CSV of the unrounded values; the generalization tables are rendered from
 values their reports already rounded."""
@@ -40,7 +38,9 @@ DATASET_NAMES = {"videomme": "Video-MME", "tomato": "TOMATO", "timeblind": "Time
 ROBUST_FAMILIES = ("typo", "para", "distraction")
 INSTRUCTION_FAMILIES = ("typo", "para", "irrelevant")
 INSTRUCTION_UNITS = 100            # the instruction-level table uses the 100-unit MMBench selection
-FINETUNE_DATASETS = (("lingoqa", "LingoQA"), ("eyepcr", "EyePCR"), ("openuav_qa", "OpenUAV-QA"))
+# The paper's two downstream tasks. OpenUAV-QA, the optional third set of the fine-tuning experiment, is answerable
+# from its option texts alone and is reported by `finetune report` only (FT_RESULTS.md).
+FINETUNE_DATASETS = (("lingoqa", "LingoQA"), ("eyepcr", "EyePCR"))
 FINETUNE_BUDGETS = (("acc@0", "0"), ("acc@1k", "1K"), ("acc@2k", "2K"), ("acc@5k", "5K"))
 
 CAPTIONS = {
@@ -50,7 +50,6 @@ CAPTIONS = {
     "eval_vmdt": r"VMDT results (\%). Fairness averages stereotype, decision, and factual/overkill scores over 1,063, 753, and 184 items, respectively. Privacy uses 600 questions from 200 videos; State/City/Zip are location-inference accuracies. Privacy $=100-(\mathrm{State}+2\mathrm{City}+4\mathrm{Zip})/7$. Missing or unparseable responses affect these metrics, and higher aggregate scores alone do not establish more trustworthy behavior. $S^\dagger$: modified MMDuet streaming.",
     "eval_robustness": r"Question robustness under offline inference. Clean scores are accuracy (\%) on 300 questions per benchmark (MMBench uses circular units). Perturbation columns give $\Delta_{\mathrm{Rob}}=\mathrm{Drop}_P-\mathrm{Drop}_C$ in percentage points with 95\% cluster-bootstrap intervals; positive means the child loses less accuracy. Paraphrase comparisons use matched valid edits{paraphrase_units} and their matched clean baselines. Distraction averages stress and irrelevant-content conditions within each item. These per-benchmark contrasts are secondary; the pooled primary tests are described in the text.",
     "eval_instruction": r"Instruction perturbations on the selected MMBench subset: absolute parent/child accuracy (\%) and $\Delta_{\mathrm{Rob}}$ (percentage points). Typo and irrelevant-text tests use {units} circular units; the matched paraphrase comparison uses {paraphrase}. Confidence intervals and drops use the corresponding matched clean subsets.{holm}",
-    "eval_common_response": r"Refusal rates (\%) on pairwise common substantive-response subsets of the fixed 400-item VSB harmful audit. Both replies must be labeled explicit refusal, safe deflection, or harmful compliance (R/D/C); the refusal-rate measure combines R+D. Empty/broken and off-task replies are excluded. Each pair has its own common subset. The displayed exact McNemar $p$ values are unadjusted; this local-judge audit is separate from the full-benchmark RJScore evaluation.",
     "eval_finetuning": r"Downstream accuracy (\%) before and after fine-tuning on 1K, 2K, and 5K examples. Each budget uses a separately trained, one-epoch LoRA adapter with one training seed; P/C identify the initialization checkpoint, and all runs use offline inference. MMDuet uses its merged checkpoint for fine-tuning. EyePCR is sensitive to zero-shot answer formatting and text priors; OpenUAV-QA is excluded from the primary adaptability endpoint because blank-frame controls nearly saturate it.",
     "eval_finetuning_gains": r"Budget-averaged fine-tuning gain differences, $\overline{\Delta\mathrm{Gain}}=\frac{1}{3}\sum_{b\in\{1K,2K,5K\}}[(C_b-C_0)-(P_b-P_0)]$, in percentage points. The recorded primary analysis applies Holm correction jointly over all {tests} child--dataset comparisons in {datasets}{excluded}. Intervals reflect test-set sampling, with one training seed, and larger gains must be interpreted alongside starting and final accuracy and visual dependence.",
 }
@@ -81,11 +80,24 @@ def _models(profile) -> list[dict]:
 
 
 def _modes(profile, models):
-    dagger = set(profile.display.get("dagger_stream", []))
     for m in models:
         yield m, "offline", m["role"]
         if m["role"] == "C":
-            yield m, "stream", r"$S^\dagger$" if m["id"] in dagger else "S"
+            yield m, "stream", "S"
+
+
+# metric names of the contrasts (configs/analysis.yaml) -> the benchmark metric keys printed in the tables
+UNREPORTED_KEYS = {"asr_harmful": "asr_harmful", "asr_benign": "asr_benign", "asr_explicit": "asr_explicit",
+                   "asr_implicit": "asr_implicit", "fairness": "fairness", "stereotype": "stereotype",
+                   "decision": "decision", "factual": "factual", "privacy": "privacy", "state": "acc/state",
+                   "city": "acc/city", "zipcode": "acc/zipcode"}
+
+
+def unreported_cells(unreported: list[dict] | None) -> set:
+    """(model, dataset, metric key) of the stream scores that are not reported (analysis/contrasts.py: a child that
+    answers none of a set's requests, or a VMDT component without a rated reply): printed as a dash."""
+    return {(u["child"], u["dataset"], UNREPORTED_KEYS[u["metric"]]) for u in unreported or []
+            if u["metric"] in UNREPORTED_KEYS}
 
 
 def _words(n: int) -> str:
@@ -108,13 +120,17 @@ def _video_caption(incomplete: list[tuple[str, str, dict]]) -> str:
             + ("; this entry has" if len(notes) == 1 else "; these entries have") + " incomplete coverage.")
 
 
-def build(metrics_rows: list[dict], profile) -> dict:
-    """name -> (LaTeX text, csv rows, csv fields) of the four absolute-score tables."""
+def build(metrics_rows: list[dict], profile, unreported: list[dict] | None = None) -> dict:
+    """name -> (LaTeX text, csv rows, csv fields) of the four absolute-score tables. unreported: the `unreported`
+    list of contrasts.json; those stream scores print as a dash."""
     data, models = Metrics(metrics_rows), _models(profile)
     children = [m for m in models if m["role"] == "C"]
-    dagger = set(profile.display.get("dagger_stream", []))
+    blank = unreported_cells(unreported)
     zero = profile.display.get("zero_below", 0.05)
     num = lambda v: absolute(v, zero)  # noqa: E731
+
+    def stream_num(model, mode, dataset, key):
+        return "--" if mode == "stream" and (model, dataset, key) in blank else num(data.value(model, mode, dataset, key))
     short = {m["id"]: profile.name_of(m["id"]) for m in models}
     out = {}
 
@@ -136,7 +152,7 @@ def build(metrics_rows: list[dict], profile) -> dict:
         *records([(m["id"], "offline", m["role"]) for m in models], IMAGE))
     video_rows, incomplete, video_entries = [], [], []
     for m in children:
-        cells = [m["name"] + (r"$^\dagger$" if m["id"] in dagger else "")]
+        cells = [m["name"]]
         for d, k in VIDEO:
             for (model, mode), tag in zip([(m["parent"], "offline"), (m["id"], "offline"), (m["id"], "stream")], "PCS"):
                 text = num(data.value(model, mode, d, k))
@@ -158,8 +174,8 @@ def build(metrics_rows: list[dict], profile) -> dict:
     for m, mode, tag in _modes(profile, models):
         mid = m["id"]
         hb = num(data.value(mid, mode, "harmbench", "asr")) if mode == "offline" else "--"
-        safety_rows.append(tex_row([m["name"], tag, hb] + [num(data.value(mid, mode, d, k)) for d, k in SAFETY]))
-        trust_rows.append(tex_row([m["name"], tag] + [num(data.value(mid, mode, d, k)) for d, k in VMDT]))
+        safety_rows.append(tex_row([m["name"], tag, hb] + [stream_num(mid, mode, d, k) for d, k in SAFETY]))
+        trust_rows.append(tex_row([m["name"], tag] + [stream_num(mid, mode, d, k) for d, k in VMDT]))
         entries.append((mid, mode, tag))
     out["eval_safety"] = (tex_table(
         "llrrrrr",
@@ -295,20 +311,3 @@ def finetuning(document: dict, profile) -> dict:
 
 
 # ---------- response-form audit ----------
-
-def common_response(path: Path, profile, dataset: str = "video_safetybench", mode: str = "offline") -> str:
-    """eval_common_response from the audit table (columns dataset, split, child, mode, n, parent_rate, child_rate,
-    p): one row per child, the offline (C vs P) comparison on VSB harmful."""
-    with open(path, newline="", encoding="utf-8") as f:
-        rows = {(r["dataset"], r["child"], r["mode"]): r for r in csv.DictReader(f)}
-    zero = profile.display.get("zero_below", 0.05)
-    body = []
-    for child in profile.children:
-        r = rows.get((dataset, child, mode))
-        if r is None:
-            body.append(tex_row([profile.full_name(child), "--", "--", "--", "--"]))
-            continue
-        body.append(tex_row([profile.full_name(child), int(r["n"]), absolute(float(r["parent_rate"]), zero),
-                             absolute(float(r["child_rate"]), zero), f'{float(r["p"]):.3g}']))
-    return tex_table("lrrrr", [tex_row(["Child", "Common $n$", "Parent refusal", "Child refusal", "Exact $p$"])], body,
-                     CAPTIONS["eval_common_response"], "tab:eval-common-response")

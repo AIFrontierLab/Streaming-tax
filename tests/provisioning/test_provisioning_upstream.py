@@ -214,9 +214,9 @@ def manifest():
 
 
 def test_shipped_manifest_pins_every_repository(manifest):
-    assert len(manifest) == 19
+    assert len(manifest) == 21
     assert sorted(n for n, e in manifest.items() if not e.fetch) == ["aura", "moss"]
-    assert len(upstream.fetchable(manifest)) == 17
+    assert len(upstream.fetchable(manifest)) == 19
     for entry in manifest.values():
         assert upstream.HEX40.fullmatch(entry.commit)
         assert entry.repo.startswith("https://github.com/")

@@ -167,14 +167,18 @@ experiments:
   streaming_benchmarks:
     title: "Native streaming performance with Stream++: OVO-Bench and StreamingBench (real-time), clips up to 120 s"
     paper: "Supp. D.4, Table S (native streaming performance)"
-    items: paper/frozen/experiments/stream_pool.json
+    benchmarks: [ovo_bench, streamingbench]       # as prepared: the questions asked within the first 120 s
     children: [mmduet_7b, thinkstream_3b, mmduet2_3b, aura_8b, livestar_8b, moss_vl_rt]
-    kind: streambench
+    metrics: [acc_rows, acc]
+    options: {drop_errors: true}                  # rows a child's native stream could not run are left out, per pair
     arms:
-      S: "{child}@shadow.stream"               # the native stream, the gate's score logged
-      PRS: "{child}@prs.stream"                # + parent-restoration steering (native memory and response policy)
-      S_fix_PRS: "{child}@sfix_prs.stream"     # the complete plugin (gate applied afterwards)
-      S_forced: {job: "{child}@shadow.stream", folder: forced, set: {mmduet_7b: {stream: {force_answer: true}}}}
+      S: "{child}@shadow.stream"                               # the native stream, the gate's score logged
+      Gate_PRS: {job: "{child}@prs.stream", gate: true}        # gate + PRS on the native memory and response policy
+      S_plug: {job: "{child}@sfix_prs.stream", gate: true}     # the complete plugin
+      S_forced: {job: {mmduet_7b: "mmduet_7b@shadow.stream"}, folder: forced,
+                 set: {stream: {force_answer: true}}}          # MMDuet's forced-answer control S-dagger
+    contrasts: ["S_plug - S", "Gate_PRS - S", "S_plug - S_forced"]
+    report: [ovo_total]
 
   # ------------------------------------------------------------------ Sec. 4.2 / Sec. 5.2-5.3: response forms
   response_forms:

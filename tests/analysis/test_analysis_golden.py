@@ -89,7 +89,7 @@ def test_plugin_recovery_golden_file():
 def test_shipped_profile_matches_the_golden_rows():
     profile = load_profile()
     table = rows("contrasts.json")
-    keys = [(m.dataset, m.name) for m in profile.metrics]
+    keys = [(m.dataset, m.name) for m in profile.metrics if m.family != "streaming"]     # Supp. D.4: its own report
     assert list(dict.fromkeys((k[0], k[1]) for k in table)) == keys
     assert {k[2] for k in table} == set(profile.children)
 

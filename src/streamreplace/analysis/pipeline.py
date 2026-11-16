@@ -6,7 +6,7 @@
                    TOST / non-inferiority marks, verdicts and cell flags; by default with the generation-cap rerun
                    overlay: <out>/contrasts.json, contrasts.csv, GAPS.md (out = <outputs>/analysis)
   tables(outputs)  the paper's tables and figure data from those files (no statistics are computed here):
-                   <out>/gaps.tex (Table 2), gaps.json, gaps_figure.json, master_cp/master_sp (.tex, .md, .csv),
+                   <out>/gaps.tex (Table 2), mcv_gaps.tex, gaps.json and gaps_figure.json (the gap figures' data),
                    eval_*.tex (+ .csv for the absolute scores), and the generalization tables from the
                    prompt-robustness and fine-tuning reports when they exist (out = <outputs>/tables)
   check_tables(out, expected)  the written tables and figure cells against an expected tables file
@@ -143,18 +143,16 @@ def stats(outputs: str | Path, profile: Profile, catalog: Catalog, out: str | Pa
 def tables(outputs: str | Path, profile: Profile, out: str | Path | None = None, paper: bool = False,
            contrasts: str | Path | None = None, metrics: str | Path | None = None,
            robustness: str | Path | None = None, robustness_results: str | Path | None = None,
-           finetune: str | Path | None = None, finetune_results: str | Path | None = None,
-           common_response: str | Path | None = None) -> dict:
+           finetune: str | Path | None = None, finetune_results: str | Path | None = None) -> dict:
     """Renders every table and figure data file whose inputs exist; returns {name: path} and the skipped ones.
 
     contrasts: contrasts.json of `stats` (default <outputs>/analysis/contrasts.json); metrics: metrics.json of `report`
     (default <outputs>/metrics.json). Optional inputs of the generalization experiments: robustness = the
     prompt-robustness contrasts.csv (default <outputs>/robustness/report/contrasts.csv), robustness_results = its
     results.json (same folder), finetune = the fine-tuning cells.csv (default <outputs>/finetune/ft_tables/cells.csv),
-    finetune_results = its results.json (same folder); common_response = the response-form audit table (default
-    <profile flags folder>/common_response.csv). paper: the paper's conventions (master tables without the coverage
-    mark)."""
-    from .render import eval_tables, fig_gaps, gaps_json, master, table_gaps
+    finetune_results = its results.json (same folder). paper: kept for compatibility (the tables always follow the
+    paper's conventions)."""
+    from .render import eval_tables, fig_gaps, gaps_json, table_gaps
     from .render.latex import to_csv
     outputs = Path(outputs)
     out = Path(out) if out else outputs / "tables"
@@ -165,9 +163,6 @@ def tables(outputs: str | Path, profile: Profile, out: str | Path | None = None,
                           else robustness.parent / "results.json")
     finetune = Path(finetune) if finetune else outputs / "finetune" / "ft_tables" / "cells.csv"
     finetune_results = Path(finetune_results) if finetune_results else finetune.parent / "results.json"
-    flags_dir = (profile.flags or {}).get("external")
-    if common_response is None and flags_dir:
-        common_response = profile.path(flags_dir) / "common_response.csv"
     files, skipped = {}, {}
 
     def write(name: str, text: str) -> None:
@@ -175,31 +170,30 @@ def tables(outputs: str | Path, profile: Profile, out: str | Path | None = None,
         files[name] = str(out / name)
 
     children, names = profile.children, {c: profile.name_of(c) for c in profile.models}
+    unreported: list[dict] = []
     if contrasts.is_file():
-        rows = json.loads(contrasts.read_text(encoding="utf-8"))["rows"]
+        document = json.loads(contrasts.read_text(encoding="utf-8"))
+        rows, unreported = document["rows"], document.get("unreported") or []
+        table = table_gaps.build(rows, children, robustness, finetune, profile.display.get("finetune_ids"))
+        gap_names = {c: profile.name_of(c, "gap_table_names") for c in children}
+        write("gaps.tex", table_gaps.latex(table, gap_names))
+        write("mcv_gaps.tex", table_gaps.mcv_latex(table, gap_names))
+        write("gaps.csv", to_csv(table_gaps.flat(table), table_gaps.CSV_FIELDS))
         gaps = gaps_json.build(rows, children, robustness=robustness if robustness.is_file() else None,
                                finetune=finetune if finetune.is_file() else None)
         write("gaps.json", json.dumps(gaps, indent=1, ensure_ascii=False) + "\n")
-        write("gaps.tex", table_gaps.latex(gaps, {c: profile.name_of(c, "gap_table_names") for c in children}))
-        write("gaps.csv", to_csv(table_gaps.flat(gaps), table_gaps.CSV_FIELDS))
         figure = fig_gaps.build(rows, children)
         write("gaps_figure.json", json.dumps(figure, indent=1, ensure_ascii=False) + "\n")
         write("gaps_figure.csv", to_csv(fig_gaps.flat(figure, names), fig_gaps.CSV_FIELDS))
-        master_names = {c: profile.name_of(c, "master_names") for c in children}
-        for gap, stem in (("C-P", "master_cp"), ("S-P", "master_sp")):
-            md, table_csv = master.markdown(rows, gap, children, names, source=contrasts.name)
-            write(f"{stem}.md", md)
-            write(f"{stem}.csv", table_csv)
-            write(f"{stem}.tex", master.latex(rows, gap, children, master_names, coverage_marks=not paper))
         if not robustness.is_file():
             skipped["gaps.tex robustness columns"] = f"{robustness} not found (streamreplace robustness report)"
         if not finetune.is_file():
-            skipped["gaps.json fine-tuning column"] = f"{finetune} not found (streamreplace finetune report)"
+            skipped["gaps.tex fine-tuning columns"] = f"{finetune} not found (streamreplace finetune report)"
     else:
-        skipped["gaps, master tables, figure data"] = f"{contrasts} not found (streamreplace stats)"
+        skipped["gaps, figure data"] = f"{contrasts} not found (streamreplace stats)"
     if metrics.is_file():
         rows = json.loads(metrics.read_text(encoding="utf-8"))["jobs"]
-        for name, (text, table_rows, fields) in eval_tables.build(rows, profile).items():
+        for name, (text, table_rows, fields) in eval_tables.build(rows, profile, unreported).items():
             write(f"{name}.tex", text)
             write(f"{name}.csv", to_csv(table_rows, fields))
     else:
@@ -217,10 +211,6 @@ def tables(outputs: str | Path, profile: Profile, out: str | Path | None = None,
     else:
         skipped["eval_finetuning, eval_finetuning_gains"] = (f"{finetune_results} not found (streamreplace finetune "
                                                              "report)")
-    if common_response and Path(common_response).is_file():
-        write("eval_common_response.tex", eval_tables.common_response(Path(common_response), profile))
-    else:
-        skipped["eval_common_response"] = f"{common_response} not found"
     return {"files": files, "skipped": skipped}
 
 

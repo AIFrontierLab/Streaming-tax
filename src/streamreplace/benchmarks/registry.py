@@ -5,7 +5,8 @@ Paper benchmarks (configs/benchmarks.yaml holds their settings and suites):
 - video (P/C/S): Video-MME, TOMATO, TimeBlind, VideoReasonBench (supplement);
 - safety: HarmBench (P/C; text and image behaviours), Video-SafetyBench and MCV-SafetyBench (P/C/S);
 - trust: VMDT fairness and privacy (P/C/S);
-- fine-tuning experiment: LingoQA, EyePCR, OpenUAV-QA.
+- fine-tuning experiment: LingoQA, EyePCR, OpenUAV-QA;
+- native streaming benchmarks (S and the Stream++ arms only, Supp. D.4): OVO-Bench, StreamingBench (real-time).
 Tests register extra benchmarks (e.g. a synthetic demo) with register()."""
 from __future__ import annotations
 
@@ -23,6 +24,7 @@ BENCHMARKS: dict[str, str] = {
     **{name: f"{_PACKAGE}.safety.{name}" for name in ("harmbench", "video_safetybench", "mcv_safetybench")},
     **{name: f"{_PACKAGE}.trust.{name}" for name in ("vmdt_fairness", "vmdt_privacy")},
     **{name: f"{_PACKAGE}.finetune.{name}" for name in ("lingoqa", "eyepcr", "openuav_qa")},
+    **{name: f"{_PACKAGE}.streaming.{name}" for name in ("ovo_bench", "streamingbench")},
 }
 
 _extra: dict[str, str] = {}

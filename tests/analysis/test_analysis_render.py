@@ -1,9 +1,9 @@
-"""Renderers: display conventions, Table 2, master tables, figure data, absolute-score and robustness tables."""
+"""Renderers: display conventions, Table 2 and the MCV table, figure data, absolute-score and robustness tables."""
 from __future__ import annotations
 
 import pytest
 
-from streamreplace.analysis.render import eval_tables, fig_gaps, gaps_json, latex, master, table_gaps
+from streamreplace.analysis.render import eval_tables, fig_gaps, gaps_json, latex, table_gaps
 from streamreplace.analysis.specs import load_profile
 
 
@@ -24,7 +24,6 @@ def test_display_conventions():
     assert latex.absolute(24.65) == "24.6" and latex.absolute(75.35) == "75.3"   # format() on the binary value
     assert latex.absolute(0.04) == "0.0" and latex.absolute(-0.04) == "0.0" and latex.absolute(None) == "--"
     assert latex.delta(-0.04) == "+0.0" and latex.delta(-2.25) == "-2.2" and latex.delta(3.0) == "+3.0"
-    assert latex.master_delta(-0.04) == "+0.0" and latex.master_delta(-0.06) == "-0.1"
     assert latex.round4(1.234567) == 1.2346 and latex.round4(None) is None
 
 
@@ -44,49 +43,45 @@ def cp_row(child, delta, p_broad=0.5, tost3=False, flags=(), dataset="mathvista"
             "verdict": "inconclusive", "flag_notes": []}
 
 
-def test_table2_cells_shading_and_qualifications():
-    assert table_gaps.cell({"delta": -2.2, "holm_sig": True, "flags": []}) == \
-        "\\cellcolor[HTML]{F4DCD9}$\\mathbf{-2.2}$"
-    assert table_gaps.cell({"delta": 0.04, "holm_sig": False, "flags": []}) == "$+0.0$"
-    assert table_gaps.cell({"delta": -3.9, "holm_sig": True, "flags": ["invalid"]}) == \
-        "\\textcolor[HTML]{8A939B}{$-3.9^{\\ddagger}$}"
-    assert table_gaps.cell({"delta": 1.0, "flags": ["non_answer", "artifact"]}).count("\\dagger") == 1
-    assert table_gaps.cell(None) == "--"
+def test_table2_cells():
+    assert table_gaps.number({"delta": -2.2, "sig": True}) == "$-2.2$"
+    assert table_gaps.number({"delta": 0.04, "sig": False}) == "\\textcolor[HTML]{8A939B}{$+0.0$}"   # grey: n.s.
+    assert table_gaps.number(None) == "--" and table_gaps.number({"delta": None}) == "--"
+    cells = {("a", "k"): {"delta": 1.0}, ("b", "k"): {"delta": 2.0}}
+    assert table_gaps.mean(cells, ["a", "b"], "k") == "$+1.5$"
+    assert table_gaps.mean(cells, ["a", "b", "c"], "k") == "$+1.5^{\\ast}$"                          # a child without a score
 
 
-def test_gaps_json_and_table2_from_contrast_rows(tmp_path):
+def test_table2_and_mcv_table_from_contrast_rows(tmp_path):
     children = ["a_kid", "b_kid"]
-    rows = [cp_row("a_kid", -2.2, p_broad=0.01), cp_row("b_kid", 0.5, tost3=True)]
+    row = lambda c, d, dataset, metric, gap, p=0.01: cp_row(c, d, p_broad=p, dataset=dataset, metric=metric, gap=gap)  # noqa: E731
+    rows = [row("a_kid", -11.8, "video_safetybench", "asr_harmful", "C-P"),
+            row("a_kid", 76.4, "video_safetybench", "asr_harmful", "S-C"),
+            row("b_kid", -1.2, "harmbench", "asr", "C-P", p=0.5),
+            row("a_kid", 31.6, "mcv_safetybench", "asr_explicit", "C-P")]      # its S-C contrast: not reported
     robust = tmp_path / "contrasts.csv"
     robust.write_text("pair,child,family,readout,n,value,low,high,p_holm,equivalent\n"
                       "p1,a_kid,typo,acc,600,0.7,-1.0,2.3,1.0,True\n"
                       "p1,a_kid,para,acc,579,0.71,-1.2,2.6,1.0,True\n"
                       "p1,a_kid,distraction,acc,600,0.12,-1.6,1.9,1.0,True\n"
                       "p1,a_kid,typo,prob,600,0.1,-1.0,2.3,1.0,True\n")
-    data = gaps_json.build(rows, children, robustness=robust)
-    cells = {(c["panel"], c["column"], c["child"]): c for c in data["cells"]}
-    assert cells[("offline", "mathvista", "a_kid")]["holm_sig"] is True
-    assert cells[("offline", "robust", "a_kid")]["delta"] == 0.12 and cells[("offline", "robust", "a_kid")]["family"] \
-        == "distraction"
-    assert cells[("offline", "robust", "b_kid")]["delta"] is None
-    text = table_gaps.latex(data, {"a_kid": "A", "b_kid": "B"})
-    rows_tex = latex.tex_cells(text)
-    assert rows_tex[0][0] == "A" and rows_tex[0][2] == "\\cellcolor[HTML]{F4DCD9}$\\mathbf{-2.2}$"
-    assert rows_tex[0][-3:] == ["$+0.7$", "$+0.7$", "$+0.1$"]
-    assert rows_tex[1][-3:] == ["--", "--", "--"]
-    assert len(table_gaps.flat(data)) == 2 * len(table_gaps.COLUMNS)
-
-
-def test_master_tables_marks():
-    r = cp_row("a_kid", -0.04, tost3=True)
-    assert master.tex_cell(r) == "$+0.0^{\\approx}$"
-    assert master.tex_cell(cp_row("a_kid", -2.2, p_broad=0.01, tost3=True)) == "$\\mathbf{-2.2}$"
-    r2 = {**cp_row("a_kid", 1.0), "coverage_gap": 5.0}
-    assert master.tex_cell(r2) == "$+1.0$" and master.tex_cell(r2, coverage_marks=True) == "$+1.0^{c}$"
-    text = master.latex([cp_row("a_kid", 1.0)], "C-P", ["a_kid"], {"a_kid": "A"})
-    assert "tab:master-cp" in text and latex.tex_cells(text) == [["MathVista", "$+1.0$"]]
-    md, table = master.markdown([cp_row("a_kid", 1.0)], "C-P", ["a_kid"], {"a_kid": "A"})
-    assert "| mathvista · acc | +1.0 |" in md and table.startswith("dataset,metric,child")
+    finetune = tmp_path / "cells.csv"
+    finetune.write_text("dataset,variant,pair,child,n,contrast,value\n"
+                        "lingoqa,all,p,a_merged,500,d_gain_avg,3.6\neyepcr,all,p,a_merged,2000,d_gain_avg,4.1\n"
+                        "lingoqa,all,p,a_merged,500,d_acc_avg,1.0\neyepcr,all,p,a_merged,2000,d_acc_avg,-1.0\n"
+                        "openuav_qa,all,p,a_merged,2000,d_gain_avg,50.0\n")
+    data = table_gaps.build(rows, children, robust, finetune, {"a_kid": "a_merged"})
+    table = {r[0]: r for r in latex.tex_cells(table_gaps.latex(data, {"a_kid": "A", "b_kid": "B"}))}
+    grey = lambda text: "\\textcolor[HTML]{8A939B}{" + text + "}"                                    # noqa: E731
+    assert table["A"][1:4] == ["--", "$-11.8$", "$+76.4$"] and table["B"][1] == grey("$-1.2$")
+    assert table["A"][-5:] == [grey("$+0.7$"), grey("$+0.7$"), grey("$+0.1$"), "$+3.9$", "$+0.0$"]   # 3.85 -> +3.9
+    assert table["B"][-5:] == ["--"] * 5
+    assert table["\\textit{Mean}"][2] == "$-11.8^{\\ast}$"                                          # one child of two
+    mcv = {r[0]: r for r in latex.tex_cells(table_gaps.mcv_latex(data, {"a_kid": "A", "b_kid": "B"}))}
+    assert mcv["A"][1:] == ["$+31.6$", "--", "--", "--"]
+    assert len(table_gaps.flat(data)) == 2 * (len(table_gaps.TRUST) + len(table_gaps.MCV) + 5)
+    cells = {(c["panel"], c["column"], c["child"]): c for c in gaps_json.build(rows, children, robustness=robust)["cells"]}
+    assert cells[("offline", "robust", "a_kid")]["delta"] == 0.12                # the gap figures' cell data
 
 
 def test_figure_data_prints_daggers():
@@ -113,12 +108,16 @@ def test_eval_tables_absolute_scores_and_incomplete_coverage():
             metrics_row("video_safetybench", "aura_8b", "stream", 75.35, name="asr_benign")]
     out = eval_tables.build(rows, profile)
     video = latex.tex_cells(out["eval_video"][0])
-    assert video[0][0] == "MMDuet-7B$^\\dagger$" and video[0][1] == "69.3" and video[0][3] == "66.0"
+    assert video[0][0] == "MMDuet-7B" and video[0][1] == "69.3" and video[0][3] == "66.0"
     assert video[0][9] == "2.0$^\\ddagger$"
     assert "eight MMDuet TimeBlind generation errors leave 2,392/2,400 completed queries; this entry has" \
         in out["eval_video"][0]
     safety = {r[0] + r[1]: r for r in latex.tex_cells(out["eval_safety"][0])}
     assert safety["AURA-8BS"][4] == "75.3"
+    # a stream score that is not reported (the child answered none of the set's requests) prints as a dash
+    silent = [{"child": "aura_8b", "dataset": "video_safetybench", "metric": "asr_benign", "gap": "S-C"}]
+    blank = {r[0] + r[1]: r for r in latex.tex_cells(eval_tables.build(rows, profile, silent)["eval_safety"][0])}
+    assert blank["AURA-8BS"][4] == "--"
     text, csv_rows, fields = out["eval_image"]
     assert len(csv_rows) == len(profile.models) and "mathvista/acc" in fields
 
@@ -165,22 +164,11 @@ def test_finetuning_tables_from_the_finetuning_report():
     out = eval_tables.finetuning(document, profile)
     rows = latex.tex_cells(out["eval_finetuning"])
     assert len(rows) == len(profile.models)
-    assert rows[0] == ["LLaVA-OneVision-7B", "P"] + ["40.0", "50.0", "52.0", "--"] * 3
-    assert rows[1] == ["MMDuet-7B", "C"] + ["40.0", "50.0", "52.0", "--"] * 3
+    assert rows[0] == ["LLaVA-OneVision-7B", "P"] + ["40.0", "50.0", "52.0", "--"] * 2
+    assert rows[1] == ["MMDuet-7B", "C"] + ["40.0", "50.0", "52.0", "--"] * 2
     text = out["eval_finetuning"]
     assert r"\multicolumn{4}{c}{LingoQA ($n=500$)}" in text and r"\multicolumn{4}{c}{EyePCR ($n=2{,}000$)}" in text
-    assert r"\multicolumn{4}{c}{OpenUAV-QA}" in text                    # no size recorded: none printed
+    assert "OpenUAV-QA}" not in text                                     # the optional third set: finetune report only
     gains = latex.tex_cells(out["eval_finetuning_gains"])
     assert gains[0] == ["MMDuet-7B"] + ["+1.80", "[-2.33, +5.93]", "1"] * 2 and len(gains) == len(profile.children)
-    assert ("all 12 child--dataset comparisons in LingoQA and EyePCR; OpenUAV-QA is excluded."
-            in out["eval_finetuning_gains"])
     assert eval_tables.finetuning({}, profile) == {}
-
-
-def test_common_response_table(tmp_path):
-    path = tmp_path / "common_response.csv"
-    path.write_text("dataset,split,child,mode,n,parent_rate,child_rate,p\n"
-                    "video_safetybench,harmful,mmduet_7b,offline,97,26.804,6.1856,1.0967e-05\n")
-    rows = latex.tex_cells(eval_tables.common_response(path, load_profile()))
-    assert rows[0] == ["MMDuet-7B", "97", "26.8", "6.2", "1.1e-05"]
-    assert rows[1][1:] == ["--"] * 4

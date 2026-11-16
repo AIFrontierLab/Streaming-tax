@@ -2,8 +2,7 @@
 
 - absolute scores: the benchmark value (rounded to 2 decimals by the benchmark) printed with 1 decimal, exactly as
   the development report printed it; |x| < 0.05 prints as 0.0 (`absolute`);
-- differences: '{:+.1f}'; Table 2 and the gap figure print |x| < 0.05 as +0.0 (`delta`); the master tables turn
-  '-0.0' into '+0.0' (`master_delta`).
+- differences: '{:+.1f}'; Table 2 and the gap figure print |x| < 0.05 as +0.0 (`delta`).
 Python's format() rounds half to even on the binary value, which is what the published tables used."""
 from __future__ import annotations
 
@@ -42,11 +41,6 @@ def zeroed(value: float, zero_below: float = 0.05) -> float:
 def delta(value: float, zero_below: float = 0.05) -> str:
     """'+.1f' with |x| < 0.05 shown as +0.0 (Table 2, gap figure)."""
     return f"{zeroed(value, zero_below):+.1f}"
-
-
-def master_delta(value: float) -> str:
-    """'+.1f' with '-0.0' shown as '+0.0' (master tables)."""
-    return f"{value:+.1f}".replace("-0.0", "+0.0")
 
 
 def round4(x):

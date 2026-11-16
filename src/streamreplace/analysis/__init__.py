@@ -12,5 +12,5 @@ Pipeline (docs/statistics.md):
   flags.py     cell qualifications (forced, invalid, non-answer, chance, artifact)
   pipeline.py  the steps behind `streamreplace report` (metrics.json, RESULTS.md), `stats` (contrasts.json, GAPS.md)
                and `tables` (the paper's tables; check_tables compares them with paper/expected/tables.json)
-  render/      RESULTS.md, GAPS.md, Table 2, master tables, gap-figure data, absolute-score tables
+  render/      RESULTS.md, GAPS.md, Table 2, the MCV table, gap-figure data, absolute-score tables
 The generation-cap reruns themselves (selection, rerun jobs, sensitivity report) are run/rerun_capped.py."""

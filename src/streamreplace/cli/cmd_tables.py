@@ -1,28 +1,24 @@
 """`streamreplace tables`: the paper's tables and figure data from the files of `report` and `stats`.
 
-  streamreplace report && streamreplace stats && streamreplace tables --paper     -> <outputs>/tables/
+  streamreplace report && streamreplace stats && streamreplace tables     -> <outputs>/tables/
 
-Written (each .tex with a .csv of unrounded values next to it):
-  gaps.tex, gaps.json, gaps.csv     Table 2 (offline C-P on the image headlines, their mean, HarmBench, prompt
-                                    robustness) and its cell data, with the generation-cap reruns merged
-  gaps_figure.json / .csv           the gap figure: C-P and S-P on the video, safety and VMDT columns (108 cells)
-  master_cp, master_sp (.tex/.md/.csv)  every C-P and every S-P contrast
-  eval_image, eval_video, eval_safety, eval_vmdt   absolute scores (formal rows, from metrics.json)
+Written:
+  gaps.tex, gaps.csv                Table 2: adaptation tax (C-P) and execution tax (S-C) on the trust benchmarks,
+                                    the pooled prompt-robustness contrasts and the fine-tuning task means
+  mcv_gaps.tex                      the same two contrasts on MCV-SafetyBench (supplement)
+  gaps.json, gaps_figure.json / .csv   the cell data of the gap figures (image C-P, video C-P and S-C, C-P and S-P
+                                    per benchmark), with the generation-cap reruns merged
+  eval_image, eval_video, eval_safety, eval_vmdt   absolute scores (formal rows, from metrics.json), .tex and .csv
   eval_robustness, eval_instruction  prompt robustness (from the robustness report's results.json)
   eval_finetuning, eval_finetuning_gains  fine-tuning (from the fine-tuning report's ft_tables/results.json)
-  eval_common_response              the VSB response-form audit (paper/flags/common_response.csv)
 
 Inputs (defaults under the outputs folder): analysis/contrasts.json (`stats`), metrics.json (`report`),
-robustness/report/contrasts.csv and results.json (`robustness report`; the Table 2 robustness columns and two
-supplement tables), finetune/ft_tables/cells.csv and results.json (`finetune report`; the fine-tuning column of
-gaps.json and two supplement tables). Tables whose inputs are missing are skipped and listed. --paper: the paper's
-display conventions (the master tables omit the coverage mark).
+robustness/report/contrasts.csv and results.json (`robustness report`), finetune/ft_tables/cells.csv and results.json
+(`finetune report`). Tables whose inputs are missing are skipped and listed.
 
---check [FILE] then compares every written table and the gap figure's printed cells with an expected tables file,
-cell by cell (default paper/expected/tables.json, the paper's printed cells), lists each differing cell and gives exit
-code 1 when one differs. On the paper's rows (`tables --paper --check`) exactly four master-table cells differ:
-ThinkStream VMDT cells that the paper rendered with an unreleased scoring variant (docs/reproducing-the-paper.md,
-"Known differences")."""
+--check [FILE] then compares every written table with an expected tables file, cell by cell (default
+paper/expected/tables.json, the paper's printed cells), lists each differing cell and gives exit code 1 when one
+differs (docs/reproducing-the-paper.md lists the known differences)."""
 from __future__ import annotations
 
 import argparse
@@ -33,7 +29,7 @@ from . import context
 def register(subparsers) -> None:
     parser = subparsers.add_parser("tables", help="the paper's LaTeX tables (+ csv) and figure data",
                                    description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--paper", action="store_true", help="the paper's display conventions")
+    parser.add_argument("--paper", action="store_true", help="accepted for compatibility (always on)")
     parser.add_argument("--out", metavar="DIR", help="output folder (default <outputs>/tables)")
     parser.add_argument("--profile", metavar="FILE", help="analysis profile YAML instead of configs/analysis.yaml")
     parser.add_argument("--contrasts", metavar="FILE", help="contrasts.json of `stats` (default "
@@ -47,8 +43,6 @@ def register(subparsers) -> None:
                         help="fine-tuning cells.csv (default <outputs>/finetune/ft_tables/cells.csv)")
     parser.add_argument("--finetune-results", metavar="FILE",
                         help="fine-tuning results.json (default: next to --finetune)")
-    parser.add_argument("--common-response", metavar="FILE",
-                        help="response-form audit table (default <profile flags folder>/common_response.csv)")
     parser.add_argument("--check", nargs="?", const="paper", metavar="FILE",
                         help="compare the written tables cell by cell with an expected tables file (default "
                              "paper/expected/tables.json)")
@@ -62,8 +56,7 @@ def handler(args) -> int:
     profile = profile_from_config(ctx.config, args.profile)
     result = tables(ctx.paths.outputs, profile, out=args.out, paper=args.paper, contrasts=args.contrasts,
                     metrics=args.metrics, robustness=args.robustness, robustness_results=args.robustness_results,
-                    finetune=args.finetune, finetune_results=args.finetune_results,
-                    common_response=args.common_response)
+                    finetune=args.finetune, finetune_results=args.finetune_results)
     for path in result["files"].values():
         print(f"wrote {path}")
     for what, why in result["skipped"].items():

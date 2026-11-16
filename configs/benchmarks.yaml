@@ -43,8 +43,14 @@ benchmarks:
                       settings: {generation: {max_new_tokens: 128}, video: {min_pixels: 200704}},   # official floor
                       offline_frames: {sampler: all}}                             # official <= 32 frames
 
+  # native streaming benchmarks (the question arrives during the video; S and Stream++ arms only): the official
+  # prompts and rule scoring, greedy, 128 new tokens; clips of at most 120 s up to the question
+  ovo_bench:         {media: video, suite: streaming, settings: {generation: {max_new_tokens: 128}}}
+  streamingbench:    {media: video, suite: streaming, settings: {generation: {max_new_tokens: 128}}}
+
 suites:
   paper-core: [dynamath, mathvista, mmbench, mme, mmmu, mmstar, scienceqa, videomme, tomato, timeblind,
                harmbench, video_safetybench, mcv_safetybench, vmdt_fairness, vmdt_privacy]
   paper-supp: [visulogic, videoreasonbench]
   finetune: [lingoqa, eyepcr, openuav_qa]
+  streaming: [ovo_bench, streamingbench]
