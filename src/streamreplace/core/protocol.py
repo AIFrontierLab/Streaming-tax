@@ -5,14 +5,17 @@ Every comparison is made inside one pair: an offline *parent* model and a stream
 - P: the parent in the offline pipeline (whole video at once, question after the media).
 - C: the child in the same offline pipeline (same frames, same prompt): isolates the checkpoint change.
 - S: the child through its own native streaming interface, with the question asked at the end of the video:
-  adds the protocol change. S - P = (C - P) + (S - C) (Eq. 1 of the paper).
+  adds the protocol change.
+Streaming tax S - P = adaptation tax (C - P) + execution tax (S - C) (Eq. 3 of the paper).
 
-The plugin adds S_fix (Recall + Respond) and S+ (S_fix with the hidden-state gate and parent-restoration steering);
-S_HF is AURA's stream rebuilt in Hugging Face transformers (the engine the plugin runs on, without the plugin).
-S+ is not a generation job: it is assembled after the fact from the `sfix_prs` shadow rows and the fixed-refusal rows.
+Stream++, the plugin, adds S_fix (Recall + Respond) and S_plug (S_fix + Refuse: parent-restoration steering and
+the refusal gate). S_plug is not a generation job: it is assembled after the fact from the `sfix_prs` shadow rows
+and the fixed-refusal rows. S_HF is AURA's stream rebuilt in Hugging Face transformers (the engine the plugin runs
+on, without the plugin).
 
 A job is named `<model>.<mode>` (P/C/S, as in the original runs) or `<model>@<variant>.<mode>` for plugin arms, and
-the refusal pseudo-job is `fixed_refusal.offline`."""
+the refusal pseudo-job is `fixed_refusal.offline`. Diagnostic controls (Sec. 5, the supplement) are ordinary jobs
+of derived model ids declared in configs/experiments/*.yaml (e.g. `aura_8b_window.offline`)."""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -45,21 +48,23 @@ class Condition(_StrEnum):
     C = "C"
     S = "S"
     S_FIX = "S_fix"
-    S_PLUS = "S+"
+    S_PLUG = "S_plug"
     S_HF = "S_HF"
 
 
 # Plugin arm variants (configs/plugin.yaml): sfix = Recall + Respond with the gate in shadow mode; sfix_prs = the same
-# plus parent-restoration steering (the rows S+ is assembled from); record = gate signal logged for threshold
-# calibration; inert = plugin attached but doing nothing (fidelity control); hf = AURA's HF stream rebuild (S_HF).
-VARIANTS = ("sfix", "sfix_prs", "record", "inert", "hf")
+# plus parent-restoration steering (the rows S_plug is assembled from); record = gate signal logged for threshold
+# calibration; shadow = the native stream with the gate's score logged; prs = the native stream with PRS and the
+# logged gate (the two arms of the gate-and-PRS ablation on the streaming benchmarks); inert = plugin attached but
+# doing nothing (fidelity control); hf = AURA's HF stream rebuild (S_HF).
+VARIANTS = ("sfix", "sfix_prs", "record", "shadow", "prs", "inert", "hf")
 FIXED_REFUSAL = "fixed_refusal"        # model id of the refusal pseudo-job (rows = the fixed refusal for every id)
 
 # Paired contrasts: delta = metric(b) - metric(a), so + means the later arm is better.
 GAPS = {"C-P": ("P", "C"), "S-C": ("C", "S"), "S-P": ("P", "S")}
-PLUGIN_CONTRASTS = {"loss": ("P", "S_fix"), "ckpt": ("P", "C"), "proto": ("C", "S_fix"), "effect": ("S_fix", "S+"),
-                    "vsP": ("P", "S+"), "gate": ("S_fix", "S_fix+gate"), "prs": ("S_fix", "S_fix+PRS"),
-                    "native": ("P", "S")}
+PLUGIN_CONTRASTS = {"loss": ("P", "S_fix"), "ckpt": ("P", "C"), "proto": ("C", "S_fix"), "effect": ("S_fix", "S_plug"),
+                    "vsP": ("P", "S_plug"), "vsS": ("S", "S_plug"), "gate": ("S_fix", "S_fix+gate"),
+                    "prs": ("S_fix", "S_fix+PRS"), "native": ("P", "S")}
 
 
 @dataclass(frozen=True)
@@ -98,7 +103,8 @@ class Arm:
 
 
 def condition_arm(condition: Condition | str, parent: str, child: str) -> Arm:
-    """The generation arm behind an analysis condition of the pair (parent, child). S+ has none (see module doc)."""
+    """The generation arm behind an analysis condition of the pair (parent, child). S_plug has none (see module
+    doc)."""
     condition = Condition(condition)
     if condition is Condition.P:
         return Arm(parent, Mode.OFFLINE)
@@ -110,7 +116,7 @@ def condition_arm(condition: Condition | str, parent: str, child: str) -> Arm:
         return Arm(child, Mode.STREAM, "sfix")
     if condition is Condition.S_HF:
         return Arm(child, Mode.STREAM, "hf")
-    raise ValueError("S+ is assembled after the fact from the sfix_prs shadow rows and the fixed-refusal rows; "
+    raise ValueError("S_plug is assembled after the fact from the sfix_prs shadow rows and the fixed-refusal rows; "
                      "it has no generation arm")
 
 

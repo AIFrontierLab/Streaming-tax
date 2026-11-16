@@ -17,6 +17,8 @@ moves paper numbers and is ported unchanged from the paper's runs:
 - AURA: `visible`, the reply with AURA's <|silent|> marker removed; an empty result is silence.
 - ThinkStream: `answer_text` (the text between <response> and <|im_end|>), `option_tokens` (the tokens its
   restricted answer readout scores) and `stream_seed` (its per-question sampling seed).
+- Question timing (setting stream.question_at, a diagnostic of the native streams): `question_at`, `question_index`
+  and `timing_info`, shared by the five children whose interface takes a question during the stream.
 """
 from __future__ import annotations
 
@@ -113,3 +115,31 @@ def stream_seed(sample_id: str, replica=None) -> int:
     stream. Replicate k > 0 (settings stream.seed = k, a run-to-run variance check) uses the id f"{id}#seed{k}";
     unset or 0 gives the seed of the paper's runs."""
     return seed_of(f"{sample_id}#seed{replica}" if replica else sample_id)
+
+
+# --------------------------------------------------------------------------------------------- question timing
+
+def question_at(stream: dict | None) -> str | None:
+    """The setting stream.question_at: None (the paper's S: the question arrives at the end of the video) or
+    "start" | "middle" (the question is posed once at the first step or at step n // 2, the stream runs on under the
+    child's own response policy, and the last reply is scored; Supp. "Question timing")."""
+    where = (stream or {}).get("question_at")
+    if where not in (None, "start", "middle"):
+        raise ValueError(f"stream.question_at must be start or middle, not {where!r}")
+    return where
+
+
+def question_index(where: str, steps: int) -> int:
+    """The step (frame, turn or segment) the question is posed at: the first, or step n // 2."""
+    return 0 if where == "start" else steps // 2
+
+
+def timing_info(where: str, index: int, t: float, replies: list[dict], end: float, fallback: bool) -> dict:
+    """Row info of a question-timing stream. replies: the child's visible replies after the question, in order, as
+    {"t": media time in seconds, "text"}; fallback: no reply came before the end, so an answer was requested there
+    as in S. The last 20 replies are kept, each cut to 300 characters; the first reply is kept separately."""
+    cut = [{**r, "text": r["text"][:300]} for r in replies]
+    return {"question_at": where, "question_index": index, "question_t": round(float(t), 2),
+            "replies": cut[-20:], "n_replies": len(replies),
+            "first_reply_t": replies[0]["t"] if replies else None, "first_reply": cut[0]["text"] if replies else None,
+            "answer_t": replies[-1]["t"] if replies else round(float(end), 2), "fallback": bool(fallback)}

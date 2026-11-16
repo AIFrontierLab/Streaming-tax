@@ -85,8 +85,9 @@ def test_set_overrides_enter_settings_and_identity(shipped):
 
 
 def test_plugin_arms_of_the_shipped_config(shipped):
-    """AURA's plugin arms run on its Hugging Face rebuild with the full-history Recall; ThinkStream's Recall widens
-    its window. The plugin block (recipe, Recall, artefact hashes) is part of the identity."""
+    """AURA's plugin arms run on its Hugging Face rebuild with Recall at its native budget of 30 segments;
+    ThinkStream's Recall keeps a reservoir inside its native window. The plugin block (recipe, settings delta,
+    artefact hashes) is part of the identity."""
     pytest.importorskip("streamreplace.plugin.hooks")
     config, paths = shipped
     jobs = {j.name: j for j in plan(config, paths, pairs="p2,p3", protocols="", variants="sfix",
@@ -95,9 +96,9 @@ def test_plugin_arms_of_the_shipped_config(shipped):
                             "videomme/thinkstream_3b@sfix.stream"]
     aura = jobs["videomme/aura_8b@sfix.stream"]
     assert aura.adapter == "aura_stream_hf" and aura.payload["model"]["adapter"] == "aura_stream_hf"
-    assert aura.settings["stream"] == {"fps": 1, "window": "full"}
+    assert aura.settings["stream"] == {"fps": 1, "window": "full", "budget": 30, "recent": 10}
     thinkstream = jobs["videomme/thinkstream_3b@sfix.stream"]
-    assert thinkstream.settings["stream"] == {"fps": 1, "window": "full", "max_len": 81920}
+    assert thinkstream.settings["stream"] == {"fps": 1, "reservoir": 10}
     assert jobs["videomme/mmduet2_3b@sfix.stream"].settings["stream"] == {"fps": 1}
     assert all(j.payload["model"]["plugin"]["recipe"]["name"] == "sfix" for j in jobs.values())
     assert all(j.plugin == {"child": j.arm.model, "variant": "sfix", "section": config.section("plugin")}

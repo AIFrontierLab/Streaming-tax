@@ -1,10 +1,10 @@
-"""`streamreplace plugin run|assemble|report|calibrate|verify`: the streaming plugin (docs/plugin.md).
+"""`streamreplace plugin run|assemble|report|calibrate|verify`: Stream++, the streaming plugin (docs/plugin.md).
 
 run        the plugin arms <child>@<arm>.stream on an item set: writes <outputs>/subset.json, then runs `run` with
            this invocation's global options (--config, --home, --paths, --config-dir); --print prints that command
            instead of running it (the subset.json is still written, since the printed command needs it)
 assemble   the fixed-refusal pseudo-job fixed_refusal.offline on the item set (score it with `streamreplace score`)
-report     the recovery tables: S+ assembled post hoc from the shadow arms, against P, C and S (report.json,
+report     the recovery tables: S_plug assembled post hoc from the shadow arms, against P, C and S (report.json,
            REPORT.md, figure.json under <outputs>/plugin), with the analysis profile of the loaded configuration
 calibrate  a new child: stages directions, freeze, record, harmless (docs/plugin.md, "Calibrating a new child").
            The two GPU stages load models: directions the child's and the parent's offline pipelines, harmless the
@@ -19,11 +19,11 @@ but ThinkStream) the turn also ends there; ThinkStream's turn runs to its end an
 `plugin report` reads shadow arms only: it refuses an arm whose gate is not shadow, and rows a live or record gate
 made.
 
-Paper reproduction on the second pilot's items (Fig. plugin):
-  streamreplace --outputs OUT plugin run --children mmduet_7b,... --arms sfix,sfix_prs --items pilot2 --gpus 0
-  streamreplace --outputs OUT plugin assemble --items pilot2
+Paper reproduction (Fig. 6 and Supp. D; the 10,140 evaluation rows per child):
+  streamreplace --outputs OUT plugin run --arms sfix,sfix_prs --items full --gpus 0
+  streamreplace --outputs OUT plugin assemble --items full
   streamreplace --outputs OUT score --judge
-  streamreplace --outputs OUT plugin report --items pilot2 --formal FORMAL_OUTPUTS"""
+  streamreplace --outputs OUT plugin report --items full --formal FORMAL_OUTPUTS"""
 from __future__ import annotations
 
 import argparse
@@ -36,8 +36,8 @@ import sys
 
 from . import command_line, context, csv_list, global_options, gpu_list
 
-ITEMS_HELP = "item set: a name under `items` in configs/plugin.yaml (pilot2, full, threshold, dev) or a JSON file " \
-             "{dataset: [ids]} (default: pilot2)"
+ITEMS_HELP = "item set: a name under `items` in configs/plugin.yaml (full, pilot2, threshold, stream_pilot, dev) " \
+             "or a JSON file {dataset: [ids]} (default: full)"
 WORKER = "STREAMREPLACE_PLUGIN_WORKER"      # set in a calibration stage's model-environment process
 
 
@@ -50,9 +50,9 @@ def register(subparsers) -> None:
                              description="Writes <outputs>/subset.json (the item set) and runs the arms "
                                          "<child>@<arm>.stream through `streamreplace run`, with the global options "
                                          "of this invocation.")
-    run.add_argument("--children", type=csv_list, help="children (default: the paper's five)")
+    run.add_argument("--children", type=csv_list, help="children (default: all six)")
     run.add_argument("--arms", type=csv_list, default=["sfix", "sfix_prs"], help="arms (default: sfix,sfix_prs)")
-    run.add_argument("--items", default="pilot2", help=ITEMS_HELP)
+    run.add_argument("--items", default="full", help=ITEMS_HELP)
     run.add_argument("--gpus", type=gpu_list, help="GPU slots, one worker each, e.g. 0,0,1 (default: run.gpus in configs)")
     run.add_argument("--print", dest="print_only", action="store_true",
                      help="print the run command instead of running it (<outputs>/subset.json is still written: the "
@@ -63,18 +63,15 @@ def register(subparsers) -> None:
     assemble = actions.add_parser("assemble", help="write the fixed-refusal job on an item set",
                                   description="Writes fixed_refusal.offline (the refusal the gate gives when it "
                                               "fires) for every item of the set, with the prompts of the arms' rows.")
-    assemble.add_argument("--items", default="pilot2", help=ITEMS_HELP)
+    assemble.add_argument("--items", default="full", help=ITEMS_HELP)
     assemble.add_argument("--formal", type=Path, help="outputs folder with formal rows to take prompts from")
     assemble.set_defaults(func=_assemble)
 
-    report = actions.add_parser("report", help="recovery tables (S+ assembled post hoc)",
-                                description="S+ assembled post hoc from the shadow arms (threshold variants), "
-                                            "against P, C and S of the same items: report.json, REPORT.md, "
-                                            "figure.json.")
-    report.add_argument("--items", default="pilot2", help=ITEMS_HELP)
-    report.add_argument("--children", type=csv_list, help="children (default: the paper's five)")
-    report.add_argument("--variant", default="all", choices=("all", "higher", "rule", "old"),
-                        help="threshold variant (default: all three; the paper's is higher)")
+    report = actions.add_parser("report", help="recovery tables (S_plug assembled post hoc)",
+                                description="S_plug assembled post hoc from the shadow arms, against P, C and S of "
+                                            "the same items: report.json, REPORT.md, figure.json.")
+    report.add_argument("--items", default="full", help=ITEMS_HELP)
+    report.add_argument("--children", type=csv_list, help="children (default: all six)")
     report.add_argument("--formal", type=Path, help="outputs folder of the formal P/C/S jobs (default: the outputs root)")
     report.add_argument("--profile", metavar="FILE",
                         help="analysis profile YAML instead of configs/analysis.yaml (metrics, names)")
@@ -84,9 +81,10 @@ def register(subparsers) -> None:
 
     cal = actions.add_parser("calibrate", help="calibrate the plugin for a child",
                              description="Stages, in order: directions (GPU: refusal direction and parent-restoration "
-                                         "vector), freeze (writes plugin_artefacts/<child>/), record (tau_closed from "
-                                         "the record arm's rows), harmless (GPU: tau_free). The GPU stages run in the "
-                                         "model environment's interpreter.")
+                                         "vector), freeze (writes plugin_artefacts/<child>/), record (the harmless "
+                                         "closed-choice quantiles from the record arm's rows), harmless (GPU: the "
+                                         "harmless free-form quantile). The GPU stages run in the model environment's "
+                                         "interpreter.")
     cal.add_argument("child", help="the child's model id (configs/models.yaml or a --config file)")
     cal.add_argument("--parent", help="the child's offline parent (default: from configs/pairs.yaml)")
     cal.add_argument("--stage", required=True, choices=("directions", "freeze", "record", "harmless"))
@@ -94,6 +92,9 @@ def register(subparsers) -> None:
     cal.add_argument("--alpaca", type=Path, help="Stanford Alpaca alpaca_data.json (stage directions)")
     cal.add_argument("--clips", type=Path, help="folder of the benign clips (stage harmless; cut when missing)")
     cal.add_argument("--ffmpeg", default="ffmpeg", help="ffmpeg binary for cutting benign clips")
+    cal.add_argument("--stream-pilot", type=Path, metavar="OUTPUTS",
+                     help="stage record: outputs folder holding the complete plugin's shadow rows on the streaming "
+                          "pilot (`plugin run --arms sfix_prs --items stream_pilot`); pooled into the closed threshold")
     cal.add_argument("--work", type=Path, help="calibration work folder (default <outputs>/plugin_calibration/<child>)")
     cal.add_argument("--gpus", type=gpu_list,
                      help="GPU slot of the model process of stages directions and harmless (default: the first of "
@@ -121,7 +122,7 @@ def _config(args):
 
 
 def _children(args, config) -> list[str]:
-    children = args.children or list(config.paper_children)
+    children = args.children or list(config.children)
     unknown = sorted(set(children) - set(config.children))
     if unknown:
         raise ValueError(f"no plugin configuration for {unknown}")
@@ -200,11 +201,10 @@ def _report(args) -> int:
     if missing:
         raise ValueError(f"no parent for {missing}: the pair of a child belongs in configs/pairs.yaml or an extra "
                          "--config file (pairs: {<pair>: {parent: ..., children: [...]}})")
-    arms = ("sfix", config.splus_arm)
+    arms = ("sfix", config.plug_arm)
     rec = Recovery(profile, Catalog(), args.formal or ctx.paths.outputs, ctx.paths.outputs, items, children,
                    {c: artefacts.load(c) for c in children}, config, arms)
-    variants = ("higher", "rule", "old") if args.variant == "all" else (args.variant,)
-    result = rec.compute(variants)
+    result = rec.compute()
     for note in rec.notes:
         print("note:", note, file=sys.stderr)
     if rec.problems:
@@ -215,7 +215,7 @@ def _report(args) -> int:
     write_json(out / "report.json", result)
     (out / "REPORT.md").write_text(markdown(result, {c: profile.name_of(c) for c in children},
                                             f"Plugin recovery ({args.items})"), encoding="utf-8")
-    write_json(out / "figure.json", figure_data(result, variants[0]))
+    write_json(out / "figure.json", figure_data(result))
     print(f"wrote {out}/report.json, REPORT.md, figure.json ({len(result['cells'])} cells)")
     return 0
 
@@ -304,9 +304,17 @@ def _calibrate(args) -> int:
     if args.stage == "record":
         items = config.load_items("threshold")
         rows = {d: read_latest(ctx.paths.outputs / d / f"{child}@record.stream.jsonl") for d in items}
-        closed = T.tau_closed(T.record_projections(rows, items))
-        print(f"{child}: tau_closed {closed} on {sum(map(len, items.values()))} threshold items")
-        print(freeze.set_thresholds(child, closed=closed))
+        dev = T.record_projections(rows, items)
+        closed, pool = T.tau_closed(dev), None
+        print(f"{child}: dev-slice q97.5 {closed} on {len(dev)} threshold items")
+        if args.stream_pilot:                 # the complete plugin's shadow rows on the streaming pilot
+            pilot_items = config.load_items("stream_pilot")
+            pilot_rows = {d: read_latest(args.stream_pilot / d / f"{child}@{config.plug_arm}.stream.jsonl")
+                          for d in pilot_items}
+            pilot = T.record_projections(pilot_rows, pilot_items, complete=False)
+            pool = T.pool_quantile(dev, pilot)
+            print(f"{child}: pooled q97.5 {pool} with {len(pilot)} streaming-pilot rows")
+        print(freeze.set_thresholds(child, dev_closed=closed, closed_pool=pool))
         return 0
     return _harmless(args, config, ctx, child, work)
 
@@ -370,11 +378,11 @@ def _harmless(args, config, ctx, child, work) -> int:
         if errors:
             print(f"{errors} harmless-request requests failed; run the stage again", file=sys.stderr)
             return 1
-    closed = artefacts.read_manifest(child)["thresholds"].get("closed")
-    if closed is None:
-        raise ValueError(f"{child}: run stage record first (tau_closed)")
-    free, q = T.tau_free(closed, T.fit_projections(read_jsonl(out), [it["id"] for it in items]))
-    print(f"{child}: harmless q97.5 {q}, tau_free {free}")
+    if artefacts.read_manifest(child)["thresholds"].get("dev_closed_q975") is None:
+        raise ValueError(f"{child}: run stage record first (the dev-slice quantile)")
+    q = T.harmless_quantile(T.fit_projections(read_jsonl(out), [it["id"] for it in items]),
+                            minimum=int(config.thresholds.get("min_fit_requests", 100)))
+    print(f"{child}: harmless free-form q97.5 {q}")
     print(freeze.set_thresholds(child, free_q=q))
     return 0
 

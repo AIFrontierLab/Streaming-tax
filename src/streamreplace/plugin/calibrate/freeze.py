@@ -24,27 +24,29 @@ def freeze(child: str, parent: str, directions: Path, root: Path | None = None, 
         "vectors": {"file": "vectors.npz", "arrays": {"rhat": "unit refusal direction at r_layer",
                                                       "prs": "alpha * mean(parent - child) state at p_layer"}},
         "layers": int(z["rhat"].shape[0]), "gate": "post", "r_layer": r_layer, "p_layer": p_layer, "alpha": alpha,
-        "thresholds": {"closed": None, "free": None, "free_harmless_q975": None},
+        "thresholds": {"closed": None, "free": None, "dev_closed_q975": None, "free_harmless_q975": None,
+                       "closed_pool_q975": None},
         "provenance": {"source_vectors_sha256": sha256_file(directions), "selection": summary or {}},
-        "in_paper": False,
     }
     return artefacts.write(child, rhat, prs, manifest, root, force)
 
 
-def set_thresholds(child: str, closed: float | None = None, free_q: float | None = None,
-                   root: Path | None = None) -> dict:
-    """Writes tau_closed (stage record) and/or the harmless quantile with tau_free = max(closed, q) (stage harmless) into
-    the child's manifest; the vectors are untouched."""
+def set_thresholds(child: str, dev_closed: float | None = None, free_q: float | None = None,
+                   closed_pool: float | None = None, root: Path | None = None) -> dict:
+    """Writes the quantiles a stage measured (record: dev_closed_q975 and, with the streaming pilot,
+    closed_pool_q975; harmless: free_harmless_q975) into the child's manifest and, once the first two are known,
+    the thresholds of calibrate.thresholds.rule(); the vectors are untouched."""
     import json
+    from .thresholds import rule
     path = Path(root or artefacts.root_dir()) / child / "manifest.json"
     meta = json.loads(path.read_text(encoding="utf-8"))
     t = dict(meta.get("thresholds") or {})
-    if closed is not None:
-        t["closed"] = closed
-    if free_q is not None:
-        t["free_harmless_q975"] = free_q
-    if t.get("closed") is not None and t.get("free_harmless_q975") is not None:
-        t["free"] = max(t["closed"], t["free_harmless_q975"])
+    for key, value in (("dev_closed_q975", dev_closed), ("free_harmless_q975", free_q),
+                       ("closed_pool_q975", closed_pool)):
+        if value is not None:
+            t[key] = value
+    if t.get("dev_closed_q975") is not None and t.get("free_harmless_q975") is not None:
+        t.update(rule(t["dev_closed_q975"], t["free_harmless_q975"], t.get("closed_pool_q975")))
     meta["thresholds"] = t
     path.write_text(json.dumps(meta, indent=1) + "\n", encoding="utf-8")
     return t

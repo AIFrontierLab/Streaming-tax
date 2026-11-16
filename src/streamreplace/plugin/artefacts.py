@@ -3,8 +3,8 @@
 vectors.npz holds two float32 arrays of the child's hidden size:
   rhat  the unit refusal direction at decoder layer r_layer (the gate projects the answer-position state on it)
   prs   the parent-restoration vector at decoder layer p_layer, already scaled: alpha * mean(parent - child)
-manifest.json holds the layers, alpha, the thresholds (closed / free and the 97.5th percentile on harmless requests behind the
-free one), the threshold rule, and provenance as sha256 values only. Layer indices count the decoder ModuleList that
+manifest.json holds the layers, alpha, the thresholds (closed / free and the three 97.5th percentiles on harmless
+requests behind them), the threshold rule, and provenance as sha256 values only. Layer indices count the decoder ModuleList that
 guard.find_layers() returns (LiveStar: the one inside model.language_model).
 
 The shipped files are the ones every reported plugin number was produced with; `streamreplace plugin verify` re-hashes
@@ -39,7 +39,7 @@ class Artefact:
     r_layer: int
     p_layer: int
     alpha: float
-    thresholds: dict            # {"closed", "free", "free_harmless_q975"}
+    thresholds: dict            # {"closed", "free"} + the three quantiles behind them (calibrate/thresholds.py)
     manifest: dict = field(default_factory=dict)
     folder: Path | None = None
 
@@ -53,17 +53,9 @@ class Artefact:
         gate always reads the child's own state (False for ThinkStream 14 <= 20 and MOSS-VL-Realtime 19 <= 24)."""
         return not self.p_layer <= self.r_layer
 
-    def tau(self, variant: str = "higher") -> dict:
-        """{closed, free} of a threshold variant: higher (the paper: free = max(closed, harmless q97.5)), rule (free =
-        the harmless q97.5 itself) or old (the closed threshold on both formats, as the first deployed gate)."""
-        t = self.thresholds
-        if variant == "higher":
-            return {"closed": t["closed"], "free": t["free"]}
-        if variant == "rule":
-            return {"closed": t["closed"], "free": t["free_harmless_q975"]}
-        if variant == "old":
-            return {"closed": t["closed"], "free": t["closed"]}
-        raise ValueError(f"unknown threshold variant {variant!r} (higher, rule, old)")
+    def tau(self) -> dict:
+        """{closed, free}: the gate's thresholds for closed-choice and for free-form items."""
+        return {"closed": self.thresholds["closed"], "free": self.thresholds["free"]}
 
     def identity(self) -> dict:
         """What of the artefacts changes a generation (part of the run identity of a plugin arm)."""
@@ -97,7 +89,7 @@ def load(child: str, root: Path | None = None, verify: bool = True) -> Artefact:
 
 def check(child: str, root: Path | None = None) -> list[str]:
     """Problems of one child's artefacts (empty when everything holds): sha256, |rhat| = 1, shapes and hidden size,
-    layer indices, free >= closed, free = max(closed, harmless q97.5)."""
+    layer indices, thresholds = the rule applied to the stored quantiles."""
     problems = []
     try:
         art = load(child, root, verify=True)
@@ -117,10 +109,14 @@ def check(child: str, root: Path | None = None) -> list[str]:
     if "prs_norm" in meta and abs(float(np.linalg.norm(art.prs.astype(np.float64))) - meta["prs_norm"]) > 1e-3:
         problems.append(f"{child}: |prs| differs from the manifest's {meta['prs_norm']}")
     t = art.thresholds
-    if any(t.get(k) is None for k in ("closed", "free", "free_harmless_q975")):
+    if any(t.get(k) is None for k in ("closed", "free", "dev_closed_q975", "free_harmless_q975")):
         problems.append(f"{child}: thresholds not calibrated yet (stages record and harmless)")
-    elif t["free"] != max(t["closed"], t["free_harmless_q975"]):
-        problems.append(f"{child}: tau_free {t['free']} != max(tau_closed, harmless q97.5)")
+    else:
+        from .calibrate.thresholds import rule
+        expected = rule(t["dev_closed_q975"], t["free_harmless_q975"], t.get("closed_pool_q975"))
+        if (t["closed"], t["free"]) != (expected["closed"], expected["free"]):
+            problems.append(f"{child}: thresholds {t['closed']} / {t['free']} differ from the rule's "
+                            f"{expected['closed']} / {expected['free']}")
     return problems
 
 

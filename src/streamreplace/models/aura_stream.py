@@ -29,6 +29,11 @@ environment (vLLM 0.11.0 with the transformers patch from AURA's README, applied
 
 The plugin cannot run on vLLM (no hidden states): its engine is aura_stream_hf.py, the same procedure rebuilt in
 transformers, which shares this module's segments, system prompt and spans.
+
+Diagnostic settings (never part of condition S): `stream.system: none` drops the live-stream system turn (Sec. 5.2);
+`stream.question_at: start | middle` poses the question during the stream (AuraStream._question_at; Supp. "Question
+timing"). Another checkpoint (the parent, Qwen3-VL-8B) can be served through this adapter as the parent control P_S:
+it writes AURA's silence marker as literal text, which `readouts.visible` reads the same way (info.silent_text).
 """
 from __future__ import annotations
 
@@ -48,7 +53,7 @@ from ..core.io import fingerprint
 from ..core.schema import Generation, Request
 from ..media.video_meta import video_info
 from .base import AnswerTurnHooks, BaseAdapter
-from .readouts import AURA_SILENT, visible
+from .readouts import AURA_SILENT, question_at, question_index, timing_info, visible
 
 ADAPTER = "aura_stream"
 # AURA's live-stream system prompt, verbatim from AURA_bench_eval/OVO-Bench/models/AURA.py (SYSTEM_PROMPT) at
@@ -127,15 +132,28 @@ def free_port() -> int:
         return probe.getsockname()[1]
 
 
+def system_prompt(settings: dict) -> str | None:
+    """AURA's live-stream system prompt, or None with the setting stream.system: none (the control of Sec. 5.2 that
+    removes the streaming system turn)."""
+    system = (settings.get("stream") or {}).get("system", "aura")
+    if system not in ("aura", "none"):
+        raise ValueError(f"stream.system must be aura or none, not {system!r}")
+    return SYSTEM if system == "aura" else None
+
+
 class AuraStream(BaseAdapter):
     """Condition S of AURA-8B (env aura: vLLM 0.11.0, patched transformers 4.57.1). load=False builds a
     schedule-only adapter (no server)."""
     PROTOCOL_VERSION = 1
-    LOAD_KEYS: tuple[str, ...] = ("stream.aura_concurrency",)
+    LOAD_KEYS: tuple[str, ...] = ("stream.aura_concurrency", "stream.question_at")
 
     def __init__(self, spec, settings: dict, upstream, load: bool = True):
         super().__init__(spec, settings, upstream)
         self.concurrency = int(settings.get("stream", {}).get("aura_concurrency", CONCURRENCY))
+        # question timing sends every segment of a step by file:// URL (one request per arriving second), so the
+        # server may read local media
+        self._server_args = [*SERVER_ARGS, *(["--allowed-local-media-path", "/"]
+                                             if question_at(settings.get("stream")) else [])]
         self.server = None
         self._log = None
         if load:
@@ -149,7 +167,8 @@ class AuraStream(BaseAdapter):
         self._log = (log_dir / f"{port}.log").open("a")
         try:
             self.server = subprocess.Popen(
-                ["vllm", "serve", str(paths.checkpoint_dir(self.spec.checkpoint)), "--port", str(port), *SERVER_ARGS],
+                ["vllm", "serve", str(paths.checkpoint_dir(self.spec.checkpoint)), "--port", str(port),
+                 *self._server_args],
                 stdout=self._log, stderr=subprocess.STDOUT,
                 env={**os.environ, "PATH": f"{Path(sys.executable).parent}{os.pathsep}{os.environ.get('PATH', '')}"})
             self.client = OpenAI(base_url=f"http://127.0.0.1:{port}/v1", api_key="local")
@@ -178,9 +197,13 @@ class AuraStream(BaseAdapter):
     def stream(self, req: Request, hooks: AnswerTurnHooks | None = None) -> Generation:
         if hooks is not None:
             raise ValueError("AURA's vLLM stream exposes no hidden states: the plugin runs on aura_stream_hf")
+        where = question_at(req.settings.get("stream"))
+        if where is not None:
+            return self._question_at(req, where)
         plan = schedule(req)
         kept = [tuple(s) for s in plan["spans"]]
-        messages = [{"role": "system", "content": SYSTEM}]
+        system = system_prompt(req.settings)
+        messages = [{"role": "system", "content": system}] if system else []
         for index, (start, length) in enumerate(kept):
             data = base64.b64encode(segment(req.video, start, length).read_bytes()).decode()
             user = [{"type": "video_url", "video_url": {"url": "data:video/mp4;base64," + data}}]
@@ -197,8 +220,62 @@ class AuraStream(BaseAdapter):
                 "prompt_tokens": response.usage.prompt_tokens, "no_answer": not text}
         if literal:                          # a literal <|silent|> in the text (a checkpoint without AURA's token)
             info["silent_text"] = True
+        if system is None:
+            info["system"] = "none"
         info["schedule"] = plan["digest"]
         return Generation(text, response.usage.completion_tokens, response.choices[0].finish_reason, info)
+
+    def _question_at(self, req: Request, where: str) -> Generation:
+        """Question timing: the official adapter's segments (1 s, aligned to the video's end) and 30-segment visual
+        window, run live from the question on. The question joins the user turn of segment q (the first, or segment
+        n // 2), once, and AURA generates after that segment and after every later one; its reply (or <|silent|>)
+        stays as that segment's assistant turn. Rounds that leave the 30-segment window follow AURA's released
+        context manager (Qwen3_VL_online_streaming_v2_ContextManaged.py): their video is dropped and their text kept,
+        silent rounds go; the question itself is always kept as text, even when AURA stayed silent at it. Earlier
+        segments get prefilled <|silent|> turns as in the adapter. The scored answer is the last reply; if AURA has
+        not replied before the last segment, the question is asked again with the last segment as in S
+        (info.fallback); a silent reply there stays unanswered as in S."""
+        duration = schedule(req)["duration"]
+        kept = spans(duration, "full")
+        n = len(kept)
+        q = question_index(where, n)
+        system = system_prompt(req.settings)
+        budget = req.settings["generation"]["max_new_tokens"]
+        said, steps, fallback = {}, [], False
+        for step in range(q, n):
+            lo = max(0, step - WINDOW + 1)
+            if step == n - 1 and step > q and not any(said.values()):
+                fallback = True
+            messages = [{"role": "system", "content": system}] if system else []
+            if q < lo:                                  # the question's round has left the visual window
+                messages += [{"role": "user", "content": req.prompt},
+                             {"role": "assistant", "content": said.get(q) or AURA_SILENT}]
+                for k in range(q + 1, lo):              # later rounds out of the window: only spoken replies stay
+                    if said.get(k):
+                        messages += [{"role": "user", "content": ""}, {"role": "assistant", "content": said[k]}]
+            for k in range(lo, step + 1):
+                path = segment(req.video, *kept[k]).resolve()
+                user = [{"type": "video_url", "video_url": {"url": f"file://{path}"}}]
+                if k == q or (k == step and fallback):
+                    user.append({"type": "text", "text": req.prompt})
+                messages.append({"role": "user", "content": user})
+                if k < step:
+                    messages.append({"role": "assistant", "content": said.get(k) or AURA_SILENT})
+            response = self.client.chat.completions.create(model="aura", messages=messages, temperature=0,
+                                                           max_tokens=budget,
+                                                           extra_body={"mm_processor_kwargs": MM_PROCESSOR_KWARGS})
+            text, _ = visible(response.choices[0].message.content)
+            said[step] = text
+            steps.append({"segment": step, "t": round(kept[step][0] + kept[step][1], 2), "text": text,
+                          "prompt_tokens": response.usage.prompt_tokens,
+                          "finish": response.choices[0].finish_reason})
+        spoken = [x for x in steps if x["text"]]
+        last = spoken[-1] if spoken else steps[-1]
+        info = {"segments": n, "duration": round(duration, 2), "steps": len(steps),
+                **timing_info(where, q, kept[q][0], [{"t": x["t"], "text": x["text"]} for x in spoken], duration,
+                              fallback),
+                "prompt_tokens": steps[-1]["prompt_tokens"], "no_answer": not spoken}
+        return Generation(last["text"] if spoken else "", None, last["finish"], info)
 
     def close(self) -> None:
         """Stops the vLLM server (killed when it does not exit within 60 s of SIGTERM)."""

@@ -18,9 +18,13 @@ checkpoint's remote code (create_realtime_session) the way its realtime_inferenc
 - nondeterminism: the session runs on the wall clock, so how much the model generates between frames, and whether the
   question is taken in the same cycle as its frame (`info.prompt_with_frame`; push_prompt_frame is not atomic),
   depend on GPU speed. Reruns are not bit-identical.
+- question timing (setting `stream.question_at: start | middle`, a diagnostic; Supp. "Question timing"): the question
+  is pushed once with frame q (the first, or frame n // 2), every later frame as usual; every output after the
+  question is split into the model's turns (<|round_start|>) and read with the same display rule, and the last turn
+  with visible text is scored. If the model has written nothing after the question by the end of the video, the
+  question is pushed again with the last frame and read as in S (`info.fallback`).
 
-Plugin hook points (hooks=None is exactly the native path above). MOSS-VL-Realtime's plugin arms ship but are not
-part of the paper's reported S+.
+Plugin hook points (hooks=None is exactly the native path above).
 - attach: once, with the decoder layers and the tokenizer.
 - answer turn: starts at the first update of the session's model inputs (`_update_model_kwargs_for_real_time_
   generation`) whose <|im_start|> count rises during the request, i.e. when the question is drained, whatever cycle
@@ -35,6 +39,7 @@ part of the paper's reported S+.
 """
 from __future__ import annotations
 
+import re
 import threading
 import time
 
@@ -45,7 +50,8 @@ from ..media.digest import frame_digest
 from ..media.frames import frame_indices, sample_frames
 from ..media.video_meta import video_info
 from .base import AnswerTurnHooks, BaseAdapter
-from .readouts import has_visible_text, read_reply
+from .readouts import (MOSS_TOKEN, has_visible_text, question_at, question_index, read_reply,
+                       timing_info)
 
 ADAPTER = "mossrt_stream"
 FRAME_QUEUE = 256
@@ -170,6 +176,11 @@ class MossRTStream(BaseAdapter):
         s = req.settings
         budget = s["generation"]["max_new_tokens"]
         frames, meta = sample_frames(req.video, fps=s["stream"]["fps"])
+        where = question_at(s.get("stream"))
+        if where is not None:
+            if hooks is not None:
+                raise ValueError("stream.question_at is a diagnostic of the native stream: it takes no plugin hooks")
+            return self._question_at(req, frames, meta, where)
         if hooks is not None:
             self._attach(hooks)
             self._turn = _AnswerTurn(hooks)
@@ -233,6 +244,90 @@ class MossRTStream(BaseAdapter):
                                   float(s["stream"]["fps"]))["digest"]}
         generation = Generation(text, texts, "length" if texts >= budget else "unknown", info)
         return hooks.finish(req, generation) if hooks is not None else generation
+
+    def _question_at(self, req: Request, frames, meta: dict, where: str) -> Generation:
+        """Question timing on the official realtime session (see the module docstring)."""
+        s = req.settings
+        budget = s["generation"]["max_new_tokens"]
+        q = question_index(where, len(frames))
+        session = self.model.create_realtime_session(
+            self.processor, initial_prompt="", frame_queue_size=FRAME_QUEUE, max_tokens_per_turn=TOKENS_PER_TURN,
+            max_new_tokens=max(MIN_TOTAL_TOKENS, len(frames) * TOKENS_PER_TURN + budget), do_sample=False)
+        events, start = [], time.monotonic()
+
+        def drain(timeout=0.0):
+            value = session.poll_output(timeout)
+            if value is not None:
+                events.append((round(time.monotonic() - start, 2), value))
+            return value
+
+        def turns(since: int) -> list[dict]:
+            """Visible replies in events[since:], one per model turn, with the wall time its turn began."""
+            out, current, began = [], None, None
+            for t, value in events[since:]:
+                for part in re.split(r"(<\|round_start\|>)", value):
+                    if part == "<|round_start|>":
+                        if current is not None:
+                            out.append((began, current))
+                        current, began = "", t
+                    elif current is not None:
+                        current += part
+            if current is not None:
+                out.append((began, current))
+            replies = []
+            for began, raw in out:
+                text, parsed = read_reply(raw)
+                if text:
+                    replies.append({"t": began, "text": text, "complete": parsed["complete"]})
+            return replies
+
+        mark, fallback = None, False
+        try:
+            session.start()
+            for index, (frame, stamp) in enumerate(zip(frames, meta["timestamps"])):
+                while time.monotonic() - start < stamp:
+                    drain(max(0.0, min(0.1, stamp - (time.monotonic() - start))))
+                if index == q:
+                    mark = len(events)
+                    session.push_prompt_frame(req.prompt, frame, timestamp=stamp, drop_oldest=False)
+                else:
+                    session.push_frame(frame, timestamp=stamp, drop_oldest=False)
+                drain()
+            deadline = time.monotonic() + max(120, meta["duration"])
+            while session.pending_frames or time.monotonic() - start < meta["duration"]:
+                drain(0.1)
+                if time.monotonic() > deadline:
+                    raise TimeoutError("MOSS did not consume all frames")
+            quiet = time.monotonic()
+            while time.monotonic() - quiet < IDLE_STOP and session.active:      # let a reply in progress finish
+                if drain(0.1) is not None:
+                    quiet = time.monotonic()
+            replies = turns(mark)
+            if not replies:
+                fallback, mark2 = True, len(events)
+                session.push_prompt_frame(req.prompt, frames[-1], timestamp=meta["timestamps"][-1], drop_oldest=False)
+                asked = last = time.monotonic()
+                while time.monotonic() - asked < ANSWER_TIMEOUT and session.active:
+                    if drain(0.1) is None:
+                        if turns(mark2) and time.monotonic() - last > IDLE_STOP:
+                            break
+                        continue
+                    last = time.monotonic()
+                    got = turns(mark2)
+                    if got and (got[-1]["complete"] or len(MOSS_TOKEN.sub("", got[-1]["text"]).split()) >= budget):
+                        break
+                replies = turns(mark2)
+        finally:
+            session.close(CLOSE_TIMEOUT)
+        text = replies[-1]["text"] if replies else ""
+        info = {"stream_fps": s["stream"]["fps"], "frames": len(frames), "duration": round(meta["duration"], 2),
+                "events": len(events),
+                **timing_info(where, q, meta["timestamps"][q], [{"t": r["t"], "text": r["text"]} for r in replies],
+                              meta["duration"], fallback),
+                "no_answer": not text}
+        if not replies:
+            info["answer_t"] = None
+        return Generation(text, None, "unknown", info)
 
     def close(self) -> None:
         self.model = None

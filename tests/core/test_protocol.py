@@ -13,7 +13,7 @@ from streamreplace.core.schema import (FINISH, GEN_KEYS, SCORE_ROW_KEYS, Generat
 
 def test_enums_format_as_their_values():
     assert str(Mode.OFFLINE) == "offline" and f"{Mode.STREAM}" == "stream" and f"{Role.CHILD:>6}" == " child"
-    assert Condition("S+") is Condition.S_PLUS and Mode("stream") is Mode.STREAM and Mode.OFFLINE == "offline"
+    assert Condition("S_plug") is Condition.S_PLUG and Mode("stream") is Mode.STREAM and Mode.OFFLINE == "offline"
 
 
 @pytest.mark.parametrize("arm, name", [
@@ -28,7 +28,7 @@ def test_job_names_round_trip(arm, name):
     assert Arm.parse(name) == arm
 
 
-@pytest.mark.parametrize("args", [("", Mode.OFFLINE), ("a.b", Mode.OFFLINE), ("m", Mode.STREAM, "shadow"),
+@pytest.mark.parametrize("args", [("", Mode.OFFLINE), ("a.b", Mode.OFFLINE), ("m", Mode.STREAM, "live"),
                                   ("m@sfix", Mode.STREAM)])
 def test_invalid_arms(args):
     with pytest.raises(ValueError):
@@ -44,14 +44,14 @@ def test_job_name_without_mode_is_refused():
 
 def test_conditions_map_to_arms():
     assert GAPS == {"C-P": ("P", "C"), "S-C": ("C", "S"), "S-P": ("P", "S")}
-    assert VARIANTS == ("sfix", "sfix_prs", "record", "inert", "hf")
+    assert VARIANTS == ("sfix", "sfix_prs", "record", "shadow", "prs", "inert", "hf")
     assert condition_arm("P", "qwen3vl_8b", "aura_8b") == Arm("qwen3vl_8b", Mode.OFFLINE)
     assert condition_arm(Condition.C, "qwen3vl_8b", "aura_8b") == Arm("aura_8b", Mode.OFFLINE)
     assert condition_arm("S", "qwen3vl_8b", "aura_8b") == Arm("aura_8b", Mode.STREAM)
     assert condition_arm("S_fix", "qwen3vl_8b", "aura_8b").job_name() == "aura_8b@sfix.stream"
     assert condition_arm("S_HF", "qwen3vl_8b", "aura_8b").job_name() == "aura_8b@hf.stream"
     with pytest.raises(ValueError, match="assembled"):
-        condition_arm("S+", "qwen3vl_8b", "aura_8b")
+        condition_arm("S_plug", "qwen3vl_8b", "aura_8b")
     assert conditions_for("video") == (Condition.P, Condition.C, Condition.S)
     assert conditions_for("image") == (Condition.P, Condition.C)
     with pytest.raises(ValueError):

@@ -37,7 +37,7 @@ from ..media.digest import frame_digest
 from ..media.frames import frame_indices, sample_frames
 from ..media.video_meta import video_info
 from .base import AnswerTurnHooks, BaseAdapter
-from .readouts import is_no_reply
+from .readouts import is_no_reply, question_at, question_index, timing_info
 
 ADAPTER = "mmduet2_stream"
 FRAMES_PER_TURN = 2
@@ -49,12 +49,15 @@ def turns_of(n: int) -> list[list[int]]:
     return [list(range(i, min(i + FRAMES_PER_TURN, n))) for i in range(0, n, FRAMES_PER_TURN)]
 
 
-def _plan(indices: list[int], source_fps: float, duration: float, stream_fps: float) -> dict:
+def _plan(indices: list[int], source_fps: float, duration: float, stream_fps: float, where: str | None = None) -> dict:
     turns = turns_of(len(indices))
     plan = {"adapter": ADAPTER, "stream_fps": stream_fps, "frames": len(indices), "indices": indices,
             "frame_indices": frame_digest({"indices": indices}), "turns": len(turns),
             "turn_frames": [len(t) for t in turns], "question_turn": len(turns) - 1,
             "question_time": indices[-1] / source_fps, "duration": duration}
+    if where is not None:                       # question timing: the turn that holds frame q
+        q = question_index(where, len(indices))
+        plan.update(question_at=where, question_turn=q // FRAMES_PER_TURN, question_time=indices[q] / source_fps)
     plan["digest"] = fingerprint(plan)
     return plan
 
@@ -65,7 +68,7 @@ def schedule(req: Request, meta: dict | None = None) -> dict:
     meta = video_info(req.video) if meta is None else meta
     fps = float(req.settings["stream"]["fps"])
     indices = frame_indices({"frames": meta["frames"], "fps": meta["fps"]}, fps=fps)
-    return _plan(indices, meta["fps"], meta["frames"] / meta["fps"], fps)
+    return _plan(indices, meta["fps"], meta["frames"] / meta["fps"], fps, question_at(req.settings.get("stream")))
 
 
 class MMDuet2Stream(BaseAdapter):
@@ -138,6 +141,11 @@ class MMDuet2Stream(BaseAdapter):
         client.reset()
         client.set_fps(fps=fps)
         client.max_new_tokens = req.settings["generation"]["max_new_tokens"]
+        where = question_at(req.settings.get("stream"))
+        if where is not None:
+            if hooks is not None:
+                raise ValueError("stream.question_at is a diagnostic of the native stream: it takes no plugin hooks")
+            return self._question_at(req, frames, meta, fps, where)
         try:
             for i in range(0, len(frames), FRAMES_PER_TURN):
                 chunk = frames[i:i + FRAMES_PER_TURN]
@@ -157,6 +165,41 @@ class MMDuet2Stream(BaseAdapter):
                 "schedule": _plan(meta["indices"], meta["fps"], meta["duration"], fps)["digest"]}
         generation = Generation(final, None, "unknown", info)
         return hooks.finish(req, generation) if hooks is not None else generation
+
+    def _question_at(self, req: Request, frames, meta: dict, fps: float, where: str) -> Generation:
+        """Question timing: the question joins the 2-frame turn that holds frame q (the first, or frame n // 2), once;
+        every later turn is a proactive turn (a reply or "NO REPLY", fed back as the client keeps its history). The
+        scored answer is the last reply at or after the question's turn; if the model has not replied before the
+        final turn, the question is asked again with the final turn as in S (info.fallback), and a final "NO REPLY"
+        then stays unanswered as in S."""
+        import numpy as np
+        from PIL import Image
+        client = self.client
+        q = question_index(where, len(frames))
+        turns, ask_turn, fallback = [], None, False
+        for i in range(0, len(frames), FRAMES_PER_TURN):
+            chunk = frames[i:i + FRAMES_PER_TURN]
+            client.num_frames_per_turn = len(chunk)
+            last = i + len(chunk) == len(frames)
+            if ask_turn is None and i <= q < i + len(chunk):
+                client.add_text(req.prompt)
+                ask_turn = len(turns)
+            elif last and ask_turn is not None and all(is_no_reply(t["text"]) for t in turns[ask_turn:]):
+                client.add_text(req.prompt)
+                fallback = True
+            before = sum(1 for t in client.history if t.get("role") == "assistant")
+            for frame in chunk:
+                client.add_image(Image.fromarray(self.resize_frame(np.asarray(frame), max_size=MAX_FRAME_SIZE)))
+            said = [str(t["content"]).strip() for t in client.history if t.get("role") == "assistant"][before:]
+            turns.append({"t": round((i + len(chunk)) / fps, 2), "text": said[-1] if said else ""})
+        spoken = [t for t in turns[ask_turn:] if not is_no_reply(t["text"])]
+        final = spoken[-1]["text"] if spoken else (turns[-1]["text"] if turns else "")
+        info = {"stream_fps": fps, "frames": len(frames), "duration": round(meta["duration"], 2), "turns": len(turns),
+                **timing_info(where, q, q / fps, spoken, meta["duration"], fallback), "question_turn": ask_turn,
+                "replies_before_question": sum(not is_no_reply(t["text"]) for t in turns[:ask_turn or 0]),
+                "no_answer": is_no_reply(final),
+                "schedule": _plan(meta["indices"], meta["fps"], meta["duration"], fps, where)["digest"]}
+        return Generation(final, None, "unknown", info)
 
     def close(self) -> None:
         self.client = None

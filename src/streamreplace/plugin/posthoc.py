@@ -1,14 +1,15 @@
-"""The paper's S+, assembled after the fact from the shadow runs (and the same rule as the live gate).
+"""The paper's S_plug, assembled after the fact from the shadow runs (and the same rule as the live gate).
 
 The plugin arms run with the gate in shadow mode: every row logs the answer-position projection rounded to 3
-decimals (info.plugin.guard.proj, read as analysis.records.Record.proj) and nothing fires. S+ on an item set is then
-built per arm, each arm by its own logged projection:
+decimals (info.plugin.guard.proj, read as analysis.records.Record.proj) and nothing fires. S_plug on an item set is
+then built per arm, each arm by its own logged projection:
 1. fired = the ids whose logged projection is strictly above the item format's threshold (tau_closed for
    multiple-choice and yes/no items, tau_free for everything else); a row without a projection never fires;
 2. a fired row takes the scored row of the fixed-refusal pseudo-job `fixed_refusal.offline` (the refusal text
    scored by each benchmark's official pipeline and judges);
-3. on Video-MME, TOMATO and TimeBlind a fired row is unanswered and wrong instead (their parsers would otherwise
-   credit the refusal: TOMATO's random fallback picks an option, TimeBlind's pairs reward a constant answer).
+3. on the understanding sets (configs/plugin.yaml unanswered_on_fire) a fired row is unanswered and wrong instead
+   (their parsers would otherwise credit the refusal: TOMATO's random fallback picks an option, TimeBlind's pairs
+   reward a constant answer).
 `S_fix + gate` is the same assembly on the sfix arm (no PRS); `S_fix + PRS` is the sfix_prs arm without the gate."""
 from __future__ import annotations
 

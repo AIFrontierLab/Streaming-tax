@@ -9,8 +9,12 @@ mcq_predict_streaming, used for OVO-Bench and StreamingBench-RT). The adapter ru
   official eval's values, forced on the video processor; the checkpoint's own config would resize again). Each chunk
   is one user turn. `schedule()` reproduces the chunking and frame selection without decoding.
 - memory: KV cache of 24,576 tokens holding the last 20 video chunks (the checkpoint's video_flex_window_size,
-  default 20); older chunks are evicted. Settings `stream.window` (chunks, or "full" = all 120) and `stream.max_len`
-  change this; the plugin's Recall uses {window: full, max_len: 81920}.
+  default 20); older chunks are evicted (their visual tokens; thoughts and template tokens stay). Settings
+  `stream.window` (chunks, or "full" = all 120) and `stream.max_len` change the budget: the full-history control
+  S_full is {window: full, max_len: 81920}. Setting `stream.reservoir: k` is Stream++'s Recall: within the same
+  window budget the newest k chunks stay and, when the budget is full, the older chunk the reservoir would not keep
+  is evicted instead of the oldest (`recall_engine`, plugin/recall.py evict_index); the row records the retained
+  chunks (`info.retained`). `stream.memory_seed` varies the reservoir.
 - question: asked at the end of the video (timestamp = torchcodec duration, which puts it in the last chunk), as
   "\\n" + the benchmark prompt after that chunk's frames; ThinkStream's own system prompt, the dataset's is not used.
 - decoding: every chunk thinks for at most 20 sampled tokens (T 1.0, top-k 50, top-p 0.95, through flashinfer), seeded
@@ -23,6 +27,10 @@ mcq_predict_streaming, used for OVO-Bench and StreamingBench-RT). The adapter ru
   <|im_end|> before </think>, upstream raises "Deadline exceeded": the row is unanswered (`info.no_answer`,
   `info.failure`), scored wrong. A RuntimeError before any chunk was streamed is an error, not silence.
 - nondeterminism: sampled thoughts; reproducible on the same GPU type and flashinfer version only.
+- question timing (setting `stream.question_at: start | middle`, a diagnostic; Supp. "Question timing"): the
+  question is posed once at 0 s or at half the duration and ThinkStream's official deferral runs to the video's end
+  (the deadline, where an answer is forced, is the last chunk). Its query interface returns one answer and ends the
+  run (break_on_answer), so the first answer is the scored one.
 - deliberate deviations from the official eval: the video is not extended by slack_time past the question, the answer
   budget is the benchmark's (official 30 tokens), and the question is the harness prompt (official: options plus
   "\\nPlease select the correct answer.").
@@ -45,6 +53,7 @@ from __future__ import annotations
 
 from contextlib import ExitStack
 import math
+from pathlib import Path
 
 from .. import paths
 from ..core.io import fingerprint
@@ -53,7 +62,7 @@ from ..media.digest import frame_digest
 from ..media.qwen_sampling import fetch_video_selection
 from ..media.video_meta import torchcodec_meta
 from .base import AnswerTurnHooks, BaseAdapter
-from .readouts import answer_text, option_tokens, stream_seed
+from .readouts import answer_text, option_tokens, question_at, stream_seed
 
 ADAPTER = "thinkstream_stream"
 THINKSTREAM_PIXELS = (200704, 401408)       # official benchmark eval (scripts/eval/{ovo,rtvu}/eval.sh)
@@ -127,6 +136,11 @@ def schedule(req: Request, meta: dict | None = None, config_window: int | None =
                 frame_indices=frame_digest({"indices": indices}), question_chunk=plan["chunks"] - 1,
                 question_time=tc["duration"], window_chunks=window_chunks(stream, config_window),
                 max_len=int(stream.get("max_len") or MAX_LEN), seed=stream_seed(req.id, stream.get("seed")))
+    if stream.get("reservoir"):                 # Recall: the newest k chunks + a reservoir within the window budget
+        plan.update(reservoir=int(stream["reservoir"]), memory_seed=int(stream.get("memory_seed", 0)))
+    where = question_at(stream)
+    if where is not None:
+        plan.update(question_at=where, question_time=0.0 if where == "start" else tc["duration"] / 2)
     plan["digest"] = fingerprint(plan)
     return plan
 
@@ -150,6 +164,40 @@ def _open_answer_sample(next_token, logits, step, generated_tokens, generated_le
     think = generated_tokens[:, :step] == think_end_token_id
     first_after = think.any(dim=1) & (step - think.to(torch.long).argmax(dim=1) - 1 == 0)
     return torch.where(first_after.unsqueeze(1), torch.full_like(next_token, response_token_id), next_token)
+
+
+def recall_engine(base):
+    """ThinkStream's window engine with Recall's eviction: when the visual budget is full, the older chunk the
+    reservoir would not keep goes instead of the oldest (plugin/recall.py evict_index). The KV move is the engine's
+    own cache compaction plus its window bookkeeping; text KV stays, as natively. The instance attribute `recall` =
+    {"recent", "stream_id", "seed", "retained": arrival indices kept (oldest first), "arriving": the index of the
+    chunk the next generate adds}."""
+    from ..plugin.recall import evict_index
+
+    class RecallEngine(base):
+        def _maybe_evict(self):
+            if int(self._window_count[0]) < self.video_flex_window_size:
+                return
+            r = self.recall
+            index = evict_index(r["retained"], r["arriving"], r["recent"], r["stream_id"], r["seed"])
+            starts = self._window_starts[:, index].clone()
+            ends = self._window_ends[:, index].clone()
+            amount = (ends - starts).unsqueeze(1)
+            self._cache_eviction.evict(starts, ends)
+            count = int(self._window_count[0])
+            keep = [i for i in range(count) if i != index]
+            old_starts = self._window_starts[:, keep].clone()
+            old_ends = self._window_ends[:, keep].clone()
+            self._window_starts[:, :count - 1] = old_starts - (old_starts >= ends.unsqueeze(1)) * amount
+            self._window_ends[:, :count - 1] = old_ends - (old_ends >= ends.unsqueeze(1)) * amount
+            self._window_count -= 1
+            r["retained"].pop(index)
+
+        def _record_video_windows(self, *args):
+            super()._record_video_windows(*args)
+            self.recall["retained"].append(self.recall["arriving"])
+
+    return RecallEngine
 
 
 class _AnswerTurn:
@@ -227,9 +275,11 @@ class ThinkStreamStream(BaseAdapter):
         self._attached = hooks
 
     def _engine(self, stream: dict, window: int):
+        """The request's KV engine: upstream's window engine, or with stream.reservoir its Recall subclass."""
         tokenizer = self.processor.tokenizer
         cfg = getattr(self.model.config, "text_config", self.model.config)
-        return self._engine_cls(
+        engine_cls = recall_engine(self._engine_cls) if stream.get("reservoir") else self._engine_cls
+        return engine_cls(
             self.model, batch_size=1, max_len=int(stream.get("max_len") or MAX_LEN), num_hidden_layers=cfg.num_hidden_layers,
             num_key_value_heads=cfg.num_key_value_heads, head_dim=cfg.hidden_size // cfg.num_attention_heads,
             vocab_size=cfg.vocab_size, pad_token_id=self.model.generation_config.pad_token_id,
@@ -321,6 +371,10 @@ class ThinkStreamStream(BaseAdapter):
         config_window = self._config_window()
         window = window_chunks(stream, config_window)
         engine = self._engine(stream, window)
+        reservoir = stream.get("reservoir")
+        if reservoir:                           # Recall: the newest `reservoir` chunks + a sample of older ones
+            engine.recall = {"recent": int(reservoir), "stream_id": Path(req.video).name,
+                             "seed": int(stream.get("memory_seed", 0)), "retained": [], "arriving": 0}
         token = tokenizer.convert_tokens_to_ids
         kwargs = {"think_end_token_id": token("</think>"), "max_think_tokens": MAX_THINK_TOKENS,
                   "eos_token_id": token("<|im_end|>"), "silent_token_id": token("<silent>"),
@@ -333,6 +387,13 @@ class ThinkStreamStream(BaseAdapter):
             sample = _open_answer_sample
         metadata = VideoDecoder(req.video).metadata
         duration = metadata.duration_seconds
+        # question timing: asked once at 0 s or at half the duration; the deadline is then the last chunk
+        where = question_at(stream)
+        if where is not None and hooks is not None:
+            raise ValueError("stream.question_at is a diagnostic of the native stream: it takes no plugin hooks")
+        ask_t = duration if where is None else 0.0 if where == "start" else duration / 2
+        slack = SLACK_TIME if where is None else duration - ask_t + 1.0
+        answer_t = answer_chunk = None
         seed = stream_seed(req.id, stream.get("seed"))
         torch.manual_seed(seed)
         turn = None
@@ -344,14 +405,18 @@ class ThinkStreamStream(BaseAdapter):
         try:
             for event in self._chat(
                     engine=engine, processor=self.processor, video_path=req.video,
-                    queries=[{"content": req.prompt, "timestamp": duration}], video_start=0.0, video_end=duration,
+                    queries=[{"content": req.prompt, "timestamp": ask_t}], video_start=0.0, video_end=duration,
                     frames_per_chunk=FRAMES_PER_CHUNK, max_chunks=MAX_CHUNKS, min_pixels=THINKSTREAM_PIXELS[0],
                     max_pixels=THINKSTREAM_PIXELS[1], max_new_tokens=req.settings["generation"]["max_new_tokens"],
                     system_prompt=self._system, chat_template_wo_system=self._template, sample=sample,
-                    sample_kwargs=kwargs, model_type="qwen2.5vl", slack_time=SLACK_TIME, break_on_answer=True):
+                    sample_kwargs=kwargs, model_type="qwen2.5vl", slack_time=slack, break_on_answer=True):
                 chunks += 1
+                if reservoir:                   # the arrival index of the next generate's chunk
+                    engine.recall["arriving"] = chunks
                 if event["is_answer"]:
                     answer = self.processor.decode(event["generated_tokens"][0], skip_special_tokens=False)
+                    if where is not None:
+                        answer_t, answer_chunk = round(float(event["window_end"]), 2), int(event["chunk_idx"])
         except RuntimeError as exc:         # upstream raises when there is no <response> by the deadline
             # nothing streamed at all (e.g. FlashInfer refusing the GPU) is an error, not silence; with hooks, the
             # deadline of a one-chunk clip (raised before upstream's first yield) is the same unanswered turn
@@ -363,6 +428,11 @@ class ThinkStreamStream(BaseAdapter):
                 "raw_turn": (answer or "")[:2000], "no_answer": answer is None}
         if failure:
             info["failure"] = failure
+        if reservoir:
+            info.update(reservoir=int(reservoir), retained=list(engine.recall["retained"]))
+        if where is not None:
+            info.update(question_at=where, question_t=round(ask_t, 2), answer_t=answer_t, answer_chunk=answer_chunk,
+                        deadline_answer=answer_t is not None and answer_t >= round(duration, 2) - 1e-6)
         try:                                 # the row's schedule digest; never changes the native result
             info["schedule"] = schedule(req, {"torchcodec": {"frames": int(metadata.num_frames),
                                                              "fps": float(metadata.average_fps),

@@ -1,10 +1,11 @@
-"""The plugin recipe (configs/plugin.yaml): arms, threshold rule, per-child Recall settings, answer turns, engines and
-item sets.
+"""The Stream++ recipe (configs/plugin.yaml): arms, threshold rule, per-child Recall and Respond settings, answer
+turns, engines and item sets.
 
 One recipe (arms, threshold rule) serves every child. Per child, the configuration declares only how the child's
-stream runs: its Recall settings delta, its answer turn (silence marker and logits path, AnswerTurn) and the stream
+stream runs: its Recall settings delta (the two children whose memory evicts), its Respond settings delta (MMDuet,
+whose answer turn must be requested), its answer turn (silence marker and logits path, AnswerTurn) and the stream
 adapter its arms run on; the per-child numbers are the artefacts (plugin_artefacts/<child>/). The paper's S_fix is
-the `sfix` arm and its S+ is the `sfix_prs` arm with the gate applied afterwards (posthoc.py)."""
+the `sfix` arm and its S_plug is the `sfix_prs` arm with the gate applied afterwards (posthoc.py)."""
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
@@ -18,8 +19,7 @@ VIDEO_PREFIX = "These are frames of a video.\n"              # Video-SafetyBench
 CLOSED_KINDS = ("mcq", "yesno")                              # closed-choice items: tau_closed; all others: tau_free
 CHILDREN = ("mmduet_7b", "thinkstream_3b", "mmduet2_3b", "aura_8b", "livestar_8b", "moss_vl_rt")
 GATE_MODES = ("shadow", "live", "record")
-RECALL = ("full", "native")
-VARIANTS = ("higher", "rule", "old")                         # threshold variants of the recovery report
+RECALL = ("budget", "native")
 # Where a stream adapter hands the hooks its answer turn's logits (AnswerTurn.logits; hooks.py applies the rules).
 LOGITS_PATHS = ("processor", "first_step", "opening", "deadline")
 NO_REPLY = "NO REPLY"           # MMDuet2's silence: a reply reading "NO REPLY" (two tokens; respond.silence_bans)
@@ -56,8 +56,9 @@ class AnswerTurn:
 
 @dataclass(frozen=True)
 class ArmRecipe:
-    """One plugin arm. recall: "full" applies the child's Recall settings; respond: silence bans + option readout;
-    gate: None | shadow | live | record (module docstring of configs/plugin.yaml); prs: parent-restoration steering."""
+    """One plugin arm. recall: "budget" applies the child's Recall settings; respond: the child's Respond settings,
+    silence bans + option readout; gate: None | shadow | live | record (configs/plugin.yaml); prs: parent-restoration
+    steering."""
     name: str
     recall: str = "native"
     respond: bool = False
@@ -95,11 +96,11 @@ class PluginConfig:
     recall: dict[str, dict]
     engines: dict[str, str]
     children: tuple[str, ...]
-    paper_children: tuple[str, ...]
     items: dict[str, str]
     calibration: dict
     answer_turns: dict[str, AnswerTurn] = field(default_factory=dict)
-    splus_arm: str = "sfix_prs"
+    respond: dict[str, dict] = field(default_factory=dict)
+    plug_arm: str = "sfix_prs"
     root: Path | None = None
     raw: dict = field(default_factory=dict)
 
@@ -109,10 +110,13 @@ class PluginConfig:
         except KeyError:
             raise ValueError(f"unknown plugin arm {variant!r}; configured: {', '.join(self.arms)}") from None
 
-    def recall_delta(self, child: str, variant: str) -> dict:
-        """The settings delta of the arm's Recall for this child ({} for native recall or a child without one)."""
-        import copy
-        return copy.deepcopy(self.recall.get(child, {})) if self.arm(variant).recall == "full" else {}
+    def settings_delta(self, child: str, variant: str) -> dict:
+        """The settings delta of the arm for this child: its Recall settings (arms with recall: budget) merged with
+        its Respond settings (arms with respond: true); {} for a child that needs neither."""
+        from ..config.settings import merge
+        arm = self.arm(variant)
+        return merge(self.recall.get(child, {}) if arm.recall == "budget" else {},
+                     self.respond.get(child, {}) if arm.respond else {})
 
     def path(self, relative: str | Path) -> Path:
         p = Path(relative)
@@ -162,19 +166,18 @@ def plugin_config_from_dict(data: Mapping[str, Any], root: Path | None = None) -
     if unknown:
         raise ValueError(f"configs/plugin.yaml: arm names {unknown} are not job variants ({', '.join(JOB_VARIANTS)})")
     thresholds = dict(data.get("thresholds") or {})
-    if thresholds.get("variant", "higher") not in VARIANTS:
-        raise ValueError(f"configs/plugin.yaml: thresholds.variant must be one of {VARIANTS}")
-    splus = data.get("splus_arm", "sfix_prs")
-    if splus not in arms:
-        raise ValueError(f"configs/plugin.yaml: splus_arm {splus!r} is not an arm")
+    plug = data.get("plug_arm", "sfix_prs")
+    if plug not in arms:
+        raise ValueError(f"configs/plugin.yaml: plug_arm {plug!r} is not an arm")
     return PluginConfig(
         refusal=str(data.get("refusal", REFUSAL)), arms=arms, thresholds=thresholds,
         unanswered_on_fire=tuple(data.get("unanswered_on_fire") or ()),
         recall={k: dict(v or {}) for k, v in (data.get("recall") or {}).items()},
         engines=dict(data.get("engines") or {}), children=tuple(data.get("children") or CHILDREN),
-        paper_children=tuple(data.get("paper_children") or data.get("children") or CHILDREN),
         items=dict(data.get("items") or {}), calibration=dict(data.get("calibration") or {}),
-        answer_turns=answer_turns_from(data.get("answer_turn")), splus_arm=splus, root=root, raw=dict(data))
+        answer_turns=answer_turns_from(data.get("answer_turn")),
+        respond={k: dict(v or {}) for k, v in (data.get("respond") or {}).items()}, plug_arm=plug, root=root,
+        raw=dict(data))
 
 
 def load_plugin_config(path: str | Path | None = None, section: Mapping | None = None) -> PluginConfig:

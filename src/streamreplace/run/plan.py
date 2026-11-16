@@ -11,14 +11,14 @@ Conditions are always relative to a pair (configs/pairs.yaml):
     S   the child through its native stream          Arm(child, stream), video benchmarks only
 Parents never stream and image benchmarks are never streamed, so HarmBench (text and image behaviours) is P/C only.
 All five pairs under P/C/S on the paper's two suites make the paper's 235 jobs. Plugin variants (configs/plugin.yaml
-arms: sfix, sfix_prs, record, inert, hf) add Arm(child, stream, variant) on video benchmarks, for every selected
-child (--variants) or one arm at a time by its name (--models aura_8b@sfix); the plugin package supplies what a
-variant changes: the Recall settings delta, the engine adapter (AURA's plugin arms run on its Hugging Face rebuild)
-and the identity block, and the worker attaches the arm's hooks. Models outside the pairs, such as fine-tuned
+arms: sfix, sfix_prs, record, shadow, prs, inert, hf) add Arm(child, stream, variant) on video benchmarks, for every
+selected child (--variants) or one arm at a time by its name (--models aura_8b@sfix); the plugin package supplies what
+a variant changes: the settings delta (Recall, Respond), the engine adapter (AURA's plugin arms run on its Hugging
+Face rebuild) and the identity block, and the worker attaches the arm's hooks. Models outside the pairs, such as fine-tuned
 checkpoints declared in an extra config file (`--config FILE`), are selected with --models and run the conditions
 of their role (a parent: P; a child: C, and S when it has a stream adapter).
 
-Settings follow config/settings.py (the merge order of the paper's runs). A plugin arm's Recall delta is the extra
+Settings follow config/settings.py (the merge order of the paper's runs). A plugin arm's settings delta is the extra
 layer merged right after the model's own settings, where the original plugin runs carried it, so --set still wins.
 
 Run identity (core/identity.py) covers the arm, the model block (checkpoints, the adapter actually run and its
@@ -71,7 +71,7 @@ class AdapterConstants:
 @dataclass(frozen=True)
 class PluginArm:
     """What a plugin variant changes about a child's stream job."""
-    settings: dict            # settings layer merged after the model's own settings (Recall)
+    settings: dict            # settings layer merged after the model's own settings (Recall, Respond)
     identity: dict            # the `plugin` block of the run identity
     adapter: str              # the stream adapter the arm runs on
     worker: dict              # what the worker needs to rebuild the arm's hooks
@@ -259,7 +259,7 @@ def plugin_arm(config: Config, model: str, variant: str, default_adapter: str) -
     section = config.section("plugin")
     plugin_config = load_plugin_config(section=section)
     hooks = make_hooks(model, variant, plugin_config)
-    return PluginArm(settings=plugin_config.recall_delta(model, variant), identity=hooks.identity(),
+    return PluginArm(settings=plugin_config.settings_delta(model, variant), identity=hooks.identity(),
                      adapter=stream_adapter(model, default_adapter, plugin_config),
                      worker={"child": model, "variant": variant, "section": section})
 

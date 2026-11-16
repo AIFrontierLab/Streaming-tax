@@ -1,4 +1,4 @@
-"""Plugin rules that need no torch: Recall, Respond, finish(), post-hoc S+, thresholds, artefacts, frozen lists."""
+"""Plugin rules that need no torch: Recall, Respond, finish(), post-hoc S_plug, thresholds, artefacts, frozen lists."""
 from __future__ import annotations
 
 import json
@@ -13,16 +13,16 @@ from streamreplace.plugin import artefacts, posthoc
 from streamreplace.plugin import respond as R
 from streamreplace.plugin.calibrate import thresholds as T
 from streamreplace.plugin.hooks import PluginHooks, make_hooks
-from streamreplace.plugin.recall import Reservoir, aura_policy, aura_spans
+from streamreplace.plugin.recall import Reservoir, aura_policy, aura_spans, evict_index
 from streamreplace.plugin.recipe import REFUSAL, AnswerTurn, ArmRecipe, load_plugin_config, plugin_config_from_dict
-from streamreplace.plugin.report import Recovery, gate_acted, recovered
+from streamreplace.plugin.report import Recovery, gate_acted, means
 
 CHILDREN = ["mmduet_7b", "thinkstream_3b", "mmduet2_3b", "aura_8b", "livestar_8b", "moss_vl_rt"]
 LAYERS = {"mmduet_7b": (8, 19), "thinkstream_3b": (20, 14), "mmduet2_3b": (18, 21), "aura_8b": (11, 18),
           "livestar_8b": (11, 25), "moss_vl_rt": (24, 19)}
-TAUS = {"mmduet_7b": (0.225, 0.225), "thinkstream_3b": (16.064, 16.064), "mmduet2_3b": (1.1485, 1.2629249999999999),
-        "aura_8b": (-1.1555, -1.1555), "livestar_8b": (-0.6805, 3.6417249999999997),
-        "moss_vl_rt": (5.2385, 6.433749999999999)}
+TAUS = {"mmduet_7b": (0.225, 0.225), "thinkstream_3b": (16.064, 16.064), "mmduet2_3b": (1.8623, 1.2629249999999999),
+        "aura_8b": (-1.1555, -1.1555), "livestar_8b": (3.6417249999999997, 3.6417249999999997),
+        "moss_vl_rt": (6.433749999999999, 6.433749999999999)}        # (closed, free)
 
 
 def mcq(i="x", text_kind="mcq"):
@@ -42,11 +42,32 @@ def test_aura_spans_official_full_and_budget():
     assert len(spans) == 40 and evicted == 55 and starts == sorted(starts)
     assert starts[-30:] == [95.4 - 95 + i for i in range(65, 95)]
     assert aura_spans(0.6, "full") == ([(0.0, 0.6)], 0)
-    assert aura_policy({"stream": {"window": "full"}}) == "full" and aura_policy({}) == "official"
-    assert aura_policy({"stream": {"window": "full", "budget": 40}}) == 40           # Recall bounded by a budget
+    assert aura_policy({"stream": {"window": "full"}}) == ("full", 30, 0) and aura_policy({}) == ("official", 30, 0)
+    # Stream++'s Recall for AURA: the native budget of 30 segments, the newest 10 kept densely
+    assert aura_policy({"stream": {"window": "full", "budget": 30, "recent": 10}}) == (30, 10, 0)
+    assert aura_policy({"stream": {"window": "full", "budget": 30, "recent": 10, "memory_seed": 2}}) == (30, 10, 2)
     for stream in ({"window": 40}, {"budget": 40}, {"window": 40, "budget": 40}):    # AURA's own last-N window
         with pytest.raises(ValueError, match="Recall policy"):
             aura_policy({"stream": stream})
+    spans, evicted = aura_spans(95.4, 30, recent=10, stream_id="v.mp4")
+    starts = [s for s, _ in spans]
+    assert len(spans) == 30 and evicted == 65 and starts == sorted(starts)
+    assert starts[-10:] == [95.4 - 95 + i for i in range(85, 95)]                    # the newest 10
+    assert aura_spans(95.4, 30, recent=10, stream_id="v.mp4", seed=1) != (spans, evicted)   # another reservoir
+    assert aura_spans(20.5, 30, recent=10) == aura_spans(20.5, "full")              # while the frames fit: all kept
+
+
+def test_evict_index_keeps_the_reservoir_set():
+    """An engine that evicts one chunk when its budget is full (ThinkStream's KV window) keeps exactly the chunks
+    Reservoir(recent, budget - recent) keeps, at every arrival."""
+    for budget, recent, seed in ((20, 10, 0), (40, 10, 0), (20, 10, 3), (6, 2, 0)):
+        memory, retained = Reservoir(recent, budget - recent, "clip.mp4", seed), []
+        for arriving in range(130):
+            if len(retained) == budget:
+                retained.pop(evict_index(retained, arriving, recent, "clip.mp4", seed))
+            retained.append(arriving)
+            memory.push(arriving)
+            assert retained == memory.indices()
 
 
 def test_reservoir_is_causal_and_deterministic():
@@ -121,7 +142,7 @@ def test_silence_bans_per_declared_marker():
 
 
 def test_answer_turn_declarations_are_validated():
-    base = {"arms": {"sfix": {"recall": "full", "respond": True, "gate": "shadow"}}, "splus_arm": "sfix"}
+    base = {"arms": {"sfix": {"recall": "budget", "respond": True, "gate": "shadow"}}, "plug_arm": "sfix"}
     config = plugin_config_from_dict({**base, "answer_turn": {"c": {"silence": None, "logits": "first_step"}}})
     assert config.answer_turns == {"c": AnswerTurn(None, "first_step")}
     for bad in ({"logits": "processor"}, {"silence": None}, {"silence": None, "logits": "processor", "extra": 1},
@@ -157,7 +178,7 @@ class FakeGuard:
 
 
 def hooks_for(child="aura_8b", respond=True, guard=None):
-    h = PluginHooks(child, ArmRecipe("sfix" if respond else "inert", "full" if respond else "native", respond),
+    h = PluginHooks(child, ArmRecipe("sfix" if respond else "inert", "budget" if respond else "native", respond),
                     turn=load_plugin_config().answer_turns[child])
     h.tokenizer, h.guard = Tok(), guard
     return h
@@ -319,8 +340,9 @@ def test_refusal_job_rows(tmp_path):
 
 
 def test_report_reads_shadow_arms_only():
-    """plugin report assembles S+ from shadow arms: an arm configured with another gate, or rows a live / record gate
-    made (the refusal already in the row, finish "guard"), would enter S_fix, PRS and S+ with the gate's decision."""
+    """plugin report assembles S_plug from shadow arms: an arm configured with another gate, or rows a live / record
+    gate made (the refusal already in the row, finish "guard"), would enter S_fix, PRS and S_plug with the gate's
+    decision."""
     config = load_plugin_config()
     arms = {**config.raw["arms"], "sfix_prs": {**config.raw["arms"]["sfix_prs"], "gate": "live"}}
     with pytest.raises(ValueError, match="shadow"):
@@ -339,16 +361,15 @@ def test_report_reads_shadow_arms_only():
     assert gate_acted(Job("d", "m@sfix_prs.stream", live, 4, None)) == ["a", "b", "c"]
 
 
-def test_recovered_share_and_noninferiority():
-    cell = {"loss": {"delta": -10.0, "ci95": [-15.0, -5.0]}, "effect": {"delta": 4.0, "ci95": [1.0, 7.0]}}
-    recovered(cell)
-    assert cell["recovered"] == pytest.approx(0.4) and cell["ni2"] is None
-    cell = {"loss": {"delta": -1.0, "ci95": [-4.0, 2.0]}, "effect": {"delta": -0.5, "ci95": [-1.9, 0.9]}}
-    recovered(cell)
-    assert cell["recovered"] is None and cell["ni2"] is True
-    cell = {"loss": {"delta": 3.0, "ci95": [1.0, 5.0]}, "effect": {"delta": -1.0, "ci95": [-3.0, 1.0]}}
-    recovered(cell)
-    assert cell["recovered"] is None and cell["ni2"] is False
+def test_means_cover_the_children_with_a_native_score():
+    """Fig. 6: a child without a native streaming score on a set (it answers none of its requests) is left out of
+    both means of that set."""
+    def cell(child, native, plug):
+        return {"child": child, "dataset": "mcv_safetybench", "metric": "asr_explicit",
+                "native": {"delta": native}, "vsP": {"delta": plug}}
+    rows = means([cell("a", 10.0, 30.0), cell("b", None, 80.0), cell("c", -2.0, 4.0)])
+    assert rows == [{"dataset": "mcv_safetybench", "metric": "asr_explicit", "children": ["a", "c"], "S_P": 4.0,
+                     "Splug_P": 17.0, "change": 13.0}]
 
 
 # ---------- thresholds ----------
@@ -357,16 +378,20 @@ def test_threshold_rule():
     values = [float(v) for v in range(401)]
     assert T.tau_closed(values) == 0.975 * 400
     assert T.tau_closed([0.1234, 0.98765]) == round(float(np.quantile([0.1234, 0.98765], 0.975)), 4)
-    free, q = T.tau_free(1.0, [0.0] * 100)
-    assert (free, q) == (1.0, 0.0)
-    free, q = T.tau_free(-1.0, list(np.linspace(0, 1, 100)))
-    assert free == q == float(np.quantile(np.linspace(0, 1, 100), 0.975))
+    assert T.harmless_quantile(list(np.linspace(0, 1, 100))) == float(np.quantile(np.linspace(0, 1, 100), 0.975))
     with pytest.raises(ValueError):
-        T.tau_free(0.0, [0.0] * 99)
+        T.harmless_quantile([0.0] * 99)
+    # free = max(dev-slice closed quantile, harmless free-form quantile); closed = max(free, pooled closed quantile)
+    assert T.rule(1.0, 0.0) == {"free": 1.0, "closed": 1.0}
+    assert T.rule(-1.0, 0.5) == {"free": 0.5, "closed": 0.5}
+    assert T.rule(1.0, 1.2, 1.8) == {"free": 1.2, "closed": 1.8}          # the streaming pilot raises the closed one
+    assert T.rule(1.0, 3.0, 1.8) == {"free": 3.0, "closed": 3.0}          # ... never below the free-form one
+    assert T.pool_quantile([0.0] * 300, [1.0] * 100) == float(np.quantile([0.0] * 300 + [1.0] * 100, 0.975))
     rows = {"d": {"1": {"info": {"plugin": {"guard": {"proj": 0.5}}}}, "2": {"error": "boom"}}}
     with pytest.raises(ValueError, match="1 threshold item"):
         T.record_projections(rows, {"d": ["1", "2"]})
     assert T.record_projections(rows, {"d": ["1"]}) == [0.5]
+    assert T.record_projections(rows, {"d": ["1", "2"]}, complete=False) == [0.5]
     rows = [{"id": "x", "guard": {"proj": 1.0}}, {"id": "x", "error": "late failure"}, {"id": "y", "guard": {"proj": 2.0}}]
     assert T.fit_projections(rows, ["x"]) == [1.0]               # a later error never replaces a good row
     assert T.guard_proj({"info": {"plugin": {"guard": {"proj": 0.25}}}, "error": None}) == 0.25
@@ -383,8 +408,9 @@ def test_shipped_artefacts(child):
     assert (art.r_layer, art.p_layer) == LAYERS[child] and art.alpha == 1.5
     assert (art.thresholds["closed"], art.thresholds["free"]) == TAUS[child]
     assert art.steer_prefill == (child not in ("thinkstream_3b", "moss_vl_rt"))
-    assert art.tau("old") == {"closed": TAUS[child][0], "free": TAUS[child][0]}
-    assert art.tau("rule")["free"] == art.thresholds["free_harmless_q975"]
+    assert art.tau() == {"closed": TAUS[child][0], "free": TAUS[child][1]}
+    t = art.thresholds
+    assert T.rule(t["dev_closed_q975"], t["free_harmless_q975"], t["closed_pool_q975"]) == art.tau()
     strings = [v for v in json.dumps(art.manifest).split('"') if v.startswith("/")]
     assert "/" not in art.manifest["vectors"]["file"] and not strings          # no absolute paths
 
@@ -403,10 +429,17 @@ def test_tampered_vectors_are_refused(tmp_path):
 
 def test_recipe_and_frozen_lists():
     config = load_plugin_config()
-    assert config.arm("sfix") == ArmRecipe("sfix", "full", True, "shadow", False)
+    assert config.arm("sfix") == ArmRecipe("sfix", "budget", True, "shadow", False)
     assert config.arm("sfix_prs").prs and config.arm("record").gate == "record" and not config.arm("inert").respond
-    assert config.recall_delta("thinkstream_3b", "sfix") == {"stream": {"window": "full", "max_len": 81920}}
-    assert config.recall_delta("thinkstream_3b", "inert") == {} and config.recall_delta("mmduet_7b", "sfix") == {}
+    assert config.arm("prs") == ArmRecipe("prs", "native", False, "shadow", True)
+    # Recall acts on the two children whose memory evicts; Respond requests MMDuet's answer turn
+    assert config.settings_delta("thinkstream_3b", "sfix") == {"stream": {"reservoir": 10}}
+    assert config.settings_delta("aura_8b", "sfix") == {"stream": {"window": "full", "budget": 30, "recent": 10}}
+    assert config.settings_delta("mmduet_7b", "sfix") == {"stream": {"force_answer": True}}
+    assert config.settings_delta("thinkstream_3b", "inert") == {} and config.settings_delta("mmduet_7b", "prs") == {}
+    assert config.settings_delta("livestar_8b", "sfix_prs") == {} and len(config.children) == 6
+    assert {d: len(v) for d, v in config.load_items("stream_pilot").items()} == {"ovo_bench": 398,
+                                                                                 "streamingbench": 178}
     sizes = lambda name: {d: len(v) for d, v in config.load_items(name).items()}    # noqa: E731
     assert sizes("threshold") == {"videomme": 45, "tomato": 75, "timeblind": 80, "vmdt_fairness": 101}
     assert sum(sizes("pilot2").values()) == 908 and sum(sizes("full").values()) == 10140

@@ -1,5 +1,6 @@
-"""AnswerTurnHooks (models/base.py) for the plugin arms: Recall settings, the gate, PRS, silence bans and the option
-readout, wired into a child's native stream adapter. `hooks=None` is exactly the native stream.
+"""AnswerTurnHooks (models/base.py) for the plugin arms: the arm's settings delta (Recall, Respond), the gate, PRS,
+silence bans and the option readout, wired into a child's native stream adapter. `hooks=None` is exactly the native
+stream.
 
 The calls in the order a run makes them (the run worker calls begin(), the stream adapter all the others; each adapter
 documents its arming point, docs/plugin.md):
@@ -18,7 +19,7 @@ documents its arming point, docs/plugin.md):
                                  returning answer logits
     finish(req, gen)             fixed refusal (live gate) or option readout; writes info.plugin. It refuses to make
                                  the row of an arm whose gate / PRS or Respond never attached
-settings(s) merges the Recall delta for callers outside the run planner (the planner merges the same delta into the
+settings(s) merges the arm's settings delta for callers outside the run planner (the planner merges the same delta into the
 job's settings, and the worker never calls it). `eager_decode` (true with PRS) makes ThinkStream decode its answer
 chunk eagerly, because forward hooks do not run inside the CUDA graph it otherwise replays.
 
@@ -68,7 +69,7 @@ class PluginHooks:
     """One child, one arm. `artefact` (plugin.artefacts.Artefact) is required when the arm has a gate or PRS; `turn`
     (the child's recipe.AnswerTurn, configs/plugin.yaml answer_turn) when it has Respond or a live / record gate."""
 
-    def __init__(self, child: str, arm: ArmRecipe, artefact=None, recall: dict | None = None,
+    def __init__(self, child: str, arm: ArmRecipe, artefact=None, delta: dict | None = None,
                  refusal: str = REFUSAL, engine: str | None = None, turn: AnswerTurn | None = None):
         if arm.needs_artefacts and artefact is None:
             raise ValueError(f"{child}@{arm.name}: the arm needs the child's artefacts")
@@ -77,7 +78,7 @@ class PluginHooks:
                              "silence marker and the logits path its stream adapter uses; docs/plugin.md, "
                              "'Calibrating a new child')")
         self.child, self.recipe, self.artefact, self.turn = child, arm, artefact, turn
-        self.recall, self.refusal, self.engine = dict(recall or {}), refusal, engine
+        self.delta, self.refusal, self.engine = dict(delta or {}), refusal, engine
         self.guard = None
         self.tokenizer = None                    # set last by a successful attach(): the "attached" marker
         self.ban: list[int] = []
@@ -101,9 +102,9 @@ class PluginHooks:
     # ---------- identity ----------
 
     def identity(self) -> dict:
-        """The part of a plugin arm's run identity: recipe, Recall delta, answer turn, artefact hashes and
-        thresholds."""
-        return {"child": self.child, "recipe": self.recipe.to_dict(), "recall": self.recall,
+        """The part of a plugin arm's run identity: recipe, settings delta (Recall, Respond), answer turn, artefact
+        hashes and thresholds."""
+        return {"child": self.child, "recipe": self.recipe.to_dict(), "settings": self.delta,
                 "answer_turn": self.turn.to_dict() if self.turn is not None else None,
                 "refusal": self.refusal if self.recipe.gate == "live" else None, "engine": self.engine,
                 "artefacts": self.artefact.identity() if self.recipe.needs_artefacts else None}
@@ -116,8 +117,8 @@ class PluginHooks:
     # ---------- AnswerTurnHooks ----------
 
     def settings(self, settings: dict) -> dict:
-        """Recall: the stream settings with the child's Recall delta merged in (unchanged for native recall)."""
-        return merge(settings, self.recall) if self.recall else dict(settings)
+        """The stream settings with the arm's settings delta merged in (Recall, Respond; unchanged without one)."""
+        return merge(settings, self.delta) if self.delta else dict(settings)
 
     def attach(self, decoder_layers, tokenizer, *, eos: int | None = None) -> None:
         """decoder_layers: the decoder ModuleList (or a model, searched with guard.find_layers); tokenizer: the
@@ -143,7 +144,7 @@ class PluginHooks:
                 raise ValueError(f"{self.child}: {len(layers)} decoder layers, the artefacts were built on "
                                  f"{art.manifest['layers']}")
             guard = Guard(layers, art.rhat, art.r_layer, art.p_layer, art.prs if self.recipe.prs else None,
-                          mode=self.recipe.gate, tau=art.tau("higher") if self.recipe.gate == "live" else None)
+                          mode=self.recipe.gate, tau=art.tau() if self.recipe.gate == "live" else None)
             guard.reset(kind=self.kind)
         self.eos, self.ban, self.ban_next, self.response_id, self.guard = eos_id, ban, ban_next, response_id, guard
         self.tokenizer = tokenizer                     # last: the hooks count as attached only now
@@ -275,7 +276,7 @@ def make_hooks(child: str, variant: str, config: PluginConfig | None = None, art
     config = config or load_plugin_config()
     arm = config.arm(variant)
     art = artefacts.load(child, artefacts_root) if arm.needs_artefacts else None
-    return PluginHooks(child, arm, art, config.recall_delta(child, variant), config.refusal, config.engines.get(child),
+    return PluginHooks(child, arm, art, config.settings_delta(child, variant), config.refusal, config.engines.get(child),
                        config.answer_turns.get(child))
 
 

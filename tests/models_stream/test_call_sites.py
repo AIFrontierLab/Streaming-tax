@@ -25,7 +25,8 @@ def test_registry_names_import_without_model_libraries(name):
     cls = registry.load_class(name)
     adapter = cls(None, {"stream": {}}, None, load=False)
     assert isinstance(adapter, StreamAdapter)
-    assert adapter.PROTOCOL_VERSION == 1 and adapter.concurrency == (8 if name == "aura_stream" else 1)
+    assert adapter.PROTOCOL_VERSION == (2 if name == "mmduet_stream" else 1)
+    assert adapter.concurrency == (8 if name == "aura_stream" else 1)
 
 
 # ------------------------------------------------------------------------------------------- MMDuet
@@ -79,9 +80,24 @@ def mmduet(monkeypatch, infer, frames=5):
     return adapter
 
 
-def test_mmduet_native_forces_a_reply_on_the_last_frame(monkeypatch):
+FORCED = {"generation": {"max_new_tokens": 8}, "stream": {"fps": 1, "force_answer": True}}
+
+
+def test_mmduet_native_stays_silent_when_its_heads_do_not_fire(monkeypatch):
+    """Condition S: the heads decide. Below the threshold on the last frame MMDuet says nothing (no forced reply)."""
     infer = FakeInfer(fire=())
     gen = mmduet(monkeypatch, infer).stream(request())
+    assert infer.calls == [("frame", 0), ("frame", 1), ("frame", 2), ("frame", 3), ("query", 1), ("frame", 4)]
+    assert gen.text == "" and gen.info["no_answer"] is True and gen.info["forced"] is False
+    fired = mmduet(monkeypatch, FakeInfer(fire={4})).stream(request())
+    assert fired.text == "reply" and fired.info["no_answer"] is False and fired.info["forced"] is False
+    assert gen.info["schedule"] != mmduet(monkeypatch, FakeInfer()).stream(request(settings=FORCED)).info["schedule"]
+
+
+def test_mmduet_forced_control_replies_on_the_last_frame(monkeypatch):
+    """S-dagger (stream.force_answer): one reply is generated at the last frame when the heads stayed silent."""
+    infer = FakeInfer(fire=())
+    gen = mmduet(monkeypatch, infer).stream(request(settings=FORCED))
     assert infer.calls == [("frame", 0), ("frame", 1), ("frame", 2), ("frame", 3), ("query", 1), ("frame", 4),
                            ("generate",)]
     assert gen.text == "reply" and gen.tokens is None and gen.finish == "unknown"
@@ -93,6 +109,25 @@ def test_mmduet_native_forces_a_reply_on_the_last_frame(monkeypatch):
     assert "_generate_response" not in vars(infer) and infer.head.hooks == []          # nothing installed
 
 
+def test_mmduet_question_timing_scores_the_last_reply(monkeypatch):
+    """stream.question_at: the question is encoded once before frame q; the last reply after it is the answer, and
+    one reply is requested after the last frame only when the heads never fired."""
+    start = {"generation": {"max_new_tokens": 8}, "stream": {"fps": 1, "question_at": "start"}}
+    infer = FakeInfer(fire={1, 3})
+    gen = mmduet(monkeypatch, infer).stream(request(settings=start))
+    assert infer.calls[0] == ("query", 5) and gen.text == "reply"
+    assert gen.info["n_replies"] == 2 and gen.info["first_reply_t"] == 0.5 and gen.info["answer_t"] == 1.5
+    assert gen.info["fallback"] is False and gen.info["question_index"] == 0
+    middle = {"generation": {"max_new_tokens": 8}, "stream": {"fps": 1, "question_at": "middle"}}
+    infer = FakeInfer(fire={0})                 # a reply before the question does not count
+    gen = mmduet(monkeypatch, infer).stream(request(settings=middle))
+    assert infer.calls[:3] == [("frame", 0), ("generate",), ("frame", 1)] and infer.calls[3] == ("query", 3)
+    assert gen.info["fallback"] is True and gen.info["n_replies"] == 0 and infer.calls[-1] == ("generate",)
+    with pytest.raises(ValueError, match="start or middle"):
+        mmduet(monkeypatch, FakeInfer()).stream(request(settings={"generation": {"max_new_tokens": 8},
+                                                                  "stream": {"question_at": "end"}}))
+
+
 def test_mmduet_arms_the_first_reply_after_the_question_only(monkeypatch, fake_plugin_guard, hooks):
     infer = FakeInfer(fire={1, 4})              # a reply before the question, then the heads fire on the last frame
     gen = mmduet(monkeypatch, infer).stream(request(), hooks)
@@ -100,19 +135,22 @@ def test_mmduet_arms_the_first_reply_after_the_question_only(monkeypatch, fake_p
     assert hooks.calls[0] == ("attach", ("layers of", infer.model), "mmduet tokenizer")
     assert hooks.names()[1:] == ["arm", "step", "step", "step", "disarm", "finish"]
     assert hooks.calls[1] == ("arm", True) and [c[1] for c in hooks.calls if c[0] == "step"] == [0, 1, 2]
-    infer2 = FakeInfer(fire=())                 # forced reply: that one is the answer turn
+    infer2 = FakeInfer(fire=())                 # Respond's forced reply: that one is the answer turn
     hooks2 = RecordingHooks()
     adapter = mmduet(monkeypatch, infer2)
-    adapter.stream(request(), hooks2)
+    adapter.stream(request(settings=FORCED), hooks2)
     assert hooks2.names() == ["attach", "arm", "step", "step", "step", "disarm", "finish"]
-    adapter.stream(request(), hooks2)                                           # attached once per hooks object
+    adapter.stream(request(settings=FORCED), hooks2)                            # attached once per hooks object
     assert hooks2.names().count("attach") == 1 and hooks2.names().count("arm") == 2
+    hooks3 = RecordingHooks()                   # without Respond a silent question has no answer turn
+    mmduet(monkeypatch, FakeInfer(fire=())).stream(request(), hooks3)
+    assert hooks3.names() == ["attach", "finish"]
 
 
 def test_mmduet_lm_head_result_replaces_the_logits_only_in_the_answer_turn(monkeypatch, fake_plugin_guard):
     hooks = RecordingHooks(step_result="halted logits")
     infer = FakeInfer(fire={1})                 # a reply before the question (unarmed), then the forced answer
-    mmduet(monkeypatch, infer).stream(request(), hooks)
+    mmduet(monkeypatch, infer).stream(request(settings=FORCED), hooks)
     assert infer.head_outputs == [[None]] * 3 + [["halted logits"]] * 3
     assert [hook(infer.head, (), "logits") for hook in infer.head.hooks] == [None]   # after the request: inert
 

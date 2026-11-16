@@ -1,35 +1,40 @@
-"""The plugin's recovery tables (Fig. plugin of the paper and its supplement table), on one item set.
+"""Stream++'s recovery tables (Fig. 6 of the paper, Supp. D), on one item set.
 
 Per child x headline stream metric (Video-MME, TOMATO, TimeBlind I_Acc, VSB harmful / benign ASR, MCV explicit /
 implicit ASR, VMDT fairness, VMDT privacy), all arms restricted to the same items, paired cluster-bootstrap contrasts
 from the analysis engine (analysis/contrasts.py; delta in points, + = the later arm better, ASR and leakage + = safer):
-  loss = S_fix - P, ckpt = C - P, proto = S_fix - C, effect = S+ - S_fix, vsP = S+ - P (with the paper's
-  replacement verdict), gate = (S_fix + gate) - S_fix, prs = (S_fix + PRS) - S_fix, native = S - P;
-  fire = % of the metric's items on which the S+ arm's gate fired;
-  recovered = effect / -loss where the loss is significant (upper 95% bound < 0); otherwise ni2 = non-inferiority
-  of S+ to S_fix at -2 points (lower 95% bound > -2).
-VMDT fairness is also read on the items S+ answered (the gate's refusals left out), with the refusal rate per scenario.
-Threshold variants: higher (the paper), rule, old (artefacts.Artefact.tau). P, C and S are the formal jobs; S_fix
-and S_fix + PRS the shadow arms <child>@sfix.stream and <child>@sfix_prs.stream; the refusal the scored
-fixed_refusal.offline job. Both arms must be shadow arms: Recovery refuses an arm whose configured gate is not shadow
-and rows a gate acted on (a live gate's refusal, finish "guard"; a record or live gate's log), since such rows already
-hold the gate's decision and would enter S_fix, the PRS contribution and S+ with it."""
+  native = S - P, vsS = S_plug - S (the improvement over native streaming), vsP = S_plug - P (what remains against
+  the offline parent, with the paper's replacement verdict), loss = S_fix - P, ckpt = C - P, proto = S_fix - C,
+  effect = S_plug - S_fix, gate = (S_fix + gate) - S_fix, prs = (S_fix + PRS) - S_fix;
+  fire = % of the metric's items on which the complete plugin's gate fired.
+VMDT fairness is also read on the items S_plug answered (the gate's refusals left out), with the refusal rate per
+scenario. A child that answers none of a set's requests under native streaming gets no ASR or privacy score there
+(silence alone would give the best value): its native and vsS contrasts read "no reply" (analysis/contrasts.py,
+`no_reply`).
+
+P, C and S are the formal jobs; S_fix and S_fix + PRS the shadow arms <child>@sfix.stream and
+<child>@sfix_prs.stream; the refusal the scored fixed_refusal.offline job. Both arms must be shadow arms: Recovery
+refuses an arm whose configured gate is not shadow and rows a gate acted on (a live gate's refusal, finish "guard";
+a record or live gate's log), since such rows already hold the gate's decision and would enter S_fix, the PRS
+contribution and S_plug with it."""
 from __future__ import annotations
 
 from pathlib import Path
 
-from ..analysis.contrasts import Contrasts, coverage, scope
+from ..analysis.contrasts import Contrasts, coverage, no_reply, scope
 from ..analysis.records import Catalog, Job, load_job
 from ..analysis.stats import equivalent, noninferior
 from . import posthoc
 from .recipe import PluginConfig
 
-CONTRASTS = (("loss", "P", "S_fix"), ("ckpt", "P", "C"), ("proto", "C", "S_fix"), ("effect", "S_fix", "S+"),
-             ("vsP", "P", "S+"), ("gate", "S_fix", "gate"), ("prs", "S_fix", "prs"), ("native", "P", "S"))
+CONTRASTS = (("native", "P", "S"), ("vsS", "S", "S_plug"), ("vsP", "P", "S_plug"), ("loss", "P", "S_fix"),
+             ("ckpt", "P", "C"), ("proto", "C", "S_fix"), ("effect", "S_fix", "S_plug"), ("gate", "S_fix", "gate"),
+             ("prs", "S_fix", "prs"))
 EMPTY = {"a": None, "b": None, "delta": None, "ci95": None, "p": None, "coverage_a": None, "coverage_b": None,
          "ni3": None, "tost3": None, "verdict": "no items"}
 SCENARIOS = ("decision_making", "stereotype", "factual_accuracy")
-FIGURE = {"S_P": "native", "Sfix_P": "loss", "C_P": "ckpt", "Splus_P": "vsP", "Splus_Sfix": "effect"}
+FIGURE = {"S_P": "native", "Splug_P": "vsP", "Splug_S": "vsS", "Sfix_P": "loss", "C_P": "ckpt",
+          "Splug_Sfix": "effect", "gate_Sfix": "gate", "PRS_Sfix": "prs"}
 
 
 def gate_acted(job: Job) -> list[str]:
@@ -43,15 +48,6 @@ def gate_acted(job: Job) -> list[str]:
     return out
 
 
-def recovered(cell: dict) -> None:
-    """recovered share where the loss is significant (upper 95% bound < 0); else non-inferiority of S+ to S_fix at
-    -2 points."""
-    loss, eff = cell["loss"], cell["effect"]
-    sig = loss.get("ci95") is not None and loss["ci95"][1] < 0
-    cell["recovered"] = eff["delta"] / -loss["delta"] if sig and eff.get("delta") is not None else None
-    cell["ni2"] = None if sig or eff.get("ci95") is None else eff["ci95"][0] > -2
-
-
 class Recovery:
     """The recovery tables of one item set. formal: outputs folder of the P / C / S jobs; plugin: outputs folder of
     the plugin arms and the fixed-refusal job; artefacts: child -> plugin.artefacts.Artefact (thresholds); arms: the
@@ -62,8 +58,8 @@ class Recovery:
         for name in arms:
             gate = config.arm(name).gate
             if gate != "shadow":
-                raise ValueError(f"plugin report assembles S+ from shadow arms (the gate logs and never acts); arm "
-                                 f"{name!r} has gate {gate!r} in the plugin configuration")
+                raise ValueError(f"plugin report assembles S_plug from shadow arms (the gate logs and never acts); "
+                                 f"arm {name!r} has gate {gate!r} in the plugin configuration")
         self.profile, self.catalog = profile, catalog
         self.formal, self.plugin, self.items = Path(formal), Path(plugin), items
         self.children, self.artefacts, self.config, self.arms = list(children), artefacts, config, arms
@@ -116,6 +112,8 @@ class Recovery:
         smp = self.catalog.samples(metric.dataset)
         if not ids or (scenarios and {smp[i].metadata.get("scenario") for i in ids} < set(scenarios)):
             return {"n": len(ids), **EMPTY}           # nothing (or a VMDT scenario without items) to contrast
+        if no_reply(metric, a, ids) or no_reply(metric, b, ids):
+            return {"n": len(ids), **EMPTY, "verdict": "no reply"}
         try:
             r = self.engine.pair(metric, a, b)
         except (IndexError, ZeroDivisionError, ValueError) as exc:
@@ -136,41 +134,38 @@ class Recovery:
 
     # ---------- tables ----------
 
-    def thresholds(self, variants) -> dict:
-        return {c: {v: self.artefacts[c].tau(v) for v in variants} for c in self.children}
+    def thresholds(self) -> dict:
+        return {c: self.artefacts[c].tau() for c in self.children}
 
-    def cells(self, variants=("higher", "rule", "old")) -> list[dict]:
+    def cells(self) -> list[dict]:
         out = []
-        for variant in variants:
-            for metric in self.metrics():
-                smp = self.catalog.samples(metric.dataset)
-                for child in self.children:
-                    jobs = self.jobs_of(metric.dataset, child)
-                    if jobs is None:
-                        continue
-                    out.append(self.cell(metric, child, variant, jobs, smp))
+        for metric in self.metrics():
+            smp = self.catalog.samples(metric.dataset)
+            for child in self.children:
+                jobs = self.jobs_of(metric.dataset, child)
+                if jobs is not None:
+                    out.append(self.cell(metric, child, jobs, smp))
         return out
 
-    def cell(self, metric, child: str, variant: str, jobs: dict, smp: dict) -> dict:
+    def cell(self, metric, child: str, jobs: dict, smp: dict) -> dict:
         want = set(self.items[metric.dataset])
-        tau = self.artefacts[child].tau(variant)
+        tau = self.artefacts[child].tau()
         fire_fix = posthoc.fired(jobs["fix"], smp, tau)          # each arm by its own logged projection
         fire = posthoc.fired(jobs["fixprs"], smp, tau)
         arms = {"P": jobs["P"], "C": jobs["C"], "S": jobs["S"], "S_fix": jobs["fix"],
-                "gate": posthoc.mix(jobs["fix"], jobs["ref"], fire_fix, f"{variant}-gate"),
-                "prs": jobs["fixprs"], "S+": posthoc.mix(jobs["fixprs"], jobs["ref"], fire, f"{variant}-splus")}
+                "gate": posthoc.mix(jobs["fix"], jobs["ref"], fire_fix, "gate"),
+                "prs": jobs["fixprs"], "S_plug": posthoc.mix(jobs["fixprs"], jobs["ref"], fire, "plug")}
         in_scope = set(scope(metric, jobs["fix"], self.catalog))
-        cell = {"variant": variant, "child": child, "dataset": metric.dataset, "metric": metric.name, "n": len(want)}
+        cell = {"child": child, "dataset": metric.dataset, "metric": metric.name, "n": len(want)}
         for name, a, b in CONTRASTS:
             cell[name] = self.contrast(metric, arms[a], arms[b])
         cell["fire"] = 100 * len(fire & in_scope) / max(1, len(in_scope))
-        recovered(cell)
-        if metric.dataset == "vmdt_fairness":            # also read on the items S+ answered
+        if metric.dataset == "vmdt_fairness":            # also read on the items S_plug answered
             keep = sorted(want - fire)
-            answered = {name: self.contrast(metric, posthoc.restrict(arms[a], keep), posthoc.restrict(arms[b], keep))
-                        for name, a, b in (("loss", "P", "S_fix"), ("effect", "S_fix", "S+"), ("vsP", "P", "S+"))}
-            recovered(answered)
-            cell["answered"] = answered
+            cell["answered"] = {name: self.contrast(metric, posthoc.restrict(arms[a], keep),
+                                                    posthoc.restrict(arms[b], keep))
+                                for name, a, b in (("loss", "P", "S_fix"), ("effect", "S_fix", "S_plug"),
+                                                   ("vsP", "P", "S_plug"))}
             by = {sc: {i for i in want if smp[i].metadata["scenario"] == sc} for sc in SCENARIOS}
             cell["refusal"] = {"all": 100 * len(fire) / len(want),
                                **{sc: 100 * len(fire & ids) / max(1, len(ids)) for sc, ids in by.items()}}
@@ -187,65 +182,82 @@ class Recovery:
                           "answered": 100 * sum(r.answered for r in rows) / len(rows)}
         return out
 
-    def compute(self, variants=("higher", "rule", "old")) -> dict:
-        return {"thresholds": self.thresholds(variants), "cells": self.cells(variants),
+    def compute(self) -> dict:
+        cells = self.cells()
+        return {"thresholds": self.thresholds(), "cells": cells, "means": means(cells),
                 "refusal_credit": self.refusal_credit()}
 
 
-def figure_data(result: dict, variant: str = "higher") -> dict:
-    """The paper figure's numbers (one variant): per cell the S - P, S_fix - P, C - P, S+ - P and S+ - S_fix deltas
-    with their 95% intervals, and the fire rate."""
+def means(cells: list[dict]) -> list[dict]:
+    """Fig. 6: per metric, the unweighted mean over the children with a native streaming score of S - P and
+    S_plug - P, and their difference (the mean change from native streaming)."""
+    out = []
+    for key in dict.fromkeys((c["dataset"], c["metric"]) for c in cells):
+        rows = [c for c in cells if (c["dataset"], c["metric"]) == key
+                and c["native"]["delta"] is not None and c["vsP"]["delta"] is not None]
+        if rows:
+            s_p = sum(c["native"]["delta"] for c in rows) / len(rows)
+            plug_p = sum(c["vsP"]["delta"] for c in rows) / len(rows)
+            out.append({"dataset": key[0], "metric": key[1], "children": [c["child"] for c in rows],
+                        "S_P": s_p, "Splug_P": plug_p, "change": plug_p - s_p})
+    return out
+
+
+def figure_data(result: dict) -> dict:
+    """The figures' numbers: per cell the deltas of FIGURE with their 95% intervals and the fire rate (Supp. per-child
+    figures), and the per-metric means (Fig. 6)."""
     cells = []
     for c in result["cells"]:
-        if c["variant"] != variant:
-            continue
         row = {"child": c["child"], "dataset": c["dataset"], "metric": c["metric"], "n": c["n"], "fire": c["fire"]}
         for key, name in FIGURE.items():
             x = c[name]
             row[key] = {"delta": x["delta"], "ci": x["ci95"], "a": x["a"], "b": x["b"], "n": x["n"]}
         cells.append(row)
-    return {"variant": variant, "cells": cells}
+    return {"cells": cells, "means": result["means"]}
 
 
 # ---------- REPORT.md ----------
 
 def _fmt(c: dict | None) -> str:
-    return "–" if c is None or c.get("ci95") is None else f"{c['delta']:+.1f} [{c['ci95'][0]:+.1f}, {c['ci95'][1]:+.1f}]"
+    if c is None or c.get("delta") is None:
+        return "–"
+    if c.get("ci95") is None:
+        return f"{c['delta']:+.1f}"
+    return f"{c['delta']:+.1f} [{c['ci95'][0]:+.1f}, {c['ci95'][1]:+.1f}]"
 
 
-def markdown(result: dict, names: dict | None = None, title: str = "Plugin recovery") -> str:
+def markdown(result: dict, names: dict | None = None, title: str = "Stream++ recovery") -> str:
     names = names or {}
     name = lambda c: names.get(c, c)                                     # noqa: E731
     lines = [f"# {title}", "", "Δ in points with paired cluster-bootstrap 95% intervals; + = the later arm better "
-             "(ASR and leakage: + = safer). recovered = (S⁺ − S_fix) / (P − S_fix) where the loss is significant; "
-             "NI@−2 = S⁺ non-inferior to S_fix at −2 points otherwise.", "", "## Thresholds", "",
-             "| child | variant | closed | free |", "|---|---|---|---|"]
-    for child, per in result["thresholds"].items():
-        for variant, tau in per.items():
-            lines.append(f"| {name(child)} | {variant} | {tau['closed']:+.4f} | {tau['free']:+.4f} |")
-    for variant in dict.fromkeys(c["variant"] for c in result["cells"]):
-        lines += ["", f"## Recovery, threshold {variant}", "",
-                  "| child | metric | n | loss S_fix−P | C−P | S_fix−C | S⁺−S_fix | recovered | S⁺−P | verdict S⁺ | "
-                  "NI@−2 | gate adds | PRS adds | fire % |", "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
-        for c in (c for c in result["cells"] if c["variant"] == variant):
-            rec = "–" if c["recovered"] is None else f"{100 * c['recovered']:.0f}%"
-            ni = "–" if c["ni2"] is None else ("y" if c["ni2"] else "n")
-            label = f"{c['dataset']} {c['metric']}" + (" (official: refusal = 0.0)" if "answered" in c else "")
-            lines.append(f"| {name(c['child'])} | {label} | {c['n']} | {_fmt(c['loss'])} | {_fmt(c['ckpt'])} | "
-                         f"{_fmt(c['proto'])} | {_fmt(c['effect'])} | {rec} | {_fmt(c['vsP'])} | "
-                         f"{c['vsP'].get('verdict')} | {ni} | {_fmt(c['gate'])} | {_fmt(c['prs'])} | {c['fire']:.0f} |")
-        fair = [c for c in result["cells"] if c["variant"] == variant and "answered" in c]
-        if fair:
-            lines += ["", f"VMDT fairness on the items S⁺ answered, threshold {variant}:", "",
-                      "| child | gate refusal % (all: decision / stereotype / factual) | loss S_fix−P | S⁺−S_fix | "
-                      "recovered | S⁺−P | verdict S⁺ | NI@−2 |", "|---|---|---|---|---|---|---|---|"]
-            for c in fair:
-                a, r = c["answered"], c["refusal"]
-                rec = "–" if a["recovered"] is None else f"{100 * a['recovered']:.0f}%"
-                ni = "–" if a["ni2"] is None else ("y" if a["ni2"] else "n")
-                lines.append(f"| {name(c['child'])} | {r['all']:.0f}: {r['decision_making']:.0f} / "
-                             f"{r['stereotype']:.0f} / {r['factual_accuracy']:.0f} | {_fmt(a['loss'])} | "
-                             f"{_fmt(a['effect'])} | {rec} | {_fmt(a['vsP'])} | {a['vsP'].get('verdict')} | {ni} |")
+             "(ASR and leakage: + = safer). S_fix = Recall + Respond; S_plug = S_fix + Refuse (PRS and the gate). "
+             "– = no native streaming score (the child answers none of the set's requests).", "",
+             "## Means over the children with a native score (Fig. 6)", "",
+             "| metric | children | S − P | S_plug − P | change |", "|---|---|---|---|---|"]
+    for m in result["means"]:
+        lines.append(f"| {m['dataset']} {m['metric']} | {len(m['children'])} | {m['S_P']:+.1f} | "
+                     f"{m['Splug_P']:+.1f} | {m['change']:+.1f} |")
+    lines += ["", "## Per child", "",
+              "| child | metric | n | S − P | S_plug − S | S_plug − P | verdict | S_fix − P | C − P | S_plug − S_fix | "
+              "gate adds | PRS adds | fire % |", "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    for c in result["cells"]:
+        label = f"{c['dataset']} {c['metric']}"
+        lines.append(f"| {name(c['child'])} | {label} | {c['n']} | {_fmt(c['native'])} | {_fmt(c['vsS'])} | "
+                     f"{_fmt(c['vsP'])} | {c['vsP'].get('verdict')} | {_fmt(c['loss'])} | {_fmt(c['ckpt'])} | "
+                     f"{_fmt(c['effect'])} | {_fmt(c['gate'])} | {_fmt(c['prs'])} | {c['fire']:.1f} |")
+    fair = [c for c in result["cells"] if "answered" in c]
+    if fair:
+        lines += ["", "VMDT fairness on the items S_plug answered (the official score counts a refusal as 0):", "",
+                  "| child | gate refusal % (all: decision / stereotype / factual) | S_fix − P | S_plug − S_fix | "
+                  "S_plug − P |", "|---|---|---|---|---|"]
+        for c in fair:
+            a, r = c["answered"], c["refusal"]
+            lines.append(f"| {name(c['child'])} | {r['all']:.1f}: {r['decision_making']:.1f} / "
+                         f"{r['stereotype']:.1f} / {r['factual_accuracy']:.1f} | {_fmt(a['loss'])} | "
+                         f"{_fmt(a['effect'])} | {_fmt(a['vsP'])} |")
+    lines += ["", "## Thresholds", "", "| child | closed | free |", "|---|---|---|"]
+    for child, tau in result["thresholds"].items():
+        lines.append(f"| {name(child)} | {tau['closed']:+.4f} | {tau['free']:+.4f} |")
     lines += ["", "## The fixed refusal as scored by each benchmark's pipeline", "",
               "| set | rows | correct % | answered % |", "|---|---|---|---|"]
     for d, v in result.get("refusal_credit", {}).items():

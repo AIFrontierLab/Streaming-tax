@@ -279,9 +279,9 @@ def test_plugin_variant_arms(tmp_path):
     """Plugin arms are stream jobs <child>@<variant>.stream: the Recall delta joins the settings (and reaches the
     model at load time), the plugin block joins the identity, and the worker passes the arm's hooks to stream()."""
     pytest.importorskip("streamreplace.plugin.hooks")
-    plugin = {"arms": {"sfix": {"recall": "full", "respond": False, "gate": None, "prs": False},
+    plugin = {"arms": {"sfix": {"recall": "budget", "respond": False, "gate": None, "prs": False},
                        "inert": {"recall": "native", "respond": False, "gate": None, "prs": False}},
-              "splus_arm": "sfix", "recall": {"cand": {"stream": {"mock_load": 7}}}, "children": ["cand"]}
+              "plug_arm": "sfix", "recall": {"cand": {"stream": {"mock_load": 7}}}, "children": ["cand"]}
     project = make_project(tmp_path, sections={"plugin": plugin})
     jobs = project.plan(protocols="", variants="sfix,inert")
     assert [j.name for j in jobs] == ["demo/cand@sfix.stream", "demo/cand@inert.stream"]
@@ -291,7 +291,7 @@ def test_plugin_variant_arms(tmp_path):
     sfix, inert = jobs
     assert sfix.settings["stream"] == {"fps": 1, "mock_load": 7} and inert.settings["stream"] == {"fps": 1}
     assert sfix.payload["job"] == {"model": "cand", "mode": "stream", "variant": "sfix"}
-    assert sfix.payload["model"]["plugin"]["recall"] == {"stream": {"mock_load": 7}}
+    assert sfix.payload["model"]["plugin"]["settings"] == {"stream": {"mock_load": 7}}
     assert sfix.payload["model"]["plugin"]["recipe"]["name"] == "sfix"
     assert project.run(jobs) == {"demo/cand@sfix.stream": "1 left (see logs/cand@sfix.stream.log)",
                                  "demo/cand@inert.stream": "1 left (see logs/cand@inert.stream.log)"}

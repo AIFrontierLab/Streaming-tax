@@ -114,6 +114,7 @@ def compute(outputs: str | Path, profile: Profile, catalog: Catalog, overlay: bo
         "summary": summary(rows),
         "checks": {"official_mismatches": check_official(rows, arms, catalog, profile),
                    **({"uncounted": contrasts.uncounted} if contrasts.uncounted else {})},
+        "unreported": contrasts.unreported,
         "rows": rows,
         "videomme_duration": duration_split(profile, arms, catalog),
         "merged_truncation": flagger.merged_truncation(),

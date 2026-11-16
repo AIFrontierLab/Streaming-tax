@@ -18,16 +18,18 @@
  "alpha": 1.5,
  "prs_norm": 176.457,
  "thresholds": {
-  "closed": -0.6805,
+  "closed": 3.6417249999999997,
   "free": 3.6417249999999997,
-  "free_harmless_q975": 3.6417249999999997
+  "dev_closed_q975": -0.6805,
+  "free_harmless_q975": 3.6417249999999997,
+  "closed_pool_q975": -0.7375999999999999
  },
  "threshold_rule": {
   "projection_decimals": 3,
   "quantile": 0.975,
   "closed_decimals": 4,
-  "closed": "round(np.quantile(record-arm projection on paper/frozen/plugin/threshold_items.json, 0.975), 4)",
-  "free": "max(closed, np.quantile(S_fix shadow projection on the 100 harmless fit requests, 0.975))",
+  "free": "max(dev_closed_q975, free_harmless_q975): dev_closed_q975 = round(np.quantile(record-arm projection on paper/frozen/plugin/threshold_items.json, 0.975), 4); free_harmless_q975 = np.quantile(S_fix shadow projection on the 100 harmless fit requests, 0.975)",
+  "closed": "max(free, closed_pool_q975): closed_pool_q975 = np.quantile(the threshold items' record-arm projections pooled with the sfix_prs shadow projections on paper/frozen/plugin/stream_pilot_items.json, 0.975)",
   "closed_kinds": [
    "mcq",
    "yesno"
@@ -41,6 +43,5 @@
   },
   "recipe": "calibrate stage directions (fold-1 AUC in 30-60% depth; KL grid 7 layers x alpha 0.5/1.0/1.5)"
  },
- "in_paper": true,
  "note": "decoder layers of model.language_model"
 }

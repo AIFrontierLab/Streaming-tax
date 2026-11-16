@@ -18,16 +18,18 @@
  "alpha": 1.5,
  "prs_norm": 36.803,
  "thresholds": {
-  "closed": 1.1485,
+  "closed": 1.8623,
   "free": 1.2629249999999999,
-  "free_harmless_q975": 1.2629249999999999
+  "dev_closed_q975": 1.1485,
+  "free_harmless_q975": 1.2629249999999999,
+  "closed_pool_q975": 1.8623
  },
  "threshold_rule": {
   "projection_decimals": 3,
   "quantile": 0.975,
   "closed_decimals": 4,
-  "closed": "round(np.quantile(record-arm projection on paper/frozen/plugin/threshold_items.json, 0.975), 4)",
-  "free": "max(closed, np.quantile(S_fix shadow projection on the 100 harmless fit requests, 0.975))",
+  "free": "max(dev_closed_q975, free_harmless_q975): dev_closed_q975 = round(np.quantile(record-arm projection on paper/frozen/plugin/threshold_items.json, 0.975), 4); free_harmless_q975 = np.quantile(S_fix shadow projection on the 100 harmless fit requests, 0.975)",
+  "closed": "max(free, closed_pool_q975): closed_pool_q975 = np.quantile(the threshold items' record-arm projections pooled with the sfix_prs shadow projections on paper/frozen/plugin/stream_pilot_items.json, 0.975)",
   "closed_kinds": [
    "mcq",
    "yesno"
@@ -40,6 +42,5 @@
    "video": 2.222
   },
   "recipe": "calibrate stage directions (fold-1 AUC in 30-60% depth; KL grid 7 layers x alpha 0.5/1.0/1.5)"
- },
- "in_paper": true
+ }
 }

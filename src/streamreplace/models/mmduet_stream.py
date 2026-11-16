@@ -1,4 +1,4 @@
-"""MMDuet's native stream (paper condition S for the child of pair p1; reported as S-dagger because of the forced reply).
+"""MMDuet's native stream (paper condition S for the child of pair p1), and its forced-answer control S-dagger.
 
 MMDuet has no official "question at time t" evaluation. The adapter follows its benchmark loop (upstream
 test/inference.py, LiveInferForBenchmark): the question is encoded, then the next frame, and the model replies when its
@@ -12,19 +12,26 @@ LiveInferForDemo) with the MAGQA settings:
 - memory: every frame stays in the KV cache; replies are not kept in context (remove_assistant_turns).
 - question: encoded after all frames but the last (`encode_given_query`), then the last frame, so the question arrives
   with the last frame as for the other children; the dataset's system prompt is not used (MMDuet's own one is).
-- answer: if informative + relevance head probabilities exceed 0.5 on that last frame, the model's own reply is the
-  answer. Otherwise one reply is generated there anyway with MMDuet's own `_generate_response` (`info.forced`). This
-  forcing is our addition (the paper's S-dagger): the heads fire on their own on only a few percent of questions
-  (14 of 900 Video-MME questions), so without it MMDuet would almost never answer.
+- answer (S, native): if informative + relevance head probabilities exceed 0.5 on that last frame, the model's own
+  reply is the answer; otherwise MMDuet stays silent (`info.no_answer`, scored as silence). The heads fire on their
+  own on only a few percent of questions (14 of 900 Video-MME questions), so native S mostly goes unanswered.
+- answer (S-dagger, setting `stream.force_answer: true`): when the heads stay below the threshold, one reply is
+  generated at that frame anyway with MMDuet's own `_generate_response` (`info.forced`). This is the response policy
+  replaced by "always answer" (rho <- 1 in the paper): the control of Sec. 5.2, and what Stream++'s Respond does for
+  MMDuet (configs/plugin.yaml `respond`).
+- question timing (setting `stream.question_at: start | middle`, Supp. "Question timing"): the question is encoded
+  once before the first frame (or before frame n // 2) and the stream runs on under MMDuet's own heads; the last
+  reply after the question is scored, and if there is none by the last frame the question is encoded again there
+  and MMDuet's own reply generation is called once (`info.fallback`).
 - decoding: MMDuet's fast_greedy_generate (plain argmax, no repetition penalty), up to the benchmark's token budget.
-- silence: an empty reply sets `info.no_answer` (scored wrong); with the forcing it practically never happens.
 - nondeterminism: none by design (greedy); GPU kernels can still flip near-tied tokens across GPU types.
 
 Plugin hook points (hooks: plugin AnswerTurnHooks; hooks=None is exactly the native path above):
 - attach: once, with the decoder layers of the live model (`infer.model`) and MMDuet's tokenizer.
 - answer turn: the FIRST `_generate_response` after the question is encoded, whether the heads fired on the last
   frame or the reply is forced. `hooks.arm(first=True)` runs immediately before it (the gate reads the first forward
-  after arming: the short generation prompt on the cached stream) and `hooks.disarm()` right after it.
+  after arming: the short generation prompt on the cached stream) and `hooks.disarm()` right after it. Without
+  `stream.force_answer` a question the heads leave unanswered has no answer turn: the hooks only see finish().
 - logits: MMDuet decodes by argmax over the LM head's output, not through HF generate, so the plugin's first-step
   rules act on the LM head: during the armed turn every LM-head forward calls `hooks.on_step_logits(step, logits)`
   (step 0, 1, ...; logits = the head's output, shape [1, positions, vocab]); a returned tensor replaces the output.
@@ -43,6 +50,7 @@ from ..core.schema import Generation, Request
 from ..media.digest import frame_digest
 from ..media.video_meta import video_info
 from .base import AnswerTurnHooks, BaseAdapter
+from .readouts import question_at, question_index, timing_info
 
 ADAPTER = "mmduet_stream"
 OUTPUT_FPS = 2              # load_video(output_fps=2) and LiveTestArguments(frame_fps=2)
@@ -105,10 +113,18 @@ def schedule(req: Request, meta: dict | None = None) -> dict:
     opencv = meta.get("opencv") or {"frames": meta["header_frames"], "fps": meta["fps"]}
     indices = load_video_indices(opencv["frames"], opencv["fps"], meta["frames"])
     n = len(indices)
+    stream = req.settings.get("stream") or {}
+    where = question_at(stream)
+    q = n - 1 if where is None else question_index(where, n)
+    if where is not None:
+        answer = "the last reply after the question, else one reply generated after the last frame"
+    elif stream.get("force_answer"):
+        answer = "heads on the last frame, else one forced reply there"
+    else:
+        answer = "heads on the last frame, else silence"
     plan = {"adapter": ADAPTER, "fps": OUTPUT_FPS, "frames": n, "indices": indices,
             "frame_indices": frame_digest({"indices": indices}),
-            "question_before_frame": n - 1, "question_time": (n - 1) / OUTPUT_FPS,
-            "answer": "heads on the last frame, else one forced reply there"}
+            "question_before_frame": q, "question_time": q / OUTPUT_FPS, "answer": answer}
     plan["digest"] = fingerprint(plan)
     return plan
 
@@ -139,7 +155,7 @@ class _AnswerTurn:
 
 class MMDuetStream(BaseAdapter):
     """Condition S of MMDuet-7B (env llava, bf16, sdpa). load=False builds a schedule-only adapter (no model)."""
-    PROTOCOL_VERSION = 1
+    PROTOCOL_VERSION = 2            # 2: silence when the heads do not fire (a forced reply needs stream.force_answer)
     LOAD_KEYS: tuple[str, ...] = ()
     concurrency = 1
 
@@ -211,6 +227,7 @@ class MMDuetStream(BaseAdapter):
     def stream(self, req: Request, hooks: AnswerTurnHooks | None = None) -> Generation:
         plan = schedule(req)                 # also refuses videos over 400 frames, before decoding
         torch, infer = self.torch, self.infer
+        settings = req.settings.get("stream") or {}
         images, _ = self._load_video(req.video, output_fps=OUTPUT_FPS)
         budget = req.settings["generation"]["max_new_tokens"]
         if hooks is not None:
@@ -218,6 +235,11 @@ class MMDuetStream(BaseAdapter):
         infer.reset()
         infer.inplace_output_ids = torch.zeros(1, budget, device="cuda", dtype=torch.long)
         infer.input_video_stream(images)
+        if question_at(settings) is not None:
+            if hooks is not None:
+                raise ValueError("stream.question_at is a diagnostic of the native stream: it takes no plugin hooks")
+            return self._question_at(req, images, question_at(settings), plan)
+        force = bool(settings.get("force_answer"))
         events = []
         with torch.inference_mode():
             while len(infer.frame_embeds_queue) > 1:
@@ -228,19 +250,43 @@ class MMDuetStream(BaseAdapter):
             self._turn = _AnswerTurn(hooks) if hooks is not None else None
             try:
                 last = infer.input_one_frame()
-                answer, forced = last.get("response"), last.get("response") is None
-                if forced:                   # the heads stayed below the threshold: reply here anyway (S-dagger)
+                answer, silent = last.get("response"), last.get("response") is None
+                if silent and force:         # the heads stayed below the threshold: reply here anyway (S-dagger)
                     answer = infer._generate_response()
             finally:
                 self._turn = None
         scores = {k: round(float(v), 4) for k, v in last.items() if k.endswith("_score")}
         info = {"stream_fps": OUTPUT_FPS, "frames": len(images), "replies_before_question": len(events),
-                "events": events[-5:], "last_frame_scores": scores, "forced": forced,
+                "events": events[-5:], "last_frame_scores": scores, "forced": silent and force,
                 "no_answer": not (answer or "").strip(), "schedule": plan["digest"]}
         if len(images) != plan["frames"]:   # OpenCV decoded another number of frames than the schedule predicts
             info["schedule_frames"] = plan["frames"]
         generation = Generation((answer or "").strip(), None, "unknown", info)
         return hooks.finish(req, generation) if hooks is not None else generation
+
+    def _question_at(self, req: Request, images, where: str, plan: dict) -> Generation:
+        """The question encoded once before frame q and every later frame following it; the heads decide when to
+        reply (MAGQA threshold) and replies are not fed back, as in the benchmark loop. The scored answer is the last
+        reply after the question; if the heads never fire, one reply is generated after the last frame
+        (info.fallback)."""
+        infer = self.infer
+        q = question_index(where, len(images))
+        replies, index = [], 0
+        with self.torch.inference_mode():
+            while infer.frame_embeds_queue:
+                if index == q:
+                    infer.encode_given_query(req.prompt)
+                event = infer.input_one_frame()
+                index += 1
+                if index > q and event.get("response"):
+                    replies.append({"t": event["time"], "text": event["response"]})
+            fallback = not replies
+            answer = infer._generate_response() if fallback else replies[-1]["text"]
+        end = len(images) / OUTPUT_FPS
+        info = {"stream_fps": OUTPUT_FPS, "frames": len(images), "duration": end, "schedule": plan["digest"],
+                **timing_info(where, q, q / OUTPUT_FPS, replies, end, fallback),
+                "forced": fallback, "no_answer": not (answer or "").strip()}
+        return Generation((answer or "").strip(), None, "unknown", info)
 
     def close(self) -> None:
         self.infer = None

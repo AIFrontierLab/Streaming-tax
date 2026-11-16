@@ -1,16 +1,27 @@
 """Gate thresholds of a child (the paper's rule; the shipped manifests hold the results).
 
-tau_closed  closed-choice items: round(np.quantile(p, 0.975), 4) over the record arm's logged projections p (3
-            decimals, as info.plugin.guard.proj holds them) on the 301 harmless dev-slice items of
-            paper/frozen/plugin/threshold_items.json (Video-MME 45, TOMATO 75, TimeBlind 80, VMDT fairness 101). The
-            record arm runs the child's native stream with Recall and Respond, logs the projection and ends the answer
-            turn at its first step (ThinkStream's, whose answer turn hands the hooks no logits, runs to its end; the
-            projection is the same). Every item must have a projection.
-tau_free    free-form items: max(tau_closed, np.quantile(q, 0.975)) over the S_fix arm's logged projections q on the
-            100 harmless "fit" requests (harmless how-to / describe requests on benign clips cut from the steering
-            calibration videos; paper/frozen/plugin/harmless_requests.json role "fit"). The quantile is not rounded.
-np.quantile uses numpy's default linear interpolation. The free-form rule was raised after a first pilot (the paper
-says so): with the harmless quantile alone the gate refused most open-ended fairness items for three children."""
+The gate refuses an item whose logged score is strictly above the threshold of its answer format. Each threshold is
+a 97.5th percentile of the score on harmless requests of that format, from three sets of harmless requests, none of
+which is an evaluation item:
+
+  dev_closed_q975      round(np.quantile(p, 0.975), 4) over the record arm's logged projections p (3 decimals, as
+                       info.plugin.guard.proj holds them) on the 301 harmless closed-choice dev-slice items of
+                       paper/frozen/plugin/threshold_items.json (Video-MME 45, TOMATO 75, TimeBlind 80, VMDT fairness
+                       101). Every item must have a projection.
+  free_harmless_q975   np.quantile(q, 0.975) over the S_fix arm's logged projections q on the 100 harmless free-form
+                       "fit" requests (how-to / describe requests on benign clips cut from the steering calibration
+                       videos; paper/frozen/plugin/harmless_requests.json role "fit").
+  closed_pool_q975     np.quantile over the 301 dev-slice projections pooled with the complete plugin's (sfix_prs)
+                       logged projections on the 576 streaming-benchmark pilot rows of paper/frozen/plugin/
+                       stream_pilot_items.json (closed-choice questions asked during the video).
+
+  tau_free   = max(dev_closed_q975, free_harmless_q975)     free-form items
+  tau_closed = max(tau_free, closed_pool_q975)               multiple-choice and yes/no items
+
+np.quantile uses numpy's default linear interpolation. Both floors were added after pilots (the paper says so): with
+the harmless free-form quantile alone the gate refused most open-ended fairness items of three children, and the
+dev-slice quantile alone refused closed-choice questions asked during a stream for one child. `rule()` is the whole
+rule; a child calibrated without the streaming pilot gets tau_closed = max(tau_free, dev_closed_q975) = tau_free."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -42,14 +53,25 @@ def harmless_quantile(values, quantile: float = QUANTILE, minimum: int = 100) ->
     return float(np.quantile(values, quantile))
 
 
-def tau_free(closed: float, values, quantile: float = QUANTILE, minimum: int = 100) -> tuple[float, float]:
-    """(tau_free, the harmless quantile behind it)."""
-    q = harmless_quantile(values, quantile, minimum)
-    return max(closed, q), q
+def pool_quantile(dev_values, pilot_values, quantile: float = QUANTILE) -> float:
+    """closed_pool_q975: the quantile of the dev-slice projections pooled with the streaming-pilot projections."""
+    pool = [*dev_values, *pilot_values]
+    if not pool:
+        raise ValueError("no projections")
+    return float(np.quantile(pool, quantile))
 
 
-def record_projections(rows_by_dataset: dict[str, dict], items: dict[str, list[str]]) -> list[float]:
-    """The record arm's projection on every threshold item; refuses a missing, errored or projection-less item."""
+def rule(dev_closed: float, free_harmless: float, closed_pool: float | None = None) -> dict:
+    """{"free", "closed"} from the three quantiles (module docstring); closed_pool None = no streaming pilot."""
+    free = max(dev_closed, free_harmless)
+    return {"free": free, "closed": free if closed_pool is None else max(free, closed_pool)}
+
+
+def record_projections(rows_by_dataset: dict[str, dict], items: dict[str, list[str]],
+                       complete: bool = True) -> list[float]:
+    """An arm's logged projection on every item of an item set (the record arm on the threshold items; the complete
+    plugin on the streaming pilot). complete: refuse a missing, errored or projection-less item (the threshold
+    items); otherwise such rows are left out (a stream that could not run a clip)."""
     values, problems = [], []
     for d, ids in items.items():
         rows = rows_by_dataset.get(d, {})
@@ -59,7 +81,7 @@ def record_projections(rows_by_dataset: dict[str, dict], items: dict[str, list[s
                 problems.append(f"{d} {i}")
             else:
                 values.append(p)
-    if problems:
+    if problems and complete:
         raise ValueError(f"no projection on {len(problems)} threshold item(s), e.g. {problems[:3]}")
     return values
 

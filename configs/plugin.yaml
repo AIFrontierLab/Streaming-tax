@@ -1,27 +1,34 @@
-# The streaming plugin (docs/plugin.md): S_fix = Recall + Respond; S+ = S_fix + hidden-state gate + parent-
-# restoration steering (PRS). Per-child numbers (direction, vector, layers, thresholds) live in
-# plugin_artefacts/<child>/{vectors.npz, manifest.json}.
+# Stream++ (Sec. 6; docs/plugin.md): a training-free plugin that acts on a streaming child's memory and answer turn.
+#   Recall   keeps earlier frames within the child's native memory budget          (plugin/recall.py)
+#   Respond  makes sure an answer is delivered                                     (plugin/respond.py)
+#   Refuse   parent-restoration steering (PRS) + a refusal gate on the harm score  (plugin/guard.py)
+# S_fix = Recall + Respond; S_plug = S_fix + Refuse. Per-child numbers (direction, vector, layers, thresholds) live
+# in plugin_artefacts/<child>/{vectors.npz, manifest.json}.
 
 refusal: "I'm sorry, but I can't help with that request."
 
-# Plugin arms, run as jobs <child>@<arm>.stream. gate: shadow = project and log, never act (the paper's runs; the
-# threshold is applied afterwards by `plugin assemble` / `plugin report`, which reads shadow arms only); live = reply
-# with the fixed refusal when the logged projection passes the threshold (deployment; same decision as the post-hoc
-# rule), ending the answer turn at its first step except on ThinkStream's `deadline` path, whose turn runs to its end;
-# record = log the projection and end the answer turn at its first step, again except ThinkStream's (threshold
-# calibration); null = no gate.
+# Plugin arms, run as jobs <child>@<arm>.stream. recall: budget applies the child's `recall` settings below, native
+# leaves its memory alone; respond: the child's `respond` settings, the silence ban and the option readout.
+# gate: shadow = project and log, never act (the paper's runs; the threshold is applied afterwards by
+# `plugin assemble` / `plugin report`, which read shadow arms only); live = reply with the fixed refusal when the
+# logged projection passes the threshold (deployment; same decision as the post-hoc rule), ending the answer turn at
+# its first step except on ThinkStream's `deadline` path, whose turn runs to its end; record = log the projection and
+# end the answer turn at its first step, again except ThinkStream's (threshold calibration); null = no gate.
 arms:
-  sfix:     {recall: full, respond: true, gate: shadow, prs: false}
-  sfix_prs: {recall: full, respond: true, gate: shadow, prs: true}
-  record:   {recall: full, respond: true, gate: record, prs: false}
-  inert:    {recall: native, respond: false, gate: null, prs: false}   # plugin attached, nothing changed (fidelity)
-  hf:       {recall: native, respond: false, gate: null, prs: false}   # AURA's HF stream rebuild alone (S_HF)
+  sfix:     {recall: budget, respond: true, gate: shadow, prs: false}    # S_fix
+  sfix_prs: {recall: budget, respond: true, gate: shadow, prs: true}     # S_fix + PRS; with the gate applied: S_plug
+  record:   {recall: budget, respond: true, gate: record, prs: false}
+  shadow:   {recall: native, respond: false, gate: shadow, prs: false}   # native stream, gate score logged
+  prs:      {recall: native, respond: false, gate: shadow, prs: true}    # gate + PRS on the native memory and policy
+  inert:    {recall: native, respond: false, gate: null, prs: false}     # plugin attached, nothing changed (fidelity)
+  hf:       {recall: native, respond: false, gate: null, prs: false}     # AURA's HF stream rebuild alone (S_HF)
 
-# S+ in the paper = the sfix_prs arm with the post-hoc gate.
-splus_arm: sfix_prs
+# S_plug in the paper = the sfix_prs arm with the post-hoc gate.
+plug_arm: sfix_prs
 
+# Gate thresholds (plugin/calibrate/thresholds.py; the shipped manifests hold the values): each is a 97.5th
+# percentile of the gate's score on harmless requests of that answer format.
 thresholds:
-  variant: higher               # higher (the paper) | rule | old  (docs/plugin.md, "Thresholds")
   quantile: 0.975
   projection_decimals: 3        # the gate compares the projection rounded to 3 decimals, as it was logged
   closed_decimals: 4
@@ -30,16 +37,20 @@ thresholds:
 
 # A fired item takes the fixed refusal's own scored row; on these understanding sets it is unanswered and wrong
 # instead (their parsers would otherwise credit the refusal with an option).
-unanswered_on_fire: [videomme, tomato, timeblind]
+unanswered_on_fire: [videomme, tomato, timeblind, ovo_bench, streamingbench]
 
-# Recall: settings deltas merged into the child's stream settings for arms with recall: full. The other children
-# already keep their whole history. AURA's Recall can be bounded by adding `budget: B` (segments): past B,
-# aura_stream_hf keeps the last min(30, B) and a hash-priority reservoir of older segments (plugin/recall.py). The
-# paper's arms set no budget: on its sets Recall is the full history.
+# Recall: settings deltas merged into the child's stream settings for arms with recall: budget. The budget is the
+# child's own native visual budget B; once it is full, the newest k = 10 chunks stay and the other B - k slots hold a
+# uniform sample of earlier chunks (plugin/recall.py). The other four children discard no frames natively.
 recall:
-  thinkstream_3b: {stream: {window: full, max_len: 81920}}   # 120 chunks instead of the native 20-chunk window
-  aura_8b: {stream: {window: full}}                          # every 1-s segment instead of the last 30 (aura_stream_hf
-                                                             # cuts all floor(d) segments, aligned to the video's end)
+  aura_8b: {stream: {window: full, budget: 30, recent: 10}}   # B = 30 one-second segments (aura_stream_hf)
+  thinkstream_3b: {stream: {reservoir: 10}}                   # B = its native 20-chunk KV window
+
+# Respond: settings deltas for arms with respond: true. MMDuet's response heads rarely fire, so its answer turn is
+# requested explicitly (rho <- 1, the forced-answer control S-dagger of Sec. 5.2); the other children always produce an
+# answer turn, whose silence marker is banned (answer_turn below).
+respond:
+  mmduet_7b: {stream: {force_answer: true}}
 
 # Stream adapter of the plugin arms when it differs from the model's own stream adapter: AURA's native stream runs in
 # a vLLM server without hidden states, so its plugin arms run on the Hugging Face rebuild.
@@ -56,7 +67,7 @@ engines:
 #            readout comes from the deadline fork, and a live or record gate cannot end the turn early).
 # Arms with Respond or a live / record gate refuse a child without an entry; a logits call on another path raises.
 answer_turn:
-  mmduet_7b:      {silence: null, logits: first_step}            # its stream forces a reply: no marker
+  mmduet_7b:      {silence: null, logits: first_step}            # Respond forces its reply: no marker
   thinkstream_3b: {silence: null, logits: deadline}              # answers after its thought
   mmduet2_3b:     {silence: "NO REPLY", logits: processor}
   aura_8b:        {silence: "<|silent|>", logits: processor}
@@ -64,13 +75,13 @@ answer_turn:
   moss_vl_rt:     {silence: "<|silence|>", logits: opening}
 
 children: [mmduet_7b, thinkstream_3b, mmduet2_3b, aura_8b, livestar_8b, moss_vl_rt]
-paper_children: [mmduet_7b, thinkstream_3b, mmduet2_3b, aura_8b, livestar_8b]   # MOSS-VL-Realtime: not in the paper's S+
 
-# Item sets (benchmark ids only): `--items pilot2` or a path to a {dataset: [ids]} file.
+# Item sets (benchmark ids only): `--items full` or a path to a {dataset: [ids]} file.
 items:
-  pilot2: paper/frozen/plugin/pilot2_items.json        # the paper's figure (second pilot, 908 items)
-  full: paper/frozen/plugin/full_items.json            # every non-dev item outside both pilots (10,140)
-  threshold: paper/frozen/plugin/threshold_items.json  # 301 harmless dev-slice items behind tau_closed
+  full: paper/frozen/plugin/full_items.json            # the paper's evaluation: 10,140 rows per child (Sec. 6, Supp. D)
+  pilot2: paper/frozen/plugin/pilot2_items.json        # the second pilot (908 items; disjoint from `full`)
+  threshold: paper/frozen/plugin/threshold_items.json  # 301 harmless dev-slice items behind the thresholds
+  stream_pilot: paper/frozen/plugin/stream_pilot_items.json   # 576 streaming-benchmark pilot rows (closed threshold)
   dev: paper/frozen/plugin/dev_slice.json              # 451-item dev slice (never evaluated)
   dev_exclude: paper/frozen/plugin/dev_exclude.json
 
