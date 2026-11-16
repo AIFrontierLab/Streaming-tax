@@ -8,7 +8,8 @@ rendered ones (use `run --fresh` to archive such outputs).
 Prompt overrides (the prompt-robustness experiment). An outputs folder may hold `prompt_overrides.jsonl`, one row per
 sample: {"dataset": <benchmark>, "id": <sample id>, "edits": [[old, new], ...]}. Every run on that folder applies each
 row's edits, in order, to the rendered prompt; each `old` must occur exactly once in the text at the time it is
-applied, so an edit can only touch the span it names. A folder with overrides for a benchmark needs a row for each of
+applied, so an edit can only touch the span it names. An edit [null, new] replaces the whole prompt (another request
+about the same video: the harmless-request controls). A folder with overrides for a benchmark needs a row for each of
 its samples, and the overrides enter the run identity. The main outputs folder of the paper has none.
 
 prompt_map_sha256() is the per-benchmark fingerprint of all prompts, recorded per benchmark in
@@ -38,8 +39,12 @@ def read_overrides(outputs: str | Path) -> dict[str, dict[str, list]] | None:
 
 
 def apply_edits(text: str, edits: list) -> str:
-    """Each [old, new] replaces `old`, which must occur exactly once (so an edit can only touch the span it names)."""
+    """Each [old, new] replaces `old`, which must occur exactly once (so an edit can only touch the span it names);
+    [None, new] replaces the whole text."""
     for old, new in edits:
+        if old is None:
+            text = new
+            continue
         if text.count(old) != 1:
             raise ValueError(f"prompt edit target occurs {text.count(old)} times, not once: {old[:80]!r}")
         text = text.replace(old, new)

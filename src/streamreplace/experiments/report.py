@@ -11,7 +11,7 @@ An arm whose job is missing or incomplete on the items is listed under `problems
 understanding sets a fired row is unanswered and wrong (configs/plugin.yaml unanswered_on_fire), and the arm reports
 the gate's activation rate. With the experiment option `drop_errors`, a contrast uses the rows neither arm failed on.
 Optional sections (experiment `report`): `duration` (Video-MME contrasts by video duration: under 60 s, 60-90 s,
-90-121 s, and the difference between the longest and the shortest group), `timing` (question timing: when the first
+90 s and longer, and the difference between the longest and the shortest group), `timing` (question timing: when the first
 reply came and how many replies followed) and `ovo_total` (OVO-Bench's official total average, the mean of the three
 modes' task-average accuracies, for each contrast with a bootstrap interval over source videos).
 
@@ -27,7 +27,8 @@ from ..analysis.contrasts import Contrasts, coverage, no_reply, official_metrics
 from ..analysis.records import Catalog, Job, load_job
 from . import Experiment, parent_of
 
-DURATION_BINS = ((0, 60), (60, 90), (90, 121))          # seconds, as the duration split of the main analysis
+DURATION_BINS = ((0, 60), (60, 90), (90, float("inf")))  # seconds; the last group is the paper's "90-121 s" (the
+                                                          # short split's longest videos run a few seconds over)
 
 
 def restrict(job: Job, ids) -> Job:
@@ -135,6 +136,7 @@ class Report:
         out = []
         extras = set(self.exp.spec.get("report") or [])
         used = {label for pair in self.exp.contrasts for label in pair} | set(self.exp.spec.get("arms") or {})
+        used = [label for label in self.exp.arms if label in used]      # P, C, S, then the arms as declared
         for dataset in self.exp.benchmarks():
             for metric in self.metrics(dataset):
                 for child in (children or self.exp.children):
@@ -159,8 +161,11 @@ class Report:
         return out
 
     def durations(self, child: str) -> dict:
-        """Seconds per Video-MME item, from the formal offline rows of the child (info.duration)."""
-        job = load_job(self.formal, "videomme", f"{child}.offline", self.catalog)
+        """Seconds per Video-MME item, from the reference job of the main analysis' duration split
+        (configs/analysis.yaml duration_split.reference: its rows' info.duration), else the child's offline rows."""
+        reference = (self.profile.duration_split or {}).get("reference") or f"{child}.offline"
+        job = load_job(self.formal, "videomme", reference, self.catalog) or \
+            load_job(self.formal, "videomme", f"{child}.offline", self.catalog)
         return {} if job is None else {i: r.info.get("duration") for i, r in job.rows.items()}
 
     def by_duration(self, metric, child: str, jobs: dict) -> list[dict]:
@@ -176,7 +181,7 @@ class Report:
                     for lo, hi in DURATION_BINS]
             for (lo, hi), ids in zip(DURATION_BINS, bins):
                 if ids:
-                    rows.append({"contrast": f"{b} - {a}", "bin": f"[{lo}, {hi}) s",
+                    rows.append({"contrast": f"{b} - {a}", "bin": f"[{lo}, {hi}) s" if hi != float("inf") else f">= {lo} s",
                                  **self.contrast(metric, jobs[a], jobs[b], ids)})
             if bins[0] and bins[-1]:
                 rows.append({"contrast": f"{b} - {a}", "bin": "long - short",

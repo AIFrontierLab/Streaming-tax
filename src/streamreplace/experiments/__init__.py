@@ -27,7 +27,9 @@ Three kinds of report (experiment `kind`):
   qa      report.py: benchmark-scored arms, paired contrasts (history, response policy, question timing, parent
           controls, memory budgets, streaming benchmarks). Options: `drop_errors` (contrasts on the rows neither arm
           failed on, e.g. clips a native stream cannot run), report sections `duration`, `timing`, `ovo_total`
-  forms   forms.py: replies labelled by the response-form judge, rates of refusal / help / non-answers
+  forms   forms.py: replies labelled by the response-form judge, rates of refusal / help / non-answers. Option
+          `requests: {<folder>: howto | describe}` replaces the question of every item by a harmless request about
+          the same video in that folder's arms; their replies are then labelled answered / refused / off-task / empty
   probe   probe.py: hidden-state harm scores and steering (Sec. 5.3)"""
 from __future__ import annotations
 
@@ -210,15 +212,29 @@ def write_subset(folder: Path, items: dict[str, list[str]] | None) -> None:
     path.write_text(json.dumps(items, indent=1) + "\n", encoding="utf-8")
 
 
-def write_edits(folder: Path, items: dict[str, list[str]] | None, edits: list) -> None:
-    """<folder>/prompt_overrides.jsonl: the same [old, new] edits on every item's prompt (data/prompts.py), e.g. the
-    framing experiment's bare request, whose prompt drops the sentence "These are frames of a video."."""
+def harmless_edits(items: dict[str, list[str]], kind: str) -> dict[str, list]:
+    """{id: [[None, request]]}: every item's prompt replaced by a harmless request about its video (the requests of
+    plugin/calibrate/harmless.py after Video-SafetyBench's prefix): `describe`, or `howto`, eight how-to templates
+    in rotation over the item list."""
+    from ..plugin.calibrate.harmless import DESCRIBE, HOWTO
+    from ..plugin.recipe import VIDEO_PREFIX
+    if kind not in ("howto", "describe"):
+        raise ValueError(f"options.requests: {kind!r} is not howto or describe")
+    ids = [i for chosen in items.values() for i in chosen]
+    return {i: [[None, VIDEO_PREFIX + (DESCRIBE if kind == "describe" else HOWTO[k % len(HOWTO)])]]
+            for k, i in enumerate(ids)}
+
+
+def write_edits(folder: Path, items: dict[str, list[str]] | None, edits: list | dict) -> None:
+    """<folder>/prompt_overrides.jsonl (data/prompts.py): the same [old, new] edits on every item's prompt, e.g. the
+    framing experiment's bare request, whose prompt drops the sentence "These are frames of a video."; or a mapping
+    id -> edits (`harmless_edits`)."""
     from ..data.prompts import OVERRIDES_FILE
     if items is None:
         raise ValueError("prompt edits need an item list")
     path = Path(folder) / OVERRIDES_FILE
-    text = "".join(json.dumps({"dataset": d, "id": i, "edits": edits}, ensure_ascii=False) + "\n"
-                   for d, ids in items.items() for i in ids)
+    text = "".join(json.dumps({"dataset": d, "id": i, "edits": edits[i] if isinstance(edits, dict) else edits},
+                              ensure_ascii=False) + "\n" for d, ids in items.items() for i in ids)
     if path.exists():
         if path.read_text(encoding="utf-8") != text:
             raise ValueError(f"{path} holds other prompt edits")
@@ -240,11 +256,14 @@ def plan(exp: Experiment, config: Config, paths: Paths, children: Iterable[str] 
     chosen = list({(a.folder, str(a.job), json.dumps(a.sets, sort_keys=True)): a for a in chosen}.values())
     datasets = [b for b in exp.benchmarks() if not list(benchmarks) or b in set(benchmarks)]
     jobs, seen = [], set()
-    edits = (exp.spec.get("options") or {}).get("edits") or {}
+    options = exp.spec.get("options") or {}
+    edits, requests = options.get("edits") or {}, options.get("requests") or {}
     for arm in chosen:
         write_subset(exp.folder(arm), items)
         if arm.folder in edits:
             write_edits(exp.folder(arm), items, edits[arm.folder])
+        elif arm.folder in requests:
+            write_edits(exp.folder(arm), items, harmless_edits(items, requests[arm.folder]))
         for child in (list(children) or exp.children):
             name = arm.job_name(child, parent_of(config, child))
             key = (str(exp.folder(arm)), name)

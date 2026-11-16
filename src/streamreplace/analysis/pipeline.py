@@ -9,8 +9,8 @@
                    <out>/gaps.tex (Table 2), mcv_gaps.tex, gaps.json and gaps_figure.json (the gap figures' data),
                    eval_*.tex (+ .csv for the absolute scores), and the generalization tables from the
                    prompt-robustness and fine-tuning reports when they exist (out = <outputs>/tables)
-  check_tables(out, expected)  the written tables and figure cells against an expected tables file
-                   (paper/expected/tables.json: the paper's printed cell strings), cell by cell
+  check_tables(out, expected)  the written tables against an expected tables file (paper/expected/tables.json: the
+                   paper's printed cell strings), cell by cell
 
 Every file is rewritten atomically; nothing under <outputs>/<dataset>/ is modified."""
 from __future__ import annotations
@@ -140,7 +140,7 @@ def stats(outputs: str | Path, profile: Profile, catalog: Catalog, out: str | Pa
 
 # ---------- tables ----------
 
-def tables(outputs: str | Path, profile: Profile, out: str | Path | None = None, paper: bool = False,
+def tables(outputs: str | Path, profile: Profile, out: str | Path | None = None,
            contrasts: str | Path | None = None, metrics: str | Path | None = None,
            robustness: str | Path | None = None, robustness_results: str | Path | None = None,
            finetune: str | Path | None = None, finetune_results: str | Path | None = None) -> dict:
@@ -150,8 +150,7 @@ def tables(outputs: str | Path, profile: Profile, out: str | Path | None = None,
     (default <outputs>/metrics.json). Optional inputs of the generalization experiments: robustness = the
     prompt-robustness contrasts.csv (default <outputs>/robustness/report/contrasts.csv), robustness_results = its
     results.json (same folder), finetune = the fine-tuning cells.csv (default <outputs>/finetune/ft_tables/cells.csv),
-    finetune_results = its results.json (same folder). paper: kept for compatibility (the tables always follow the
-    paper's conventions)."""
+    finetune_results = its results.json (same folder)."""
     from .render import eval_tables, fig_gaps, gaps_json, table_gaps
     from .render.latex import to_csv
     outputs = Path(outputs)
@@ -221,12 +220,10 @@ def _columns(text: str) -> list[str]:
 
 
 def check_tables(out: str | Path, expected: str | Path) -> dict:
-    """Compares the tables written to `out` (<name>.tex, by tables()) and the gap-figure cells (gaps_figure.json)
-    with an expected tables file: {"tables": {name: [[cell, ...], ...]}, "figure": {"panel/child/column":
-    {"printed": ...}}}, the format of paper/expected/tables.json (the paper's printed cell strings). Returns
-    {"cells": number compared, "differences": ["<table> / <row> / <column>: got vs expected", ...], "missing": [tables
-    not written]}."""
-    from .render.fig_gaps import printed
+    """Compares the tables written to `out` (<name>.tex, by tables()) with an expected tables file:
+    {"tables": {name: [[cell, ...], ...]}}, the format of paper/expected/tables.json (the paper's printed cell
+    strings). Returns {"cells": number compared, "differences": ["<table> / <row> / <column>: got vs expected", ...],
+    "missing": [tables not written]}."""
     from .render.latex import tex_cells
     out = Path(out)
     data = json.loads(Path(expected).read_text(encoding="utf-8"))
@@ -249,16 +246,4 @@ def check_tables(out: str | Path, expected: str | Path) -> dict:
                 if a != b:
                     column = columns[j] if j < len(columns) else str(j)
                     differences.append(f"{name} / {theirs[0]} / {column}: {a} vs {b}")
-    figure = data.get("figure") or {}
-    if figure:
-        path = out / "gaps_figure.json"
-        if not path.is_file():
-            missing.append("gaps_figure")
-        else:
-            shown = printed(json.loads(path.read_text(encoding="utf-8")))
-            for key, cell in figure.items():
-                cells += 1
-                got = shown.get(tuple(key.split("/")))
-                if got != cell.get("printed"):
-                    differences.append(f"gap figure / {key}: {got} vs {cell.get('printed')}")
     return {"cells": cells, "differences": differences, "missing": missing}

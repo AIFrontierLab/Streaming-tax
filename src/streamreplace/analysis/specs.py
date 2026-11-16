@@ -75,7 +75,7 @@ class Profile:
         return p if p.is_absolute() or self.root is None else self.root / p
 
     def name_of(self, model: str, table: str | None = None) -> str:
-        """Display name of a model: the short name, or a per-table override (`master_names`, `gap_table_names`)."""
+        """Display name of a model: the short name, or a per-table override (`gap_table_names`)."""
         if table and model in self.display.get(table, {}):
             return self.display[table][model]
         return self.display.get("names", {}).get(model, model)

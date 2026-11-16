@@ -29,14 +29,14 @@ commits and file hashes.
 - **Silence.** When the child stays silent (its own silence marker, an empty reply, or no reply by the deadline),
   the row carries `info.no_answer = true`. Such rows are scored **wrong** and are never parsed or sent to a judge
   (a parser could otherwise read MMDuet2's "NO REPLY" as "no"); the RJScore safety judge still scores the raw text.
-- **No forcing, except MMDuet.** Only MMDuet is made to reply at the question (S†, below). Every other child's
-  silence stays silence.
+- **No forcing.** No child is made to reply: silence stays silence. (MMDuet's forced-answer control is a setting,
+  below.)
 - **Frames.** MMDuet2, LiveStar and MOSS-VL-Realtime read the framework's fixed-step frames at `stream.fps = 1`
   (frame index `min(total - 1, int(i * fps_source))`, the same rule as the offline frames of pairs p4 and p5, so
   for those pairs offline and stream see the same frames). MMDuet, ThinkStream and AURA read frames with their own
   official loaders, reproduced exactly by `schedule()`.
 
-## MMDuet (S†)
+## MMDuet
 
 MMDuet has no official "question at time t" evaluation; the adapter follows its benchmark loop (the question is
 encoded, then the next frame; the model replies when its two score heads fire) inside the official live-inference
@@ -49,10 +49,13 @@ class, with the MAGQA settings (`informative + relevance > 0.5`).
   are refused, because `load_video` would cut them silently.
 - **Memory.** Every frame stays in the KV cache; replies are not kept in context.
 - **Question.** Encoded after all frames but the last; then the last frame arrives.
-- **Answer and forcing (S†).** If the heads fire on that last frame, the model's own reply is the answer. Otherwise
-  one reply is generated there anyway with MMDuet's own `_generate_response` and the row is marked `info.forced`.
-  Without this the heads fire on their own on only a few percent of questions (14 of 900 Video-MME questions), so
-  MMDuet would almost never answer. This forcing is the study's addition; results are reported as S†.
+- **Answer and silence.** If the heads fire on that last frame, the model's own reply is the answer; otherwise
+  MMDuet stays silent (`info.no_answer`). The heads fire on few questions (14 of 900 on Video-MME), so its native S
+  mostly goes unanswered.
+- **Forced-answer control (S† in the paper).** With `stream.force_answer: true`, one reply is generated at the last
+  frame with MMDuet's own `_generate_response` when the heads have not fired, and the row is marked `info.forced`.
+  This replaces the response policy by "always answer": the control of Sec. 5.2 (experiment `response`) and what
+  Stream++'s Respond does for MMDuet.
 - **Decoding.** MMDuet's `fast_greedy_generate` (argmax, no repetition penalty).
 - **Row info.** `frames`, `forced`, `last_frame_scores`, `replies_before_question`, `events` (last five), `no_answer`.
 
@@ -85,7 +88,8 @@ same upstream engine and generator (`StreamingWindowInferenceEngine`, `streaming
 - **Row info.** `chunks` (streamed chunks: one less after a missed deadline), `window_chunks`, `kept_chunks`,
   `duration`, `seed`, `restricted`, `raw_turn`, `no_answer`, `failure`.
 - Settings `stream.seed: k` gives a replicate run its own seeds (`"<id>#seed<k>"`); `stream.window` (chunks, or
-  `full`) and `stream.max_len` change the KV window (the plugin's Recall uses `window: full, max_len: 81920`).
+  `full`) and `stream.max_len` change the KV window, and `stream.reservoir: k` replaces its eviction by Recall's
+  (see "Settings of the controls").
 
 ## MMDuet2
 
@@ -130,12 +134,12 @@ applied when the `aura` environment is built).
   their length comes from ffprobe; the official reply budget is 128 tokens.
 - **Row info.** `segments`, `window_start`, `duration`, `prompt_tokens`, `no_answer`.
 
-**`aura_stream_hf`.** vLLM exposes no hidden states, so the plugin runs on a rebuild of the same procedure in
-transformers (same segments, cuts, system prompt and turns; frames decoded with OpenCV as vLLM does; per-segment video
-metadata `{fps 1.0, frames_indices range(n), total_num_frames n, duration n}` so that the prompt carries the same
-"<0.5 seconds>" stamps; greedy). On smoke items its prompt token counts equal vLLM's and most replies are
-identical. Run without the plugin it is the **S_HF** control (job variant `hf`), which separates the engine change
-from the plugin's effect.
+**`aura_stream_hf`.** vLLM exposes no hidden states and accepts at most 50 videos per request, so the plugin and
+the memory controls run on a rebuild of the same procedure in transformers (same segments, cuts, system prompt and
+turns; frames decoded with OpenCV as vLLM does; per-segment video metadata `{fps 1.0, frames_indices range(n),
+total_num_frames n, duration n}` so that the prompt carries the same "<0.5 seconds>" stamps; greedy). On smoke items
+its prompt token counts equal vLLM's and most replies are identical. Run without the plugin it is the **S_HF**
+control (job variant `hf`), which separates the engine change from the plugin's effect.
 
 ## LiveStar
 
@@ -185,6 +189,25 @@ README asks (playback speed 1).
   read live by `read_reply`. Regenerated rows are all read live; for the reply shapes seen in those runs
   (`<|round_start|>A<|silence|>`, `A.<|im_end|>`) the live reading gives the same text as the re-read.
 - **Row info.** `frames`, `events`, `no_answer`, `response_tag`, `prompt_with_frame`, `tail`.
+
+## Settings of the controls
+
+None of these is part of condition S. The diagnostic experiments ([../experiments.md](../experiments.md)) and
+Stream++ ([../plugin.md](../plugin.md)) set them through derived model ids or an arm's settings:
+
+| Setting | Children | Effect |
+|---|---|---|
+| `stream.force_answer: true` | MMDuet | one reply is generated at the last frame when the heads have not fired (`info.forced`) |
+| `stream.question_at: start \| middle` | MMDuet, ThinkStream, MMDuet2, AURA, MOSS-VL-Realtime | the question is posed once at the first step or at step n // 2, the stream runs on under the child's own response policy and the last reply after the question is scored; when no reply came by the end, an answer is requested there (`info.fallback`). ThinkStream's query interface returns one answer and ends the run, so its first answer is scored. LiveStar's narration stream takes no question before its final chat turn |
+| `stream.window: N \| full` | AURA (segments), ThinkStream (chunks, with `stream.max_len` for the size of its KV cache) | the recent-only memory of N steps, or nothing evicted (S_full: AURA on `aura_stream_hf`; ThinkStream with `max_len: 81920`) |
+| `stream.budget: B`, `stream.recent: k` with `stream.window: full` | AURA (`aura_stream_hf`) | Recall: every segment while floor(d) <= B, else the newest k plus a reservoir of B - k older ones (`info.kept_starts`) |
+| `stream.reservoir: k` | ThinkStream | Recall inside its KV window: the newest k chunks stay and the older chunk the reservoir would not keep is evicted instead of the oldest (`info.retained`) |
+| `stream.memory_seed: s` | AURA, ThinkStream | another reservoir sample |
+| `stream.system: none` | AURA | the live-stream system turn is dropped |
+| `stream.input: offline` | AURA (`aura_stream_hf`) | the video is shown as the offline pipeline shows it: one video from 0 s in one user turn, every frame at the offline pixel budget and stamped with its time |
+
+Another checkpoint can be loaded into a child's stream adapter (a derived model id with `checkpoint:`): the parent
+control P_S of Supp. C.1 serves Qwen3-VL-8B through AURA's stream.
 
 ## Schedules (CPU only)
 

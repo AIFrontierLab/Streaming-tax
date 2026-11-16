@@ -29,7 +29,6 @@ from . import context
 def register(subparsers) -> None:
     parser = subparsers.add_parser("tables", help="the paper's LaTeX tables (+ csv) and figure data",
                                    description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--paper", action="store_true", help="accepted for compatibility (always on)")
     parser.add_argument("--out", metavar="DIR", help="output folder (default <outputs>/tables)")
     parser.add_argument("--profile", metavar="FILE", help="analysis profile YAML instead of configs/analysis.yaml")
     parser.add_argument("--contrasts", metavar="FILE", help="contrasts.json of `stats` (default "
@@ -54,7 +53,7 @@ def handler(args) -> int:
     from ..analysis.specs import profile_from_config
     ctx = context(args)
     profile = profile_from_config(ctx.config, args.profile)
-    result = tables(ctx.paths.outputs, profile, out=args.out, paper=args.paper, contrasts=args.contrasts,
+    result = tables(ctx.paths.outputs, profile, out=args.out, contrasts=args.contrasts,
                     metrics=args.metrics, robustness=args.robustness, robustness_results=args.robustness_results,
                     finetune=args.finetune, finetune_results=args.finetune_results)
     for path in result["files"].values():

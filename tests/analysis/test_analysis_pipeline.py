@@ -76,17 +76,14 @@ def test_written_tables_are_checked_cell_by_cell(synthetic, tmp_path):
     root, cat, prof = synthetic
     pipeline.report(root, prof, cat)
     pipeline.stats(root, prof, cat, overlay=False, out=root / "analysis")
-    pipeline.tables(root, prof, paper=True)
-    from streamreplace.analysis.render.fig_gaps import printed
+    pipeline.tables(root, prof)
     from streamreplace.analysis.render.latex import tex_cells
     cells = tex_cells((root / "tables" / "eval_video.tex").read_text())
-    shown = printed(json.loads((root / "tables" / "gaps_figure.json").read_text()))
-    figure = {"/".join(k): {"printed": v} for k, v in shown.items()}
     expected = tmp_path / "tables.json"
-    expected.write_text(json.dumps({"tables": {"eval_video": cells, "eval_robustness": [["x"]]}, "figure": figure}))
+    expected.write_text(json.dumps({"tables": {"eval_video": cells, "eval_robustness": [["x"]]}}))
     found = pipeline.check_tables(root / "tables", expected)
     assert found["differences"] == [] and found["missing"] == ["eval_robustness"]
-    assert found["cells"] == sum(map(len, cells)) + len(figure) and len(cells) == 1
+    assert found["cells"] == sum(map(len, cells)) and len(cells) == 1
     changed = [list(row) for row in cells]
     changed[0][-1] = "$+9.9$"
     expected.write_text(json.dumps({"tables": {"eval_video": changed}}))
@@ -113,7 +110,7 @@ def test_tables_render_from_the_written_files(synthetic):
     root, cat, prof = synthetic
     pipeline.report(root, prof, cat)
     pipeline.stats(root, prof, cat, overlay=False, out=root / "analysis")
-    result = pipeline.tables(root, prof, paper=True)
+    result = pipeline.tables(root, prof)
     written = {name for name in result["files"]}
     assert {"gaps.tex", "mcv_gaps.tex", "gaps.json", "gaps_figure.json", "eval_image.tex", "eval_video.csv"} <= written
     assert "eval_robustness, eval_instruction" in result["skipped"]
@@ -131,7 +128,7 @@ def test_tables_without_inputs_says_what_to_run(tmp_path, synthetic):
 def test_cli_commands_are_registered():
     from streamreplace.cli.main import build_parser
     parser = build_parser()
-    for argv in (["report"], ["stats", "--no-overlay"], ["tables", "--paper"], ["rerun-capped", "select"],
+    for argv in (["report"], ["stats", "--no-overlay"], ["tables"], ["rerun-capped", "select"],
                  ["rerun-capped", "run", "--dry-run"], ["rerun-capped", "report"]):
         args = parser.parse_args(argv)
         assert callable(args.func)

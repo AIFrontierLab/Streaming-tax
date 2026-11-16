@@ -100,7 +100,8 @@ as silence) and records every deliberate difference from the official evaluation
   `info.schedule`.
 - `stream(req, hooks=None) -> Generation`: with `hooks=None` exactly the child's native path. Silence (its silence
   marker, an empty reply, a missed deadline) is reported as `info["no_answer"] = True`; never replace silence by a
-  guessed answer unless the protocol says so and the row says so (MMDuet's forced reply sets `info["forced"]`).
+  guessed answer in the native path. A control that does so is a setting and marks its rows (MMDuet's
+  `stream.force_answer` sets `info["forced"]`).
 - The constructor takes `load: bool = True`; `load=False` builds a schedule-only adapter without weights.
 - `concurrency`: requests in flight (1 unless the backend batches safely); `LOAD_KEYS` as offline.
 - For the plugin: the run worker calls `hooks.begin(req)` before each `stream(req, hooks)`; the adapter calls the

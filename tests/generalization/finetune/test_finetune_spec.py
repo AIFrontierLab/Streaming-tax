@@ -33,7 +33,7 @@ def test_units_and_seed_units_of_the_paper(paper):
     formal, seeded = units(paper), seed_units(paper)
     assert len(formal) == 11 * 3 * 3 + 3                        # every member x dataset x budget, + the 1K x 3 epochs
     assert all(set(u) == {"model", "dataset", "budget", "epochs", "tag"} for u in formal)   # part of unit identities
-    assert len(seeded) == 4 * 1 * 3 * 2                          # p3 and p5 members, LingoQA, 3 budgets, seeds 1 and 2
+    assert len(seeded) == 11 * 1 * 3 * 2                         # every member, LingoQA, 3 budgets, seeds 1 and 2
     unit = find_unit(paper, "moss_vl", "lingoqa", 1000, "s1")
     assert unit["seed"] == 1 and unit["shuffle"] is True
     assert unit_dir(paper, unit) == paper.root / "seeds" / "adapters" / "lingoqa" / "moss_vl" / "1k-s1"

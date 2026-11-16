@@ -3,9 +3,8 @@ benchmark that does not override them). Conservative: ambiguous answers are pars
 extract them); no Python eval, no guessing from long reasoning.
 
 Ported unchanged from the paper's runs: the regexes, their order, the tolerances and the status strings all feed
-paper numbers. clean() is the released rule (strip <think>...</think>, keep the text after an unterminated </think>,
-drop special tokens), which every reported number uses except four ThinkStream cells of the supplement's master
-tables (docs/reproducing-the-paper.md)."""
+paper numbers. clean() is the rule every reported number uses: strip <think>...</think>, keep the text after an
+unterminated </think>, drop special tokens."""
 from __future__ import annotations
 
 import math

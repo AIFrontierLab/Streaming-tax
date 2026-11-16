@@ -49,7 +49,7 @@ experiments:
   # ------------------------------------------------------------------ Sec. 5.1 / Supp. C.1: historical evidence
   window:
     title: "Window controls: offline input restricted to the streaming window, and streaming with the full history"
-    paper: "Sec. 5.1 (Eq. 5), Fig. 5a; Supp. Fig. S3b-c (VMME-750)"
+    paper: "Sec. 5.1 (Eq. 5), Fig. 5a; Supp. C.1 (history controls, panel c)"
     items: paper/frozen/experiments/vmme750.json
     children: [aura_8b, thinkstream_3b]
     arms:
@@ -60,7 +60,7 @@ experiments:
 
   window_300:
     title: "Input protocols on one question per video (VMME-300)"
-    paper: "Supp. Table S (diagnosis modes), Fig. S3b"
+    paper: "Supp. C.1 (history controls, panel b; the table of input protocols)"
     items: paper/frozen/experiments/vmme300.json
     children: [aura_8b, thinkstream_3b]
     arms:
@@ -81,7 +81,7 @@ experiments:
 
   duration:
     title: "Execution tax by video duration"
-    paper: "Supp. Fig. S3a"
+    paper: "Supp. C.1 (history controls, panel a)"
     benchmarks: [videomme]
     children: [mmduet_7b, thinkstream_3b, mmduet2_3b, aura_8b, livestar_8b, moss_vl_rt]
     contrasts: ["S - C"]
@@ -90,7 +90,7 @@ experiments:
   # ------------------------------------------------------------------ Sec. 5.2 / Supp. C.2: response decisions
   response:
     title: "Response policy: MMDuet forced to answer at the last frame (rho <- 1)"
-    paper: "Sec. 5.2; Supp. A (S-dagger)"
+    paper: "Sec. 5.2"
     benchmarks: [videomme, tomato, timeblind]
     children: [mmduet_7b]
     arms:
@@ -99,7 +99,7 @@ experiments:
 
   question_timing:
     title: "Question timing: the question posed at the start or the middle of the video instead of its end"
-    paper: "Supp. C.2, Table S (question timing)"
+    paper: "Supp. C.2 (table: question timing)"
     items: paper/frozen/experiments/vmme300.json
     children: [mmduet_7b, mmduet2_3b, thinkstream_3b, aura_8b, moss_vl_rt]
     arms:                                      # End = S; for MMDuet the forced control, as at the other two timings
@@ -111,7 +111,7 @@ experiments:
 
   parent_stream:
     title: "Parent control: the parent's weights in AURA's streaming interface (P_S)"
-    paper: "Supp. C.1, Table S (parent controls), AURA rows"
+    paper: "Supp. C.1 (table: parent controls, AURA rows)"
     items: paper/frozen/experiments/parent_stream.json
     children: [aura_8b]
     arms:
@@ -131,7 +131,7 @@ experiments:
   # ------------------------------------------------------------------ Supp. D: Stream++
   recall_budget:
     title: "Memory budget and retention policy under S_fix: recent-only against Recall at B, 2B and the full history"
-    paper: "Supp. D.2, Table S (memory budget), Table S (gains by duration), Recall settings"
+    paper: "Supp. D.2 (tables: memory budget, accuracy by video duration)"
     items: paper/frozen/experiments/videomme666.json
     children: [aura_8b, thinkstream_3b]
     arms:
@@ -166,7 +166,7 @@ experiments:
 
   streaming_benchmarks:
     title: "Native streaming performance with Stream++: OVO-Bench and StreamingBench (real-time), clips up to 120 s"
-    paper: "Supp. D.4, Table S (native streaming performance)"
+    paper: "Supp. D.4 (table: native streaming performance)"
     benchmarks: [ovo_bench, streamingbench]       # as prepared: the questions asked within the first 120 s
     children: [mmduet_7b, thinkstream_3b, mmduet2_3b, aura_8b, livestar_8b, moss_vl_rt]
     metrics: [acc_rows, acc]
@@ -183,11 +183,26 @@ experiments:
   # ------------------------------------------------------------------ Sec. 4.2 / Sec. 5.2-5.3: response forms
   response_forms:
     title: "Response forms on the audited safety requests: harmful help, refusal or safe deflection, non-answers"
-    paper: "Fig. 4, Supp. Fig. S2 (response forms and official ASR)"
+    paper: "Fig. 4; Supp. B.2 (response forms on the other splits)"
     kind: forms
     items: paper/frozen/experiments/safety_audit.json
     children: [mmduet_7b, thinkstream_3b, mmduet2_3b, aura_8b, livestar_8b, moss_vl_rt]
     contrasts: ["C - P", "S - C", "S - P"]
+
+  harmless_requests:
+    title: "Harmless how-to requests about the videos of harmful requests: answered offline and under streaming"
+    paper: "Sec. 4.2; Supp. B.2 (harmless requests)"
+    kind: forms
+    items: paper/frozen/experiments/howto40.json      # 40 VSB videos
+    children: [mmduet_7b, thinkstream_3b, mmduet2_3b, aura_8b, livestar_8b, moss_vl_rt]
+    options:
+      # in the arms of this folder every item's question is replaced by one of eight harmless how-to requests about
+      # its video (prompt_overrides.jsonl); the replies are labelled answered / refused / off-task / empty
+      requests: {howto: howto}
+    arms:      # the child offline and in its native stream, 160 new tokens
+      C_howto: {job: "{child}.offline", folder: howto, set: {generation: {max_new_tokens: 160}}}
+      S_howto: {job: "{child}.stream", folder: howto, set: {generation: {max_new_tokens: 160}}}
+    contrasts: ["S_howto - C_howto"]
 
   system_prompt:
     title: "AURA without its live-stream system turn, and its parent with it, on harmful VSB requests"
@@ -202,7 +217,7 @@ experiments:
 
   framing:
     title: "Video framing: refusal under the bare request, the framing sentence, black frames and the real video"
-    paper: "Sec. 5.3; Supp. C.3, Table S (refusal context)"
+    paper: "Sec. 5.3; Supp. C.3 (table: refusal context)"
     kind: forms
     items: paper/frozen/experiments/framing240.json
     children: [mmduet_7b, thinkstream_3b, mmduet2_3b, aura_8b, livestar_8b, moss_vl_rt]
@@ -223,7 +238,7 @@ experiments:
   # ------------------------------------------------------------------ Sec. 5.3 / Supp. C.3: recognition and response
   harm_probe:
     title: "Harm recognition and refusal: explicit risk judgments and hidden-state harm scores, parent against child"
-    paper: "Sec. 5.3, Fig. 5b; Supp. C.3, Tables S (refusal decomposition, new harmful help, probe scores, harmless controls)"
+    paper: "Sec. 5.3, Fig. 5b; Supp. C.3 (tables: refusal decomposition, harm scores by reply, probe scores, harmless controls)"
     kind: probe
     items: paper/frozen/experiments/probe200.json
     children: [mmduet_7b, thinkstream_3b, mmduet2_3b, aura_8b, livestar_8b, moss_vl_rt]
@@ -231,7 +246,7 @@ experiments:
 
   steering:
     title: "Steering along the harm direction (and along random directions of the same norm)"
-    paper: "Supp. C.3, Table S (steering)"
+    paper: "Supp. C.3 (table: steering)"
     kind: probe
     items: paper/frozen/experiments/steering60.json
     children: [aura_8b]

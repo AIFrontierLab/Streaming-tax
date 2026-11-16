@@ -77,6 +77,11 @@ flight per replica, 5 attempts 5 s apart; a request that still fails is not cach
 The judge always sees the raw, uncleaned reply (VideoReasonBench: the extracted final answer). Cache key:
 `{kind, question, choices, response, answer, meta}` with `answer = ""` except for VideoReasonBench.
 
+The same judge assigns the response forms of the safety analyses (refusal, safe deflection, harmful help, off-task,
+empty; answered or not for harmless requests): `streamreplace experiment label` sends the audit prompts of
+`experiments/forms.py` through the `chat` kind (40 tokens) and caches the answers under the experiment's folder
+([experiments.md](experiments.md)). These labels never enter a benchmark score.
+
 `extract.server.url` points the judge at an OpenAI-compatible endpoint you already run instead of starting local
 vLLM servers (`extract.server.model` names the model to ask for, default `judge`). The URL and that model name are
 part of the judge's identity, so the endpoint's answers go to a cache file of their own and are never applied as the

@@ -100,7 +100,14 @@ l) EyePCR conversation turns
              5a25c1e855940d98b67fd59d51b062fef9f8203e, train.json / test.json
    Licence:  CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/); quoted unchanged.
 
-m) Fragments of upstream code
+m) StreamingBench answer cue ("\n\nThe best option is:")
+   Used in:  src/streamreplace/benchmarks/streaming/streamingbench.py (prompt; the suffix the official evaluation
+             appends to its prompt template, which is read from the fetched file)
+   Source:   https://github.com/THUNLP-MT/StreamingBench, commit 89299232c4cc1cc3721951173c5f107b48cf6877,
+             src/benchmark/StreamingBench.py
+   Licence:  MIT License.
+
+n) Fragments of upstream code
    - manifests/upstream.yaml (`patches`) stores small old/new fragments of three upstream files, applied after
      download: LLaVA-NeXT llava/model/multimodal_encoder/builder.py (Apache-2.0), ThinkStream
      thinkstream/model/inference.py (MIT), video_reason_bench utils/eval_utils.py (no licence file).
@@ -116,7 +123,7 @@ m) Fragments of upstream code
 `streamreplace fetch-upstream` downloads only the files listed in manifests/upstream.yaml, from each project's
 GitHub repository at the pinned commit, and checks every file's git blob SHA-1. "none" = no licence file in the
 repository at that commit: such code is used as published by its authors and is not copied into this repository,
-apart from the few words and lines listed in section 1 (a, c, i, j, m). The tests check its other texts (judge
+apart from the few words and lines listed in section 1 (a, c, i, j, n). The tests check its other texts (judge
 prompts, policies, scoring code) through sha256 digests and a few identifying words instead of quoting them.
 
   name               repository @ commit                                        licence
@@ -138,6 +145,8 @@ prompts, policies, scoring code) through sha256 digests and a few identifying wo
                                                                                 Non-Commercial Use
   promptbench        github.com/microsoft/promptbench @fcda538b                 MIT
   vlmevalkit         github.com/open-compass/VLMEvalKit @21e52b8d               Apache-2.0
+  ovo_bench          github.com/JoeLeelyf/OVO-Bench @c34093f9                   MIT
+  streamingbench     github.com/THUNLP-MT/StreamingBench @89299232              MIT
 Cited for provenance only, never fetched: AURA (github.com/aurateam2026/AURA @82d78f0f; no licence file, README
 states Apache-2.0) and MOSS-VL (github.com/OpenMOSS/MOSS-VL @d029e00a; Apache-2.0).
 
@@ -162,8 +171,9 @@ Datasets (manifests/datasets.yaml; licence as declared by each publisher):
   project), HarmBench data (MIT), Video-SafetyBench (cc-by-nc-sa-4.0, gated), MCV-SafetyBench (apache-2.0),
   VMDT video-to-text fairness and privacy (see its project; the fairness videos come from third-party face-video
   datasets with their own terms), LingoQA (Wayve Dataset Licence Agreement for Non-Commercial Use), EyePCR
-  (cc-by-4.0), OpenUAV-QA (apache-2.0), AdvBench (MIT; plugin calibration), Stanford Alpaca (CC BY-NC 4.0; plugin
-  calibration).
+  (cc-by-4.0), OpenUAV-QA (apache-2.0), OVO-Bench (cc-by-sa-4.0), StreamingBench (not declared on the dataset
+  card; its code repository is MIT), AdvBench (MIT; calibration), Stanford Alpaca (CC BY-NC 4.0; calibration),
+  XSTest (CC BY 4.0; harm-score probes).
 
-Several of these datasets contain harmful requests (HarmBench, Video-SafetyBench, MCV-SafetyBench, AdvBench) and are
-used for safety evaluation only.
+Several of these datasets contain harmful requests (HarmBench, Video-SafetyBench, MCV-SafetyBench, AdvBench, XSTest)
+and are used for safety evaluation only.

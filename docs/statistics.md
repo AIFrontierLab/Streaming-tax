@@ -10,7 +10,7 @@ streamreplace score            # rules + cached judge answers -> <dataset>/<job>
 streamreplace report           # metrics.json, RESULTS.md, pairs.csv
 streamreplace stats            # analysis/contrasts.json, contrasts.csv, GAPS.md (generation-cap reruns merged)
 streamreplace stats --no-overlay   # the same on the formal rows only (analysis/no-overlay/)
-streamreplace tables --paper   # tables/*.tex (+ .csv), gaps.json, gaps_figure.json
+streamreplace tables           # tables/*.tex (+ .csv), gaps.json, gaps_figure.json
 ```
 
 `report` and `stats` read only scored rows; `tables` reads only the files that `report` and `stats` wrote (and the
@@ -26,7 +26,8 @@ For each child and its offline parent:
 | C | `<child>.offline` | the child in the same offline pipeline (same frames, same prompt) |
 | S | `<child>.stream` | the child through its native streaming interface, question at the end |
 
-The gaps are C−P (checkpoint), S−C (protocol) and S−P (total). For every metric the difference is oriented so that
+The gaps are C−P (the adaptation tax: the checkpoint changes), S−C (the execution tax: the protocol changes) and
+S−P (the streaming tax, their sum). For every metric the difference is oriented so that
 **+ means the later arm (the child, or the child's stream run) is better**: Δ = b − a for accuracy, fairness and
 privacy; for attack-success rates and the VMDT location accuracies (lower is better) the contrast is computed on the
 complementary share (safe replies, non-leaking replies), so Δ = ASR_a − ASR_b. The arm values `a` and `b` are reported
@@ -55,8 +56,15 @@ benchmarks have all three gaps.
 - A silent stream (`parse = "no_answer"`) counts wrong and is never sent to an answer-extraction judge; RJScore judges
   silent replies as they are (usually safe).
 - Flags per row: silent, answered (a rule or judge prediction exists), judged (the rule parse failed and the judge
-  extracted the answer), truncated (`finish = "length"`), forced (MMDuet's forced stream answer, `info.forced`).
+  extracted the answer), truncated (`finish = "length"`), forced (a reply generated under `stream.force_answer`,
+  MMDuet's forced control; `info.forced`).
 - Expected rows: every sample offline; the samples that have a video in stream mode.
+- **No-reply rule.** A stream job that replied to none of a metric's items has no score on a metric whose coverage
+  is "a non-silent reply" (the attack success rates and VMDT privacy): silence alone would give the best value.
+  Such a contrast is not computed; it is listed under `unreported` in contrasts.json with its reason, as is a VMDT
+  contrast whose stream arm leaves a fairness component without a rated item. On the paper's rows these are 20
+  contrasts: S−C and S−P of MMDuet on MCV implicit, on the four VMDT privacy metrics and on three VMDT fairness
+  metrics (fairness, stereotype, decision), and of MMDuet2 on both MCV splits. 334 rows remain.
 
 ## 3. Per-job metrics (`report`)
 
@@ -117,7 +125,7 @@ published intervals in their last digits, so both are ported unchanged.
 
 ### Main engine: multinomial cluster weights (`analysis/stats.py`)
 
-Every P/C/S contrast (Table 2, the master tables, the gap figure, the plugin recovery tables):
+Every P/C/S contrast (Table 2, the gap figures), the Stream++ recovery cells and the contrasts of the experiments:
 
 - B = 10,000 resamples drawn in blocks of 2,000, with a **fresh** `numpy.random.default_rng(0)` for every contrast;
 - for each stratum, in first-seen order, cluster weights `rng.multinomial(K, [1/K]*K, size=r)`; both arms are
@@ -150,9 +158,10 @@ pair; its Holm has no missing values.
 
 | result | engine |
 |---|---|
-| every C−P / S−C / S−P contrast, Table 2 image / HarmBench / video / trust cells, master tables, gap figure | main |
+| every C−P / S−C / S−P contrast: Table 2's trust cells, the gap figures, the MCV table | main |
 | VMDT fairness and privacy contrasts | VMDT |
-| plugin recovery tables (S_fix, S+) | main (and VMDT) |
+| Stream++ recovery cells (S_fix, S_plug) and the benchmark-scored experiments | main (and VMDT) |
+| response-form shares and harm-score differences of the experiments (`experiments/forms.py`, `probe.py`) | a plain bootstrap over requests or videos: 2,000 index resamples, `default_rng(0)`, 2.5 / 97.5 percentiles |
 | prompt robustness (Table 2 robustness columns, supplement tables) | integer-index |
 | fine-tuning (ΔGain, supplement tables, gaps.json fine-tuning column) | integer-index |
 | generation-cap sensitivity report (TRUNC.md) | integer-index |
@@ -175,10 +184,13 @@ systems:
   S−P), VideoReasonBench per gap (6), HarmBench (6), and one family per safety split or VMDT metric pooling its three
   gaps (18 each). The `reading` of a contrast uses these.
 - **Main-text ("broad") families**: every safety contrast that involves the parent (HarmBench C−P and the four
-  VSB / MCV splits C−P and S−P: 54) is one family, the safety S−C contrasts another (24); the same for VMDT (parent:
-  96, S−C: 48). Understanding metrics keep their declared family. **Every significance mark in the paper uses these**
-  (`p_holm_broad < 0.05`). Seven trust contrasts are significant only in the declared families and are reported as
-  not significant.
+  VSB / MCV splits C−P and S−P) is one family, the safety S−C contrasts another; the same for VMDT. Understanding
+  metrics keep their declared family. **Every significance mark in the paper uses these** (`p_holm_broad < 0.05`).
+
+A family holds the contrasts that are reported: the unreported ones (the no-reply rule of section 2) are not part of
+it. On the paper's rows the main-text families therefore have 51 (safety, parent), 21 (safety, S−C), 89 (VMDT,
+parent) and 41 (VMDT, S−C) contrasts instead of 54, 24, 96 and 48. Eight trust contrasts are significant only in the
+declared families and are reported as not significant (`summary.trust_lost_by_broad_holm_only`).
 
 ## 7. Margins, readings and verdicts
 
@@ -199,7 +211,7 @@ contrast row:
 
 | flag | rule | source |
 |---|---|---|
-| forced | the cell's stream arm contains forced answers (MMDuet's S†: one forced generation at the question frame) | rows (`info.forced`) |
+| forced | the cell's stream arm contains forced answers (a stream run with `stream.force_answer`; none of the paper's P/C/S jobs) | rows (`info.forced`) |
 | invalid | understanding metric and more than 10% of an arm's rows stopped at the generation cap (computed on the arms actually used, merged rerun arms included) | rows |
 | non_answer | the stream arm's response coverage is below 90% | contrasts |
 | non_answer | VSB harmful, MCV explicit / implicit: the response-form verdict of the cell's transition (P→C, C→S, P→S) is "response-form change", or an arm's non-answer share on the audited subset is ≥ 50% | `paper/flags/response_forms.csv`, `nonanswer_shares.csv` |
@@ -220,8 +232,8 @@ and MMStar the paper therefore generated every capped item again at 8,192 tokens
   model's own tokenizer and count as capped at ≥ cap − 8 tokens;
 - for the contrast of a parent and a child, the ids that either of the two capped are taken from the rerun rows in
   **both** offline arms, the formal rows everywhere else (so the parent arm is specific to each child);
-- the overlay applies to the contrasts, Table 2 and the C−P master table; the absolute-score tables keep the formal
-  rows (e.g. AURA's MathVista P / C there give −7.8, Table 2 shows −8.5).
+- the overlay applies to the contrasts and the gap figures; the absolute-score tables keep the formal rows (e.g.
+  AURA's MathVista P / C there give −7.8, the image gap figure shows −8.5).
 
 ```bash
 streamreplace rerun-capped select              # capped ids -> <outputs>/rerun_capped/<pair>/subset.json, capped.json
@@ -238,20 +250,22 @@ folder's own capped.json when it exists, else this file. DynaMath was not rerun.
 ## 10. Rounding and display
 
 - Absolute scores: the benchmark's 2-decimal value printed with 1 decimal (`format()` rounds the binary value half to
-  even), |x| < 0.05 as 0.0. An entry with fewer completed rows than expected gets ‡ (incomplete coverage).
-- Differences: `+.1f`; Table 2 and the gap figure print |x| < 0.05 as +0.0; the master tables print −0.0 as +0.0.
-- Table 2: shaded bold = Holm-significant in the main-text family (blue when the child is better, red when worse);
-  grey with a superscript = a qualified cell (* forced, † non-answer or artefact, ‡ more than 10% capped rows); the
-  image Mean is the unweighted mean of the seven image differences, qualified cells included. The robustness columns
-  are the pooled ΔRob per perturbation family.
-- Master tables: bold = Holm-significant in the main-text family; ^≈ = equivalent within ±3 points and not
-  significant. Without `--paper`, ^c also marks a coverage difference of more than 2 points (the paper omits it).
-- Gap figure: † = forced stream, ‡ = invalid (capped rows); the Mean row averages each column over the six children.
+  even), |x| < 0.05 as 0.0. An entry with fewer completed rows than expected gets ‡ (incomplete coverage); a stream
+  score that is not reported (section 2) prints as a dash.
+- Differences: `+.1f`, |x| < 0.05 as +0.0.
+- Table 2 and the MCV table: grey = not significant after Holm correction (the main-text families for the trust
+  columns, the robustness report's 18-test family for the robustness columns); `--` = no score under streaming; the
+  Mean row weights the children equally and is starred where a child has no score. The robustness columns are the
+  pooled ΔRob per perturbation family; the fine-tuning columns are the means over LingoQA and EyePCR of the
+  budget-averaged ΔGain and ΔAcc (descriptive, never grey).
+- Gap figure data: ‡ = invalid (more than 10% capped rows), † = a forced stream; the Mean row averages each column
+  over the six children.
 
 ## 11. Output files
 
 `<outputs>/analysis/contrasts.json` (`stats`): `rows` (one per contrast, in the order metrics × children × gaps),
-`summary` (the counts quoted in the text), `checks`, `videomme_duration` (Video-MME S−C by video duration, bins
+`unreported` (the contrasts left out by the no-reply rule: dataset, metric, child, gap, reason), `summary` (the counts
+quoted in the text), `checks`, `videomme_duration` (Video-MME S−C by video duration, bins
 [0, 60), [60, 90), [90, 121) s from the Qwen2.5-VL offline rows' durations; descriptive), `merged_truncation` (the
 truncation share of every merged rerun arm), `overlay`, `engine`, `versions`. Row fields: `dataset`, `metric`,
 `family`, `headline`, `lower_is_better`, `scale`, `child`, `gap`, `a_job`, `b_job`, `n`, `coverage_a`, `coverage_b`,
@@ -261,13 +275,13 @@ truncation share of every merged rerun arm), `overlay`, `engine`, `versions`. Ro
 `coverage_gap`, `reading`, `verdict`, `flags`, `flag_notes`. contrasts.csv flattens the same rows; GAPS.md renders them
 as tables.
 
-`<outputs>/tables/` (`tables`): `gaps.tex` (Table 2), `gaps.json` (the cell data of Table 2 and the overview: offline
-C−P and stream S−C panels with delta, 95% interval, broad Holm significance, tost3, coverage and flags per cell),
-`gaps_figure.json` / `.csv` (the gap figure: C−P and S−P of every child on the video, safety and VMDT columns),
-`master_cp` / `master_sp` (`.tex`, `.md`, `.csv`), `eval_image`, `eval_video`, `eval_safety`, `eval_vmdt` (from
-metrics.json), `eval_robustness`, `eval_instruction`, `eval_finetuning`, `eval_finetuning_gains`,
-`eval_common_response`. Table 2, the master tables and the four absolute-score tables have a `.csv` of the unrounded
-values next to them; the generalization tables are rendered from values their reports already rounded.
+`<outputs>/tables/` (`tables`): `gaps.tex` (Table 2), `mcv_gaps.tex` (its MCV-SafetyBench companion), `gaps.json` (the
+cell data of the gap figures: an offline panel C−P and a stream panel S−C with delta, 95% interval, broad Holm
+significance, tost3, coverage and flags per cell), `gaps_figure.json` / `.csv` (C−P and S−P, both against the parent,
+of every child on the video, safety and VMDT columns: the streaming tax itself), `eval_image`, `eval_video`,
+`eval_safety`, `eval_vmdt` (from metrics.json), `eval_robustness`, `eval_instruction`, `eval_finetuning`,
+`eval_finetuning_gains`. Table 2 and the four absolute-score tables have a `.csv` of the unrounded values next to
+them; the generalization tables are rendered from values their reports already rounded.
 
 ### Inputs from the generalization experiments
 
@@ -280,8 +294,9 @@ values next to them; the generalization tables are rendered from values their re
   cell and all three in `all_families`.
 - `<outputs>/robustness/report/results.json`: `robustness_by_benchmark` (eval_robustness) and the
   `instruction_robustness` group with 100 units (eval_instruction).
-- `<outputs>/finetune/ft_tables/cells.csv` (`streamreplace finetune report`; option `--finetune`): the fine-tuning
-  column of gaps.json reads the LingoQA row with `variant = all` and `contrast = d_gain_avg` (columns `child`, `n`,
+- `<outputs>/finetune/ft_tables/cells.csv` (`streamreplace finetune report`; option `--finetune`): Table 2's
+  fine-tuning columns average the LingoQA and EyePCR rows with `variant = all` and `contrast = d_gain_avg` /
+  `d_acc_avg`; the fine-tuning column of gaps.json reads the LingoQA `d_gain_avg` row (columns `child`, `n`,
   `value`, `low`, `high`, `lower_0.05`, `holm12`); tost3 is false when the one-sided 95% lower bound is below −3 and
   unknown otherwise (only that bound is recorded).
 - `<outputs>/finetune/ft_tables/results.json` (same report; option `--finetune-results`): `finetuning_accuracy`
@@ -289,37 +304,25 @@ values next to them; the generalization tables are rendered from values their re
   the test-set sizes from `finetuning_max_common_budget[].n_test`; `finetuning_primary` (the primary endpoint's rows:
   `DeltaGain`, `CI`, `Holm` strings for LingoQA and EyePCR) gives eval_finetuning_gains. MMDuet's fine-tuning results
   are read under the id of its LoRA-merged checkpoint (`display.finetune_ids` in configs/analysis.yaml).
-- `paper/flags/common_response.csv`: the response-form audit's common-response refusal rates (eval_common_response).
 
 ## 12. Reproducing the paper's numbers
 
-From the paper's scored rows, `report`, `stats --no-overlay`, `stats` and `tables --paper` reproduce:
+From the paper's scored rows, `report`, `stats --no-overlay`, `stats` and `tables` reproduce:
 
-- metrics.json and RESULTS.md of the original runs (every metric, count and table line);
-- the 354 contrasts on the formal rows and the 354 with the reruns merged, every field bit for bit
+- the per-job metrics (`paper/expected/metrics.json`);
+- the 334 contrasts and the 20 unreported ones, on the formal rows and with the reruns merged, every field
   (`paper/expected/contrasts_no_overlay.json`, `paper/expected/contrasts.json`), with the summary counts and the
   Video-MME duration split;
-- Table 2, the master tables, the four absolute-score tables, the robustness, fine-tuning and common-response tables,
-  cell by cell, and the gap-figure data (`paper/expected/tables.json`; the robustness and fine-tuning tables from the
-  reports of `streamreplace robustness report` and `streamreplace finetune report` on the paper's rows).
-  `tables --paper --check` compares the written tables with that file and lists every cell that differs.
+- Table 2, the MCV table, the four absolute-score tables and the robustness and fine-tuning tables, cell by cell
+  (`paper/expected/tables.json`; the robustness and fine-tuning tables from the reports of `streamreplace robustness
+  report` and `streamreplace finetune report` on the paper's rows). `tables --check` compares the written tables with
+  that file and lists every cell that differs.
 
-`paper/expected/plugin_recovery.json` holds the plugin's recovery numbers (docs/plugin.md): the thresholds of the three
-threshold variants, the 135 recovery cells (5 children × 9 headline stream metrics × 3 variants) and the paper
-figure's 45 cells; the figure cells are the `higher` variant read by `plugin.report.figure_data`, and that variant's
-thresholds are the ones in `plugin_artefacts/<child>/manifest.json` (both checked by `tests/analysis`).
+`paper/expected/plugin_recovery.json` holds Stream++'s numbers ([plugin.md](plugin.md)): the gate thresholds, the 54
+recovery cells (6 children × 9 headline stream metrics, each with its contrasts), the means of Fig. 6 and the
+figure's cells; the thresholds are the ones in `plugin_artefacts/<child>/manifest.json` (both checked by
+`tests/analysis`).
 
-Known differences from the published paper, all documented:
-
-- Four ThinkStream VMDT cells of the master tables (C−P privacy and state, S−P stereotype and decision) were rendered
-  from an unreleased variant of ThinkStream's answer cleaning; the released scoring gives C−P privacy +5.1 and state
-  +15.0 (bold) instead of +4.8 and +12.5, S−P stereotype −1.0 and decision +1.2 instead of −1.1 and +1.4. Table 2, the
-  gap figure and every other number use the released scoring.
-- The gap figure's flags for S−P cells were assembled by hand; only the printed marks († forced, ‡ capped rows) are
-  reproduced, and they agree.
-- The supplement text says 21 of 42 image contrasts are equivalent within ±3 points; that count predates the
-  generation-cap reruns (19 of 42 with them, as Table 2 shows).
-- Table captions are regenerated from the data (e.g. the eval_video caption names the incomplete entries).
-
-`paper/expected/` holds the golden numbers (no model outputs); `tests/analysis/` checks the engines on synthetic data
-and, when the paper's scored rows are available (marker `requires_data`), against these files.
+`paper/expected/` holds numbers only (no model outputs); `tests/analysis/` checks the engines on synthetic data and,
+when the paper's scored rows are available (marker `requires_data`), against these files. The differences from the
+published paper are listed in [reproducing-the-paper.md](reproducing-the-paper.md).

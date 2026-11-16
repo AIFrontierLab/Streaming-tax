@@ -1,8 +1,6 @@
 """Renderers: display conventions, Table 2 and the MCV table, figure data, absolute-score and robustness tables."""
 from __future__ import annotations
 
-import pytest
-
 from streamreplace.analysis.render import eval_tables, fig_gaps, gaps_json, latex, table_gaps
 from streamreplace.analysis.specs import load_profile
 

@@ -42,6 +42,5 @@
    "video": 5.101
   },
   "recipe": "calibrate stage directions (fold-1 AUC in 30-60% depth; KL grid 7 layers x alpha 0.5/1.0/1.5)"
- },
- "note": "not part of the paper's reported S+; same calibration recipe as the other children"
+ }
 }

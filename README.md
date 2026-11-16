@@ -1,11 +1,18 @@
 # streamreplace
 
-streamreplace is the evaluation code of the paper *How Close Are Streaming Models to Replacing Their Offline
-Parents?* (under anonymous review). It compares six streaming video-LLMs (the *children*) with the offline models
-they were initialised from (their *parents*) on image, video, safety, fairness and privacy benchmarks, under a
+streamreplace is the code of the paper *Streaming Tax: Can Streaming VLMs Replace Their Offline Parents?* (under
+anonymous review). It compares six streaming video-language models (the *children*) with the offline models they
+were post-trained from (their *parents*) on understanding, trustworthiness and generalization benchmarks, under a
 protocol that separates what streaming adaptation changes in the weights from what the streaming interface changes.
-It also contains a training-free plugin that repairs part of the streaming losses, two generalization experiments,
-and everything needed to rebuild the paper's statistics and tables.
+It contains everything the paper reports:
+
+- **Streaming Tax** (Sec. 3-4): the P / C / S evaluation on 15 benchmarks, its statistics and tables;
+- **the diagnosis** (Sec. 5): controls for the visual evidence a stream keeps, for its response policy, and for the
+  gap between recognizing a harmful request and refusing it;
+- **Stream++** (Sec. 6): the training-free plugin (Recall, Respond, Refuse), its calibration and its evaluation,
+  including native streaming benchmarks.
+
+[docs/reproducing-the-paper.md](docs/reproducing-the-paper.md) maps every table and figure of the paper to a command.
 
 ## What it measures
 
@@ -15,30 +22,44 @@ For each parent-child pair and benchmark, three conditions are scored by the sam
 |---|---|---|
 | **P** | parent | offline: the whole image set or sampled video at once, then the question |
 | **C** | child | the same offline pipeline, with matched frames, prompt, chat template and decoding |
-| **S** | child | its own native streaming interface: the video is replayed in order, the child keeps its own memory and response state, and the question arrives at the end of the video |
+| **S** | child | its own native streaming interface: the video is replayed in order, the child keeps its own memory and response policy, and the question arrives at the end of the video |
 
 ```
-S - P  =  (C - P)  +  (S - C)
-          adaptation   execution
+S - P           =  (C - P)         +  (S - C)
+streaming tax      adaptation tax     execution tax
 ```
 
 C - P is the difference that appears when the weights change under a fixed protocol; S - C the difference that
 appears when the same checkpoint runs as a stream. Every difference is reported with paired cluster-bootstrap
-intervals, Holm-corrected tests, equivalence and non-inferiority marks, the response coverage of both arms, and flags
-for qualified cells (forced answers, capped generations, missing answers). Image benchmarks and HarmBench have no
-streaming input and get P and C only. Details: [docs/protocol.md](docs/protocol.md),
-[docs/statistics.md](docs/statistics.md).
+intervals, Holm-corrected tests, equivalence and non-inferiority marks and the response coverage of both arms. A
+stream that answers none of a set's requests gets no attack-success or privacy score there (silence alone would give
+the best value). Image benchmarks and HarmBench have no streaming input and get P and C only. Details:
+[docs/protocol.md](docs/protocol.md), [docs/statistics.md](docs/statistics.md).
 
-**The plugin** is training-free and touches only the stream's answer turn ([docs/plugin.md](docs/plugin.md)):
+**Stream++** is training-free and acts on the stream's memory and on its answer turn
+([docs/plugin.md](docs/plugin.md)):
 
-- **S_fix** = *Recall* (the child keeps its whole visual history) + *Respond* (the answer turn may not open with the
-  child's silence marker, and a multiple-choice or yes/no reply without a valid option is read out from the first
-  answer step's option logits);
-- **S+** = S_fix + a *hidden-state gate* (a fixed refusal when the answer-position hidden state projects past a
-  calibrated threshold on the child's refusal direction) + *parent-restoration steering* (the mean parent-minus-child
-  hidden state, scaled, is added at one decoder layer while the child answers).
+- **Recall** keeps earlier frames without enlarging the memory: once the child's native visual budget is full, the
+  newest 10 chunks stay and the other slots hold a uniform sample of everything older, updated as each chunk arrives;
+- **Respond** makes sure an answer is delivered: the answer turn is requested, it may not open with the child's
+  silence marker, and a multiple-choice or yes/no reply without a valid option is read from the option logits at
+  the answer start;
+- **Refuse** restores the parent's refusal of harmful requests: *parent-restoration steering* (the mean
+  parent-minus-child hidden state, scaled, added at one decoder layer while the child answers) and a *refusal gate*
+  (a fixed refusal when the answer-position hidden state projects past a calibrated threshold on the child's harm
+  direction).
 
-The per-child vectors and thresholds ship in `plugin_artefacts/`; calibrating the plugin for a new child is included.
+S_fix = Recall + Respond; S_plug = S_fix + Refuse. The per-child vectors and thresholds ship in `plugin_artefacts/`;
+calibrating the plugin for a new child is included.
+
+**The diagnostic and supplementary experiments** are declared in one file, `configs/experiments.yaml`: each is a set
+of arms (ordinary generation jobs with one protocol component replaced) on a frozen item list, run and read with
+`streamreplace experiment` ([docs/experiments.md](docs/experiments.md)): the offline input restricted to the
+streaming window and the stream with nothing evicted; memory policies at a fixed budget; MMDuet's forced answer;
+question timing; AURA without its streaming system prompt and with its parent's weights; the response-form audit
+and harmless how-to requests about the same videos; refusal under the bare request, the video-framing sentence,
+black frames and the real video; the models' own risk judgments and their hidden-state harm scores; steering along
+the harm direction; OVO-Bench and StreamingBench.
 
 **Generalization**, offline, parent against child:
 
@@ -52,7 +73,7 @@ The per-child vectors and thresholds ship in `plugin_artefacts/`; calibrating th
 
 | Pair | Parent (P) | Child (C and S) | The child's native streaming interface (S) |
 |---|---|---|---|
-| p1 | LLaVA-OneVision-7B | MMDuet-7B | two score heads decide when to reply; when they stay silent at the question, a reply is forced at the final frame (reported as S†) |
+| p1 | LLaVA-OneVision-7B | MMDuet-7B | two score heads decide when to reply; they rarely fire at the question, so most questions go unanswered (the control S† forces a reply at the final frame) |
 | p2 | Qwen2.5-VL-3B-Instruct | ThinkStream-3B | a short thought on every 2-frame chunk, a reply at the question's chunk; a window of recent chunks |
 | p2 | | MMDuet2-3B | after every 2-frame turn, a reply or "NO REPLY"; the full history |
 | p3 | Qwen3-VL-8B-Instruct | AURA-8B | the video as one-second segments, with a silence token for "no reply"; the last 30 segments; served by vLLM |
@@ -85,10 +106,12 @@ is in `configs/pairs.yaml`. The adapters are documented in
 | MCV-SafetyBench | 2,920 (explicit and implicit attacks) | attack success rate per attack | P, C, S | RJScore |
 | VMDT fairness | 2,000 (a fixed subset) | fairness score (stereotype, decision, factual) | P, C, S | the official rules and JSON-repair prompt |
 | VMDT privacy | 600 (200 videos) | privacy score (location leakage) | P, C, S | the official rules |
+| OVO-Bench (supplement) | 1,576 rows (clips of at most 120 s) | question accuracy; official total average | S, Stream++ arms | the official scorer |
+| StreamingBench, real-time (supplement) | 700 questions (asked within 120 s) | accuracy | S, Stream++ arms | the official counting rule |
 
 One page per benchmark under [docs/benchmarks/](docs/index.md#benchmarks) gives the data source, prompt, parsing,
 judge use, metric and every deviation from the official protocol; the judges are described in
-[docs/judges.md](docs/judges.md). The five pairs on these 17 benchmarks make 235 generation jobs.
+[docs/judges.md](docs/judges.md). The five pairs on the first 17 benchmarks make 235 generation jobs.
 
 ## Installation
 
@@ -102,7 +125,8 @@ judge use, metric and every deviation from the official protocol; the judges are
   environments also support Blackwell), CUDA 12 drivers, [uv](https://docs.astral.sh/uv/), and micromamba, mamba or
   conda for the FFmpeg 6 libraries. The RJScore safety judge (Qwen2.5-72B-Instruct, about 145 GB in bf16) needs at
   least two large GPUs with working peer-to-peer copies.
-- Disk for the data: the largest benchmarks are Video-MME (101 GB) and VMDT fairness (84 GB);
+- Disk for the data: the largest benchmarks are Video-MME (101 GB) and VMDT fairness (84 GB); the two optional
+  streaming benchmarks of the supplement are larger (OVO-Bench 153 GB, StreamingBench 132 GB).
   [docs/data.md](docs/data.md) lists every size.
 
 ### The command
@@ -150,7 +174,7 @@ See [docs/environments.md](docs/environments.md) and [envs/README.md](envs/READM
 ### Third-party code
 
 Model runtimes and official scorers are other people's code. They are not copied into this repository (apart from
-the short fragments NOTICE lists): `fetch-upstream` downloads the exact files the paper used from 17 repositories at
+the short fragments NOTICE lists): `fetch-upstream` downloads the exact files the paper used from 19 repositories at
 pinned commits and checks each one against its git blob SHA-1.
 
 ```bash
@@ -207,16 +231,22 @@ streamreplace score --judge --judge-gpus 0,1
 streamreplace report                       # <outputs>/metrics.json, RESULTS.md, pairs.csv
 streamreplace stats --no-overlay           # <outputs>/analysis/no-overlay/contrasts.json, contrasts.csv, GAPS.md
 
-# 5. The plugin arms on the paper's pilot items (their own outputs folder), then the recovery tables, which
-#    compare them with P, C and S of the same items from the outputs folder of the P/C/S runs
-streamreplace --outputs plugin_runs plugin run --arms sfix,sfix_prs --items pilot2 --gpus 0,1
-streamreplace --outputs plugin_runs plugin assemble --items pilot2
+# 5. Stream++ on the paper's evaluation items (its own outputs folder), then the recovery tables, which compare
+#    S_fix and S_plug with P, C and S of the same items from the outputs folder of the P/C/S runs
+streamreplace --outputs plugin_runs plugin run --arms sfix,sfix_prs --items full --gpus 0,1
+streamreplace --outputs plugin_runs plugin assemble --items full
 streamreplace --outputs plugin_runs score --judge --judge-gpus 0,1
-streamreplace --outputs plugin_runs plugin report --items pilot2 --formal <outputs>   # <outputs>: the P/C/S runs
+streamreplace --outputs plugin_runs plugin report --items full --formal <outputs>   # <outputs>: the P/C/S runs
+
+# 6. A diagnostic experiment: the offline input restricted to the streaming window, the stream with nothing evicted
+streamreplace experiment list
+streamreplace experiment run window --gpus 0,1
+streamreplace --outputs <outputs>/experiments/window score
+streamreplace experiment report window
 ```
 
 `<outputs>` is `<STREAMREPLACE_HOME>/outputs` unless `--outputs` names another folder. `plugin run` and `plugin
-report` take `--children` to restrict the plugin to some children (default: the five of the paper).
+report` take `--children` to restrict the plugin to some children (default: all six).
 
 A quick end-to-end trial on a few items: `streamreplace --outputs runs/trial run --pairs p1 --benchmarks videomme
 --limit 3 --gpus 0` (`--limit` is part of the run identity, so it gets its own outputs folder). Without a GPU you can
@@ -248,26 +278,25 @@ model follows the same path with its own entry in a `--config` file ([docs/addin
 [docs/reproducing-the-paper.md](docs/reproducing-the-paper.md) maps every table and figure to the commands that
 produce it. In short:
 
-- **From scored outputs, on a CPU, exactly.** `report`, `stats`, `tables --paper`, `robustness report`, `finetune
-  report` and `plugin report` rebuild the statistics, tables and figure data of the paper's evaluation and plugin
-  results bit for bit from the paper's generation and score rows, with a few documented exceptions: four ThinkStream
-  VMDT cells of the supplement's master tables came from an unreleased scoring variant, the plugin's over-refusal
-  guardrail needs a judge that is not included, and MOSS-VL-Realtime's plugin results are not in the paper. The
-  paper's outputs are not distributed with this repository (they contain benchmark text and harmful completions);
-  `paper/expected/` holds the numbers they produce ([paper/README.md](paper/README.md)).
+- **From scored outputs, on a CPU.** `report`, `stats`, `tables`, `robustness report`, `finetune report`, `plugin
+  report` and `experiment report` rebuild the paper's statistics, tables and figure data from generation and score
+  rows. The paper's outputs are not distributed with this repository (they contain benchmark text and harmful
+  completions); `paper/expected/` holds the numbers they produce, and `tables --check` compares every printed cell
+  of the main tables with the paper's ([paper/README.md](paper/README.md)).
 - **Regenerating on GPUs, approximately.** The items, prompts, frames, stream schedules, decoding settings, scoring
-  rules and statistics are those of the paper, and they have been checked against the paper's original runs on CPUs.
-  New generations are not bit-identical, though: GPU kernels differ across hardware, ThinkStream samples its
-  thoughts, AURA's stream is batched by vLLM, MOSS-VL-Realtime runs on the wall clock, and LiveStar's narration varies
-  between runs.
+  rules and statistics are those of the paper. New generations are not bit-identical, though: GPU kernels differ
+  across hardware, ThinkStream samples its thoughts, AURA's stream is batched by vLLM, MOSS-VL-Realtime runs on the
+  wall clock, and LiveStar's narration varies between runs.
 
-The diagnostic analyses of the paper's Sec. 5 are not part of this release.
+What was checked while preparing this release, and the few analyses of the supplement that are not part of it, are
+listed in the same document.
 
 ## Extending
 
 - A new pair or streaming child: [docs/adding-a-model.md](docs/adding-a-model.md).
 - A new benchmark: [docs/adding-a-benchmark.md](docs/adding-a-benchmark.md).
-- The plugin for a new child: [docs/plugin.md](docs/plugin.md#calibrating-a-new-child).
+- Stream++ for a new child: [docs/plugin.md](docs/plugin.md#calibrating-a-new-child).
+- A new control experiment: an entry in `configs/experiments.yaml` ([docs/experiments.md](docs/experiments.md)).
 
 New models, pairs, benchmarks and suites can live in an extra config file passed with `--config FILE`, merged over
 `configs/`.
@@ -275,13 +304,14 @@ New models, pairs, benchmarks and suites can live in an extra config file passed
 ## Repository layout
 
 ```
-configs/              what is evaluated and how: models, pairs, benchmarks, judges, the analysis profile, the plugin,
-                      the generalization experiments (configs/local.yaml: your paths and overrides, git-ignored)
+configs/              what is evaluated and how: models, pairs, benchmarks, judges, the analysis profile, Stream++
+                      (plugin.yaml), the diagnostic and supplementary experiments (experiments.yaml), the
+                      generalization experiments (configs/local.yaml: your paths and overrides, git-ignored)
 manifests/            pinned third-party code, checkpoints and datasets; fingerprints of the prepared samples and
                       prompts; per-video frame counts and rates (video_meta/)
 envs/                 one Python environment per software stack: python-version, requirements.in, requirements.lock;
                       patches/ (the one checked patch of an installed package)
-plugin_artefacts/     the plugin's per-child steering vectors and thresholds (sha256-checked)
+plugin_artefacts/     Stream++'s per-child steering vectors and thresholds (sha256-checked)
 paper/                frozen item lists, expected numbers and audit labels of the paper (no benchmark text)
 docs/                 documentation; start at docs/index.md
 src/streamreplace/
@@ -293,7 +323,10 @@ src/streamreplace/
   judges/  scoring/   extraction judge, HarmBench classifiers, RJScore, Lingo-Judge, caches; rules -> score rows
   run/                job planning, dispatch to the model environments, the worker, generation-cap reruns
   analysis/           metrics, paired statistics, flags, the paper's tables
-  plugin/             S_fix / S+ runtime hooks, post-hoc assembly, recovery report, calibration
+  plugin/             Stream++: Recall, Respond, Refuse; runtime hooks, post-hoc assembly, recovery report,
+                      calibration
+  experiments/        the diagnostic and supplementary experiments: arms and contrasts, response forms, harm-score
+                      probes and steering
   generalization/     prompt robustness and LoRA fine-tuning
   provisioning/       environments, third-party code, downloads
 tests/                CPU test suite (pytest)
@@ -302,7 +335,8 @@ tests/                CPU test suite (pytest)
 An outputs folder (default `<STREAMREPLACE_HOME>/outputs`) holds `<benchmark>/<job>.jsonl` (generation rows, append
 only), `<job>.meta.json` (run identity and run segments) and `<job>.scores.jsonl` (score rows) for every job, where a
 job is `<model>.offline` or `<model>.stream` (a plugin arm: `<child>@<arm>.stream`); judge caches under `judges/`;
-`metrics.json`, `RESULTS.md`, `analysis/` and `tables/` from the analysis commands; and logs under `logs/`.
+`metrics.json`, `RESULTS.md`, `analysis/` and `tables/` from the analysis commands; `experiments/<name>/` (each an
+outputs folder of its own, with its item list and report); and logs under `logs/`.
 
 ## Tests
 
@@ -319,7 +353,7 @@ otherwise.
 
 ```bibtex
 @misc{anonymous2026streamreplace,
-  title  = {How Close Are Streaming Models to Replacing Their Offline Parents?},
+  title  = {Streaming Tax: Can Streaming VLMs Replace Their Offline Parents?},
   author = {Anonymous},
   year   = {2026},
   note   = {Under review}

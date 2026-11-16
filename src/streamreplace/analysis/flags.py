@@ -1,8 +1,8 @@
 """Qualifications of contrast cells: the marks the paper prints next to a difference instead of hiding it.
 
 Record-derived (computed here from the arms a cell actually uses, including merged rerun arms):
-  forced      the cell's stream arm contains forced answers (MMDuet's S-dagger: the response head rarely
-              self-triggers, so the protocol adds one forced generation at the question frame)
+  forced      the cell's stream arm contains forced answers (rows of a stream run with stream.force_answer,
+              MMDuet's forced-answer control S-dagger; the paper's S jobs have none)
   invalid     understanding metric and an arm has more than 10% of rows stopped at the generation cap
   non_answer  the stream arm's response coverage is below 90%
   chance      TimeBlind: the stream arm (S-C, S-P) or the child offline (C-P) is not above its exact bias-matched

@@ -67,6 +67,16 @@ through the same offline API as MOSS-VL-Instruct.
 - **Row info.** `frames`, `duration`, `frame_indices`, `input_tokens` and family-specific keys (`sample_fps`,
   `frame_size`, `rope_fix`, `sampler`, `pad_square`, `tiles`, `image_sizes`, `images`, `dtype`, `attention`).
 
+### Settings of the controls
+
+None of these is part of P or C. The diagnostic experiments ([../experiments.md](../experiments.md)) set them:
+
+| Setting | Effect | Experiment |
+|---|---|---|
+| `video.last_seconds: N` (`qwen_offline`, qwen-vl-utils sampler) | the same sampler on the last N seconds of the video only: what a streaming window of N seconds keeps | the window controls C_W and P_W (`window`, `window_300`) |
+| `video.blank: true` | the frame count and size are kept and every frame is black | `framing` (black frames); the fine-tuning blank control |
+| `video.drop: true` | the request is sent as text, without its frames | `framing` (the bare request, the framing sentence alone) |
+
 ## Qwen2.5-VL / Qwen3-VL family (`qwen_offline`)
 
 - **Classes.** `Qwen2_5_VLForConditionalGeneration` / `Qwen3VLForConditionalGeneration` from transformers 4.57.3

@@ -1,8 +1,8 @@
 """Paired statistics behind every P/C/S contrast of the paper (numpy + stdlib only).
 
 This is the main statistics engine (the "multinomial cluster-weight" engine). It produces every delta, interval,
-p value and TOST / non-inferiority mark of the C-P, S-C and S-P contrasts (Table 2, the master tables in the
-supplement, the gap figure). The older integer-index engine used by the robustness, fine-tuning and truncation
+p value and TOST / non-inferiority mark of the C-P, S-C and S-P contrasts (Table 2, the gap figures, Stream++'s
+recovery cells and the experiments' contrasts). The older integer-index engine used by the robustness, fine-tuning and truncation
 reports lives in `stats_index.py`; docs/statistics.md says which number comes from which engine.
 
 - mcnemar_exact, holm: exact two-sided McNemar and Holm's step-down adjustment.

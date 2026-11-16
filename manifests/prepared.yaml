@@ -1,6 +1,6 @@
 # What `streamreplace prepare` must produce from the pinned raw data (manifests/datasets.yaml), per benchmark: every
-# benchmark of the paper (the 17 of the P/C/S evaluation and the 3 of the fine-tuning experiment). The paper's runs
-# used exactly these samples and prompts; `streamreplace prepare --verify` and the requires_data tests compare a local
+# benchmark of the paper (the 17 of the P/C/S evaluation, the 3 of the fine-tuning experiment and the 2 streaming
+# benchmarks of the supplement). The paper's runs used exactly these samples and prompts; `streamreplace prepare --verify` and the requires_data tests compare a local
 # preparation against these values (a benchmark without a row is reported as not verified).
 #
 # Fields
@@ -103,3 +103,12 @@ prepared:
     count: 3893
     samples_sha256: 92649b4d77cd63ae2d5798e086993eb34cce12cfd3c1ea7ff95b5ef7f3ad018a
     prompts_sha256: 2afebfe2e47035a009816ce55d5e7dd86dcc6127bf9e252d3905e7620cb2e049
+  # streaming benchmarks (Supp. D.4): the rows asked within the first 120 s
+  ovo_bench:
+    count: 1576
+    samples_sha256: 8e919fe984a8c8cd650e049502e38a914eaca666384d8687264259dc0df2d7a5
+    prompts_sha256: c367623be2382063a032361002ae3ad0fc0f7f1d141bfb2281f9cc859feb4f45
+  streamingbench:
+    count: 700
+    samples_sha256: 0fb0bb8b17f246970786a6fdfd2ea8822a01a77b588dd54d2d9aab1f245811a9
+    prompts_sha256: 3d8ed0262bd9d459f7b9f6231855b368714f11ff01912d5aea84e6e6843dea0a

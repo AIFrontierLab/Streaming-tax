@@ -22,7 +22,7 @@ all of them:
 
 | Licence at the pinned commit | Repositories |
 |---|---|
-| MIT | HarmBench, MMDuet, ThinkStream, PromptBench |
+| MIT | HarmBench, MMDuet, ThinkStream, PromptBench, OVO-Bench, StreamingBench |
 | Apache-2.0 | VMDT, LLaVA-NeXT, MMDuet2, Self-in-Space (OpenUAV-QA), VLMEvalKit |
 | Wayve Dataset Licence Agreement for Non-Commercial Use | LingoQA (the licence covers its evaluation code as part of the dataset: personal, non-commercial, non-sublicensable) |
 | no licence file | LiveStar, TOMATO, TimeBlind, Video-MME's evaluation script, VideoReasonBench, Video-SafetyBench, MCV_Jailbreak |
@@ -44,8 +44,8 @@ A few short texts are quoted verbatim because the paper's numbers depend on them
 system prompt, the PromptBench StressTest sentence, prompt templates of lmms-eval (MIT; among them TOMATO's prompt and
 system prompt), VLMEvalKit (Apache-2.0) and VisuLogic-Eval (Apache-2.0), qwen-vl-utils' frame-selection helpers
 (Apache-2.0), MMDuet's frame geometry (MIT), the Video-SafetyBench prompt prefix, TimeBlind's answer-format suffixes,
-VMDT's JSON-repair prompt and refusal phrases (Apache-2.0) and EyePCR's conversation turns (CC BY 4.0, from the
-dataset). NOTICE gives each one's location, source, commit and licence. Everything else an official scorer contributes
+VMDT's JSON-repair prompt and refusal phrases (Apache-2.0), StreamingBench's answer cue (MIT) and EyePCR's
+conversation turns (CC BY 4.0, from the dataset). NOTICE gives each one's location, source, commit and licence. Everything else an official scorer contributes
 (parsers, judge prompts, scenario policies, attack prompts, the RJScore computation) is read from the fetched upstream
 file at run time, not copied; the tests check those texts through sha256 digests and a few identifying words.
 
@@ -64,17 +64,17 @@ Downloaded from their publishers (manifests/datasets.yaml) and used under their 
 | Licence or terms (as declared by the publisher) | Datasets |
 |---|---|
 | Apache-2.0 | DynaMath, MMMU, VisuLogic, MCV-SafetyBench, OpenUAV-QA |
-| CC BY-SA 4.0 | MathVista, TOMATO |
-| CC BY 4.0 | EyePCR |
+| CC BY-SA 4.0 | MathVista, TOMATO, OVO-Bench |
+| CC BY 4.0 | EyePCR, XSTest (harm-score probes) |
 | CC BY-NC-SA 4.0, gated | Video-SafetyBench |
-| CC BY-NC 4.0 (the repository's current statement; its DATA_LICENSE file held the ODC-By text when the data file last changed) | Stanford Alpaca (plugin calibration) |
-| MIT | HarmBench data, AdvBench (plugin calibration) |
+| CC BY-NC 4.0 (the repository's current statement; its DATA_LICENSE file held the ODC-By text when the data file last changed) | Stanford Alpaca (plugin calibration, harm-score probes) |
+| MIT | HarmBench data, AdvBench (plugin calibration, harm-score probes) |
 | Wayve non-commercial licence | LingoQA |
-| not declared on the dataset card (see the project) | MME, MMStar, ScienceQA (lmms-lab mirror; original ScienceQA terms), Video-MME, TimeBlind, VideoReasonBench, VMDT V2T |
+| not declared on the dataset card (see the project) | MME, MMStar, ScienceQA (lmms-lab mirror; original ScienceQA terms), Video-MME, TimeBlind, VideoReasonBench, VMDT V2T, StreamingBench (its code repository is MIT) |
 | not stated with the file | MMBench (OpenCompass mirror of the official TSV) |
 
 VMDT's fairness videos come from third-party face-video datasets that permit evaluation use only. Video-SafetyBench,
-MCV-SafetyBench, HarmBench and AdvBench contain harmful requests; they are used to measure refusals, and model
+MCV-SafetyBench, HarmBench, AdvBench and XSTest contain harmful requests; they are used to measure refusals, and model
 replies to them are not released. LingoQA's licence forbids redistributing the data or anything derived from its
 text.
 

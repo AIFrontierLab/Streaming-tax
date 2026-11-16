@@ -125,13 +125,15 @@ training data never contains; a sensitivity view). Table 2's fine-tuning column 
   official multi-image path) instead of one video.
 
 **Training-seed replication** (`finetune seeds`, folder `seeds/`). The formal units are seed 0. Seeds 1 and 2 repeat
-the LingoQA units of p3 and p5 with another LoRA initialisation and another order of the same training samples
-(epoch 0 reshuffled by `sha256("<seed>:0:<id>")`); test questions, settings and the zero-shot rows are the formal ones.
-Over the seeds: mean, SD and range of ΔAcc per budget and averaged over budgets, and a seed-inclusive 95% interval
-mean ± 1.96·sqrt(SE_test² + SD²/k). Decision rules fixed before the replication was run: SD(ΔAcc avg) ≤ 1.5 points
-with the interval inside ±3.6 → parity with total uncertainty; seeds more than 3 points apart → unresolved within seed
-noise; the 2K and 5K units only if a pair's 1K SD exceeds 1.5 points (both did). Paper: AURA ΔAcc avg +1.2 (SD 0.8,
-[−0.6, +2.9], parity); MOSS-VL-Realtime +0.3 (SD 1.5, [−2.2, +2.7], range 3.1: unresolved within seed noise).
+the LingoQA units of every checkpoint at the three budgets with another LoRA initialisation and another order of the
+same training samples (epoch 0 reshuffled by `sha256("<seed>:0:<id>")`); test questions, settings and the zero-shot
+rows are the formal ones. Over the seeds: mean, SD and range of ΔAcc per budget and averaged over budgets, a
+seed-inclusive 95% interval mean ± 1.96·sqrt(SE_test² + SD²/k), and the same interval for ΔGain. The report also
+states each pair against two rules fixed before the replication was run: SD(ΔAcc avg) ≤ 1.5 points with the interval
+inside ±3.6 → parity with total uncertainty; seeds more than 3 points apart → unresolved within seed noise. Paper:
+averaged over budgets and seeds, ΔAcc ranges from −1.2 (LiveStar, [−3.4, +1.1]) to +1.2 (AURA, [−0.6, +2.9]) with
+seed SDs of 0.2 to 1.5 points, and every seed-inclusive interval contains zero; MOSS-VL-Realtime's ΔGain is −7.1
+([−12.1, −2.1]), because it starts from a higher zero-shot accuracy than its parent.
 
 ## Running it
 

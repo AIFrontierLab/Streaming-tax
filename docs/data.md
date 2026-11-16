@@ -7,7 +7,7 @@ Three commands fetch them, each at the exact version behind the paper's numbers,
 streamreplace fetch-upstream all                 # third-party code (official scorers, streaming runtimes): ~300 files
 streamreplace download models all                # the 11 paper models + the SigLIP vision tower (12 checkpoints)
 streamreplace download judges all                # extraction judge, HarmBench classifiers, RJScore judge, Lingo-Judge
-streamreplace download datasets paper-core       # the 15 main benchmarks; paper-supp and finetune for the others
+streamreplace download datasets paper-core       # the 15 main benchmarks; paper-supp, finetune, streaming for the others
 ```
 
 Everything lands under one workspace, `$STREAMREPLACE_HOME` (default `workspace/` in the checkout). Each root can be
@@ -23,14 +23,14 @@ go, without downloading anything. `--dry-run --offline` prints the plan without 
 
 ## Third-party code: `streamreplace fetch-upstream`
 
-`manifests/upstream.yaml` pins 17 GitHub repositories to full commits and lists exactly the files used, each with
+`manifests/upstream.yaml` pins 19 GitHub repositories to full commits and lists exactly the files used, each with
 its git blob SHA-1 (what `git hash-object FILE` prints). `fetch-upstream` downloads those files into
 `<upstream root>/<name>/<path in the repository>` (default `$STREAMREPLACE_HOME/upstream`) and verifies each one;
 a repository's tree replaces the old one only once all its files verify. Repositories:
 
 | Group | Entries |
 |---|---|
-| core (P/C/S evaluation and scoring) | harmbench, vmdt, llava (LLaVA-NeXT), mmduet, mmduet2, thinkstream, livestar, tomato, timeblind, videomme (Video-MME's evaluation script), videoreasonbench, video_safetybench, mcv_safetybench |
+| core (evaluation and scoring) | harmbench, vmdt, llava (LLaVA-NeXT), mmduet, mmduet2, thinkstream, livestar, tomato, timeblind, videomme (Video-MME's evaluation script), videoreasonbench, video_safetybench, mcv_safetybench, ovo_bench, streamingbench |
 | generalization (robustness, fine-tuning) | openuav_qa, lingoqa, promptbench, vlmevalkit |
 
 ```bash
@@ -95,8 +95,8 @@ full commit; references without one are refused.
 
 `manifests/datasets.yaml` lists every benchmark's sources. Files go to `<data root>/<benchmark>/raw/`, the folder
 `streamreplace prepare` reads (see each benchmark's page under docs/benchmarks/). Names may be benchmarks, suites
-(`paper-core`, `paper-supp`, `finetune` from configs/benchmarks.yaml), groups (`image`, `video`, `safety`, `trust`,
-`finetune`, `calibration`) or `all`.
+(`paper-core`, `paper-supp`, `finetune`, `streaming` from configs/benchmarks.yaml), groups (`image`, `video`,
+`safety`, `trust`, `finetune`, `calibration`) or `all`.
 
 | Benchmark | Source (pinned) | Size | Access |
 |---|---|---|---|
@@ -120,8 +120,11 @@ full commit; references without one are refused.
 | lingoqa | Google Drive, 6 files (sha256); image archives unpacked | 66 GB | licence agreement (see below) |
 | eyepcr | HF EvergreenTree/EyePCR @5a25c1e8 | 13 GB | open |
 | openuav_qa | HF choucsan/OpenUAV-QA @121d55c3 + ModelScope frames | 0.03 GB + frames | ModelScope is unpinned (see below) |
-| advbench | GitHub llm-attacks/llm-attacks @a62d1307, harmful_behaviors.csv | <1 MB | open (plugin calibration) |
-| alpaca | GitHub tatsu-lab/stanford_alpaca @f1349621, alpaca_data.json | 23 MB | open (plugin calibration) |
+| ovo_bench | HF JoeLeelyf/OVO-Bench @fec29e33 (the pre-chunked clips, a split tar) | 153 GB | open (streaming benchmarks, Supp. D.4) |
+| streamingbench | HF mjuicem/StreamingBench @48872fa7 (the ten Real-Time Visual Understanding zips) | 132 GB | open (streaming benchmarks, Supp. D.4) |
+| advbench | GitHub llm-attacks/llm-attacks @a62d1307, harmful_behaviors.csv | <1 MB | open (plugin calibration, harm-score probes) |
+| alpaca | GitHub tatsu-lab/stanford_alpaca @f1349621, alpaca_data.json | 23 MB | open (plugin calibration, harm-score probes) |
+| xstest | GitHub paul-rottger/exaggerated-safety @d7bb5bd7, xstest_prompts.csv | <1 MB | open (harm-score probes) |
 
 Hugging Face sources are downloaded at their pinned commit with only the file patterns the benchmark needs
 (`allow`), then checked against the sizes and checksums the manifest records for the files that `prepare` reads
@@ -160,12 +163,22 @@ streamreplace download datasets all --verify-only --size-only-above 1000000000  
   ModelScope lists but serves empty are recorded in `raw/modelscope_unavailable.json`; `prepare` skips their
   trajectories, as the official loader could not read them either.
 
-### Plugin calibration inputs
+### Calibration and probe inputs
 
 `advbench` and `alpaca` are the text sources of the plugin's calibration for a new child (docs/plugin.md): pass the
 downloaded files to `streamreplace plugin calibrate ... --advbench <data>/advbench/raw/harmful_behaviors.csv
---alpaca <data>/alpaca/raw/alpaca_data.json`. Both are pinned to the commit that last changed the file. AdvBench
-contains harmful requests; Stanford Alpaca's data is licensed CC BY-NC 4.0.
+--alpaca <data>/alpaca/raw/alpaca_data.json`. Both are pinned to the commit that last changed the file. The
+harm-score probes (experiment `harm_probe`, docs/experiments.md) read the same two files and `xstest` from their
+download folders. AdvBench and XSTest contain harmful requests; Stanford Alpaca's data is licensed CC BY-NC 4.0,
+XSTest CC BY 4.0.
+
+### Streaming benchmarks
+
+OVO-Bench and StreamingBench are large (153 GB and 132 GB) and only needed for the streaming-benchmark table of
+Supp. D.4. Their annotations, prompts and scorers come with the benchmarks' code (`fetch-upstream ovo_bench
+streamingbench`). `prepare` extracts or cuts only the clips of the questions asked within the first 120 s; cutting
+StreamingBench's clips re-encodes video with the FFmpeg of the `ffmpeg` environment (`streamreplace env build
+ffmpeg`), about 3 CPU-seconds per second of 1080p video.
 
 ## Licences
 

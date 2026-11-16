@@ -1,5 +1,5 @@
-"""StreamingBench, Real-Time Visual Understanding (THUNLP-MT/StreamingBench): 500 videos, 2,500 four-option questions
-in 10 tasks, each asked at a time stamp t. This is the part streaming-model papers usually report; Omni-Source
+"""StreamingBench, Real-Time Visual Understanding (THUNLP-MT/StreamingBench): 2,500 four-option questions in 10 tasks
+on 499 videos, each asked at a time stamp t. This is the part streaming-model papers usually report; Omni-Source
 (audio) and Contextual Understanding are not run.
 
 Paper use: native streaming ability with and without Stream++ (Supp. D.4), on the questions asked within the first

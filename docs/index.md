@@ -15,10 +15,10 @@ detail; every page names the code and configuration it describes.
 
 | Page | Contents |
 |---|---|
-| [protocol.md](protocol.md) | P, C and S precisely: matched frames, prompts, chat template and decoding offline; the native streams with the question at the end; silence and forced answers; how the gaps are reported |
+| [protocol.md](protocol.md) | P, C and S precisely: matched frames, prompts, chat template and decoding offline; the native streams with the question at the end; silence and the no-reply rule; how the gaps are reported |
 | [frames.md](frames.md) | which video frames each model sees: the per-pair offline rules, benchmark overrides, frame digests, the `video_meta` manifests, decoder caveats |
 | [models/offline-adapters.md](models/offline-adapters.md) | the four offline adapters (conditions P and C): inputs, templates, decoding, CPU input checks, LoRA loading |
-| [models/stream-adapters.md](models/stream-adapters.md) | the six children's native streams (condition S): frames, memory, question injection, answer readout, silence, deviations from the official evaluations, plugin hook points |
+| [models/stream-adapters.md](models/stream-adapters.md) | the six children's native streams (condition S): frames, memory, question injection, answer readout, silence, deviations from the official evaluations, the settings of the controls, plugin hook points |
 
 ## Benchmarks
 
@@ -32,6 +32,7 @@ deviations from the official protocol.
 | Safety | [HarmBench](benchmarks/harmbench.md) | P, C |
 | Safety | [Video-SafetyBench](benchmarks/video_safetybench.md), [MCV-SafetyBench](benchmarks/mcv_safetybench.md) | P, C, S |
 | Fairness and privacy | [VMDT fairness](benchmarks/vmdt_fairness.md), [VMDT privacy](benchmarks/vmdt_privacy.md) | P, C, S |
+| Streaming (supplement) | [OVO-Bench](benchmarks/ovo_bench.md), [StreamingBench](benchmarks/streamingbench.md) | S and Stream++ only |
 
 The fine-tuning datasets (LingoQA, EyePCR, OpenUAV-QA) are described in
 [generalization/finetune.md](generalization/finetune.md).
@@ -43,11 +44,12 @@ The fine-tuning datasets (LingoQA, EyePCR, OpenUAV-QA) are described in
 | [judges.md](judges.md) | the scoring pipeline (`score`), the extraction judge, HarmBench classifiers, RJScore and Lingo-Judge, self-tests, judge caches |
 | [statistics.md](statistics.md) | counting rules, per-job metrics (`report`), analysis units, the bootstrap engines, Holm families, margins and verdicts, flags, generation-cap reruns, tables (`stats`, `tables`) |
 
-## The plugin and generalization
+## Diagnosis, Stream++ and generalization
 
 | Page | Contents |
 |---|---|
-| [plugin.md](plugin.md) | S_fix and S+: Recall, Respond, the hidden-state gate and parent-restoration steering; per-child arming points; thresholds; reproducing the plugin figure; calibrating a new child |
+| [experiments.md](experiments.md) | the diagnostic and supplementary experiments (Sec. 5, Supp. C and D): how an experiment is declared, what each one runs, its paper table or figure, the three kinds of report |
+| [plugin.md](plugin.md) | Stream++ (S_fix and S_plug): Recall, Respond, parent-restoration steering and the refusal gate; arms; per-child arming points; thresholds; reproducing the paper's results; calibrating a new child |
 | [generalization/robustness.md](generalization/robustness.md) | prompt robustness: items, perturbations, frozen edits, analysis |
 | [generalization/finetune.md](generalization/finetune.md) | LoRA fine-tuning: datasets, recipe, training units, evaluation, analysis, controls, seed replication |
 
@@ -55,7 +57,7 @@ The fine-tuning datasets (LingoQA, EyePCR, OpenUAV-QA) are described in
 
 | Page | Contents |
 |---|---|
-| [reproducing-the-paper.md](reproducing-the-paper.md) | which command produces which table and figure; the CPU path from scored outputs and the GPU path; nondeterminism; known differences from the paper |
+| [reproducing-the-paper.md](reproducing-the-paper.md) | which command produces which table and figure; the CPU path from scored outputs and the GPU path; nondeterminism; what was checked; known differences from the paper; what is not part of the release |
 | [paper/README.md](../paper/README.md) | the frozen item lists, expected numbers and audit labels shipped in `paper/`, and why no benchmark text or model output is |
 | [adding-a-model.md](adding-a-model.md) | a new pair or streaming child: adapters, environment, configuration, CPU checks, analysis roster |
 | [adding-a-benchmark.md](adding-a-benchmark.md) | a new benchmark: module, registration, configuration, data, fingerprints, statistics, tests |
@@ -63,7 +65,8 @@ The fine-tuning datasets (LingoQA, EyePCR, OpenUAV-QA) are described in
 ## Reference
 
 The configuration files document their own fields in comments: `configs/defaults.yaml`, `models.yaml`, `pairs.yaml`,
-`benchmarks.yaml`, `judges.yaml`, `analysis.yaml`, `plugin.yaml` and `configs/generalization/*.yaml`;
+`benchmarks.yaml`, `judges.yaml`, `analysis.yaml`, `experiments.yaml`, `plugin.yaml` and
+`configs/generalization/*.yaml`;
 `configs/examples/cpu-trial.yaml` is an extra `--config` file for the CPU trial in the README. The manifests
 (`manifests/upstream.yaml`, `checkpoints.yaml`, `datasets.yaml`, `prepared.yaml`) start with a description of their
 format, and [envs/README.md](../envs/README.md) lists the environments. `streamreplace <command> --help` describes

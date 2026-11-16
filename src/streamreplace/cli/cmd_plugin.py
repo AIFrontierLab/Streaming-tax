@@ -214,7 +214,7 @@ def _report(args) -> int:
     out = args.out or ctx.paths.outputs / "plugin"
     write_json(out / "report.json", result)
     (out / "REPORT.md").write_text(markdown(result, {c: profile.name_of(c) for c in children},
-                                            f"Plugin recovery ({args.items})"), encoding="utf-8")
+                                            f"Stream++ recovery ({args.items})"), encoding="utf-8")
     write_json(out / "figure.json", figure_data(result))
     print(f"wrote {out}/report.json, REPORT.md, figure.json ({len(result['cells'])} cells)")
     return 0

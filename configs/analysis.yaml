@@ -4,7 +4,7 @@
 profile: paper
 
 roster:
-  # Children in the paper's order (rows of Table 2, columns of the master tables). Each child's parent is read
+  # Children in the paper's order (the rows of Table 2). Each child's parent is read
   # from configs/pairs.yaml; `pairs` below is only a fallback when that file is absent.
   children: [mmduet_7b, thinkstream_3b, mmduet2_3b, aura_8b, livestar_8b, moss_vl_rt]
   # All models in the order of the absolute-score tables (each parent followed by its children).
@@ -124,7 +124,7 @@ report:
   vmdt_paired_draws: 2000        # the benchmarks' own paired bootstrap shown in RESULTS.md (not the paper's)
 
 display:
-  # Model names: short (tables, figures), full (absolute-score tables), and two per-table overrides.
+  # Model names: short (tables, figures), full (absolute-score tables), and the override of Table 2.
   names: {llava_ov_7b: LLaVA-OV, mmduet_7b: MMDuet, qwen25vl_3b: Qwen2.5-VL, thinkstream_3b: ThinkStream,
           mmduet2_3b: MMDuet2, qwen3vl_8b: Qwen3-VL, aura_8b: AURA, livestar_iv_8b: LiveStar-IV,
           livestar_8b: LiveStar, moss_vl: MOSS-VL, moss_vl_rt: MOSS-RT}
@@ -132,11 +132,10 @@ display:
                thinkstream_3b: ThinkStream-3B, mmduet2_3b: MMDuet2-3B, qwen3vl_8b: Qwen3-VL-8B, aura_8b: AURA-8B,
                livestar_iv_8b: LiveStar-InternVideo-8B, livestar_8b: LiveStar-8B, moss_vl: MOSS-VL-Instruct,
                moss_vl_rt: MOSS-VL-Realtime}
-  master_names: {moss_vl_rt: MOSS-VL-RT}
   gap_table_names: {moss_vl_rt: MOSS-VL-Realtime}
   # The ids the fine-tuning report uses for a model, when they differ (MMDuet was fine-tuned as its LoRA-merged
   # checkpoint; configs/generalization/finetune.yaml).
   finetune_ids: {mmduet_7b: mmduet_7b_merged}
   # Absolute scores: the benchmark metric (rounded to 2 decimals) printed with 1 decimal; |x| < 0.05 shows 0.0.
-  # Deltas: '+.1f'; Table 2 and the figure show |x| < 0.05 as +0.0; the master tables turn '-0.0' into '+0.0'.
+  # Deltas: '+.1f'; |x| < 0.05 shows as +0.0.
   zero_below: 0.05

@@ -19,9 +19,6 @@ The four absolute-score tables come with a CSV of the unrounded values; the gene
 values their reports already rounded."""
 from __future__ import annotations
 
-import csv
-from pathlib import Path
-
 from .latex import absolute, delta, tex_row, tex_table
 
 IMAGE = [("dynamath", "avg_acc"), ("dynamath", "worst_acc"), ("mathvista", "acc"), ("mmbench", "circular_acc"),
