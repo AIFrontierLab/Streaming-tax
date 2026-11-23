@@ -1,6 +1,6 @@
 # Streaming Tax: Can Streaming VLMs Replace Their Offline Parents?
 
-Official code of the paper (under anonymous review). It evaluates six streaming video-language models against the
+We evaluates six streaming video-language models against the
 offline models they were adapted from, diagnoses where they fall short, and provides **Stream++**, a training-free
 plugin that narrows the gap.
 
